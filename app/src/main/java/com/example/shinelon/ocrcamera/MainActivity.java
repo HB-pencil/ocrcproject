@@ -1,0 +1,363 @@
+package com.example.shinelon.ocrcamera;
+
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.Toast;
+
+import com.example.shinelon.ocrcamera.helper.ProgressBarDialogFragment;
+import com.example.shinelon.ocrcamera.helper.helperDialogFragment;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Date;
+
+import jp.co.cyberagent.android.gpuimage.GPUImage;
+import jp.co.cyberagent.android.gpuimage.GPUImageSharpenFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageView;
+
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+    private ImageButton mGalleryButton;
+    private ImageButton mTxtButton;
+    private ImageButton mCameraButton;
+    private ImageButton mCropButton;
+    private File mFile;
+    private Uri mUri;
+    private Uri uri;
+    private myImageView mImageView;
+    private static final int REQUEST_CAMERA = 0;
+    private static final int CAMERA_CROP = 1;
+    private static final int SELECT = 2;
+    private static final int CROP = 3;
+    private static final int REQUEST_RECOGNIZE = 4;
+    private ProgressBarDialogFragment progressDialog;
+    private GPUImageView mGPUImageView;
+
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        mGalleryButton = (ImageButton) findViewById(R.id.gallery_bt);
+        mTxtButton = (ImageButton) findViewById(R.id.send_bt);
+        mCameraButton = (ImageButton) findViewById(R.id.camera_bt);
+        mCropButton = (ImageButton) findViewById(R.id.corp_bt);
+        mGPUImageView  = (GPUImageView) findViewById(R.id.image_photo);
+        mCropButton.setEnabled(false);
+        mTxtButton.setEnabled(false);
+        mGPUImageView.setScaleType(GPUImage.ScaleType.CENTER_INSIDE);
+
+        mGalleryButton.setOnClickListener(this);
+        mTxtButton.setOnClickListener(this);
+        mCameraButton.setOnClickListener(this);
+        mCropButton.setOnClickListener(this);
+
+    }
+
+
+    @Override
+    public void onClick(View view){
+        switch (view.getId()){
+            //从图库中选择图片
+            case R.id.gallery_bt:
+                Intent intent2 = new Intent(Intent.ACTION_GET_CONTENT);
+                intent2.setType("image/*");
+                startActivityForResult(intent2,SELECT);
+                break;
+            case R.id.send_bt:
+                Intent intent = SecondActivity.newInstance(this);
+                startActivity(intent);
+                break;
+            case R.id.camera_bt:
+                //启动相机应用,获得一个File实例以及其所指向的抽象路
+                /**
+                 *  /storage/emulated/0/Android/data/com.example.shinelon.ocrcamera/files/Pictures/capturedImage149622891598
+                 *  这个目录为app私有存储，并不会服更图库
+                 *  有Public和无Public区别在于有Public无法指定外部存储目录下自定义目录而另一个可以
+                 *   mFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),"capturedImage" + String.valueOf(new Date().getTime()) + ".jpg");
+                 */
+                mFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),"capturedImage" + String.valueOf(new Date().getTime()) + ".jpg");
+                mUri = Uri.fromFile(mFile);
+                Intent intent3 = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                //putExtra()对于从图库选择的图片并不生效，但对于裁剪和相机却是可行的
+                intent3.putExtra(MediaStore.EXTRA_OUTPUT,mUri);
+                startActivityForResult(intent3,REQUEST_CAMERA);
+                break;
+            case R.id.corp_bt:
+                //从原来路径中裁剪照片
+                crop(getUri());
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode,int resultCode,Intent data){
+        switch(requestCode){
+            //成功拍到照片裁剪
+            case REQUEST_CAMERA:
+                if(resultCode == RESULT_OK){
+                    //启动裁剪功能，裁剪结束后覆盖原来图片
+                    Intent intent = new Intent("com.android.camera.action.CROP");
+                    intent.setDataAndType(mUri,"image/*");
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT,mUri);
+                    /**
+                     * 原来我们在保存成功后，还要发一个系统广播通知手机有图片更新，发生广播给系统更新图库
+                     */
+                    Intent intentNotify = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                    Uri uri = Uri.fromFile(mFile);
+                    intentNotify.setData(uri);
+                    this.sendBroadcast(intentNotify);
+                    System.out.println(mUri.getPath());
+                    startActivityForResult(intent,CAMERA_CROP);
+                }break;
+            //成功裁剪设置图片
+            case CAMERA_CROP:
+                if(resultCode == RESULT_OK){
+                    setImage(mUri);
+                    mCropButton.setEnabled(true);
+                    mTxtButton.setEnabled(true);
+                }break;
+            case SELECT:
+                if(data != null){
+                    Uri uri = data.getData();
+                    crop(uri);
+                }
+                break;
+            case CROP:
+                break;
+            default:
+                break;
+        }
+
+    }
+    /**
+     * 此方法更新显示的图像
+     */
+    public void setImage(Uri uri){
+        try{
+            mGPUImageView.setImage(uri);
+            mGPUImageView.setFilter(new GPUImageSharpenFilter());
+            //Bitmap bitmap = compressPhoto(uri);
+            //mImageView.setImageBitmap(bitmap);
+            mGPUImageView.saveToPictures("ocrCamera", "capturedImage" + String.valueOf(new Date().getTime()) + ".jpg", new GPUImageView.OnPictureSavedListener() {
+                @Override
+                public void onPictureSaved(Uri uri) {
+                    if(uri != null)
+                    Toast.makeText(getApplicationContext(), "图片已保存", Toast.LENGTH_SHORT).show();
+                    System.out.println(uri.getPath());
+                }
+            });
+            setUri(uri);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 压缩图片方法由于使用GPUImageView，故而将自定义View及其相关压缩等注释掉，次方法暂时不用
+     */
+
+    public Bitmap compressPhoto(Uri uri){
+        Bitmap bitmap;
+        Bitmap newBitmap;
+        //尺寸压缩
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        //只加载尺寸信息
+
+        options.inJustDecodeBounds = true;
+        try{
+            /**
+             * 这里使用decodeStream而不用decodeFile，原因在于使用后者图库加载会出现FileNoFoundException,
+             * 一开始不明所以，后来看到
+             * Don't assume that there is a file path. Android 4.4 and up are about to remove them. And the uri you got
+             * has already no path.You can still access the file content either through an InputStream
+             * 所以应该是版本的原因，看来使用decodeStream要比decodeFile明显保险，虽然步骤麻烦多一点
+             */
+            BitmapFactory.decodeStream(getContentResolver().openInputStream(uri),null,options);
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+
+
+        float srcWith = options.outWidth;
+        float srcHeight = options.outHeight;
+        float tagHeight = 800;
+        float tagWith = 400;
+        //默认压缩比
+        int inSampliSize =1;
+        if(srcWith/tagWith>srcHeight/tagHeight && srcWith>tagWith){
+            inSampliSize = Math.round(srcWith/tagWith);
+        }else if(srcHeight/tagHeight>srcWith/tagWith && srcHeight>tagHeight){
+            inSampliSize = Math.round(srcHeight/tagHeight);
+        }
+
+        options.inSampleSize = inSampliSize;
+        options.inJustDecodeBounds = false;
+        InputStream in = null;
+        try{
+           in  = getContentResolver().openInputStream(uri);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        bitmap  =  BitmapFactory.decodeStream(in,null,options);
+        //质量压缩
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG,100,bout);
+        ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
+        newBitmap = BitmapFactory.decodeStream(bin);
+        if(newBitmap != null){
+            return newBitmap;
+        }else{
+            return bitmap;
+        }
+    }
+
+
+    /**
+     * 裁剪方法
+     * @param uri
+     */
+    public void crop(Uri uri){
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setDataAndType(uri,"image/*");
+        intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
+        startActivityForResult(intent,CROP);
+        setImage(uri);
+        mCropButton.setEnabled(true);
+        mTxtButton.setEnabled(true);
+    }
+
+    /**
+     * 获得目标Uri
+     */
+
+    public Uri getUri(){
+        return uri;
+    }
+
+    /**
+     *设置uri
+     *
+     * @param mUri
+     */
+    public void setUri(Uri mUri){
+        uri = mUri;
+    }
+
+    /**
+     *     Recognize方法
+     */
+    public void doRecognize(){
+        File file = new File(Environment.getExternalStorageDirectory(),"recognized.txt");
+        Uri uri = Uri.fromFile(file);
+    }
+
+    /**
+     *设置工具栏
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.menu_item,menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem){
+        switch (menuItem.getItemId()){
+            case R.id.help_item:
+                FragmentManager manager = getSupportFragmentManager();
+                helperDialogFragment dialogFragment = new helperDialogFragment();
+                dialogFragment.show(manager,"使用技巧");
+                break;
+            case R.id.about_item:
+                break;
+            case R.id.setting_item:
+                break;
+        }
+        return super.onContextItemSelected(menuItem);
+    }
+
+
+
+    /**
+    protected class OCRRecognitionTask extends AsyncTask<Void,Integer,String>{
+
+        private ProgressBar mProgressBar;
+        private String txt;
+        //用于初始化
+        @Override
+        public void onPreExecute(){
+            mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+            mProgressBar.setProgress(0);
+            mProgressBar.setMax(100);
+            FragmentManager fm = getSupportFragmentManager();
+            progressDialog = new ProgressBarDialogFragment();
+            progressDialog.show(fm,"ProgressDialog");
+        }
+
+        //开启子线程
+        @Override
+        public String doInBackground(Void ...params){
+            doRecognize();
+            publishProgress(50);
+            txt = readFromTxt();
+        //实时设置progressbar的进度，由onProgressUpdate()调用
+            publishProgress(100);
+            return  txt;
+        }
+
+        //实时更新progressBar
+        @Override
+        public void onProgressUpdate(Integer... params){
+            mProgressBar.setProgress(params[0]);
+        }
+        @Override
+        public void onPostExecute(String str){
+            Intent intent = SecondActivity.newInstance(getApplicationContext(),str);
+            startActivityForResult(intent,REQUEST_RECOGNIZE);
+        }
+
+        }
+        //从txt文件中读取字段
+        public String readFromTxt(){
+            File file = new File(Environment.getExternalStorageDirectory(),"recognized.txt");
+            StringBuffer  stringBuffer = new StringBuffer();
+            if(!file.exists()){
+
+            }try{
+                FileInputStream in =  new FileInputStream(file);
+                InputStreamReader reader_in = new InputStreamReader(in);
+                BufferedReader reader = new BufferedReader(reader_in);
+                String str = null;
+                while((str = reader.readLine())!= null){
+                     stringBuffer.append(str);
+                }
+
+            }catch(IOException e){
+                e.printStackTrace();
+
+            }
+            return  stringBuffer.toString();
+        }
+        */
+    }
+

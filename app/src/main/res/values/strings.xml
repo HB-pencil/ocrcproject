@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">OcrCamera</string>
+    <string name="activity_title_second">识别到的文字</string>
+    <string name="ok">OK</string>
+    <string name="err_loading_libs">Error loading libs</string>
+    <string name="err_invalid_lic">Your license file is missing, invalid or expired. LEADTOOLS will not function. Please contact LEAD Sales for information on obtaining a valid license.</string>
+    <string name="err_no_lic">No LEADTOOLS License</string>
+    <string name="recognize">识别中</string>
+    <string name="using_tips_1">①拍照时要正对着屏幕的目标内容，建议手机相对屏幕的倾斜度小于等于15°</string>
+    <string name="using_tips_2">②拍照后要对图片进行裁剪，确保与目标文字无关的内容文字不在图片内，并且文字截取必须尽可能完整</string>
+    <string name="using_tips_3">③建议拍照距离在15ccm到30cm（以肉眼具体大概可见图片中文字为准）</string>
+    <string name="using_tips_4">④相机对准目标内容使用自动聚焦功能</string>
+    <string name="using_tips_5">⑤建议使用强冷色调滤镜</string>
+    <string name="result_tip">请改正识别错误的文本并确认</string>
+</resources>
