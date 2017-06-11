@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.example.shinelon.ocrcamera.helper.AsycTaskProgressTask;
+import com.example.shinelon.ocrcamera.helper.AsyncProcessTask;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -25,6 +25,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
     private Button mButton;
     private static final String IMAGE_PATH = "IMAGE_PATH";
     private static final String OUTPUT_PATH = "OUTPUT_PATH";
+    private String imageUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,19 +34,22 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
 
         mButton = (Button) findViewById(R.id.confirm_bt);
         mEditText = (EditText) findViewById(R.id.edit_text);
+        mButton.setOnClickListener(this);
 
-        String imageUrl = "unknown";
 
         Bundle extras = getIntent().getExtras();
 
         if( extras != null) {
             imageUrl = extras.getString(IMAGE_PATH);
             outputPath = extras.getString(OUTPUT_PATH);
-            // Starting recognition process
-            new AsycTaskProgressTask(SecondActivity.this).execute(imageUrl,outputPath);
             System.out.println("extras is " + imageUrl + "and" + outputPath);
+            doRecognize();
         }
+    }
 
+    public void doRecognize(){
+        // Starting recognition process
+        new AsyncProcessTask(this).execute(imageUrl,outputPath);
     }
 
     public static Intent newInstance(Context context,String...values){

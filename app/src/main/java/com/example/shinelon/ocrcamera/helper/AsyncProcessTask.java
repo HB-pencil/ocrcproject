@@ -8,13 +8,13 @@ import com.example.shinelon.ocrcamera.SecondActivity;
 
 import java.io.FileOutputStream;
 
-public class AsycTaskProgressTask extends AsyncTask<String, String, Boolean> {
+public class AsyncProcessTask extends AsyncTask<String, String, Boolean> {
 
     private ProgressDialog dialog;
     /** application context. */
     private final SecondActivity activity;
 
-    public AsycTaskProgressTask(SecondActivity activity) {
+    public AsyncProcessTask(SecondActivity activity) {
         this.activity = activity;
         dialog = new ProgressDialog(activity);
     }

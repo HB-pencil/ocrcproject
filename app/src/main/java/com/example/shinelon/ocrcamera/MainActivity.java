@@ -1,6 +1,7 @@
 package com.example.shinelon.ocrcamera;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -96,9 +98,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivityForResult(intent3,REQUEST_CAMERA);
                 break;
             case R.id.recognize_bt:
-                String imagePath = getUri().getPath();
+                String imagePath = changeToUrl(getUri());
                 Intent intent = SecondActivity.newInstance(this,imagePath,resultUrl);
-                System.out.println("图片所在位置:"+ imagePath);
+                System.out.println("手动图片路径为"+ changeToUrl(getUri()));
                 startActivity(intent);
                 break;
             case R.id.corp_bt:
@@ -162,6 +164,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startActivityForResult(intent,CROP);
         setImage(uri);
         mCropButton.setEnabled(true);
+        mRecognizeButton.setEnabled(true);
     }
 
     /**
@@ -175,20 +178,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //mImageView.setImageBitmap(bitmap);
             mGPUImageView.saveToPictures("ocrCamera", "capturedImage" + String.valueOf(new Date().getTime()) + ".jpg", new GPUImageView.OnPictureSavedListener() {
                 @Override
-                public void onPictureSaved(Uri uri) {
-                    if(uri != null){
+                public void onPictureSaved(Uri mUri) {
+                    if(mUri != null){
                         Toast.makeText(getApplicationContext(), "图片已保存", Toast.LENGTH_SHORT).show();
-                        String imagePath = uri.getPath();
+                        System.out.println("自动图片路径为"+ changeToUrl(mUri));
+                        String imagePath = changeToUrl(mUri);
                         Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,resultUrl);
-                        System.out.println("图片所在位置:"+ imagePath);
                         startActivity(intent);
                     }
-                    setUri(uri);
+                    setUri(mUri);
                 }
             });
         }catch(Exception e){
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 注意，此方法用于将Uri转化为绝对路径，因为GPUImage的saveToImage()返回的为媒体库的路径，如
+     * /external/images/media/7861
+     * @param uri
+     * @return
+     */
+    public String changeToUrl(Uri uri){
+        String[] proj = { MediaStore.Images.Media.DATA };
+        CursorLoader loader = new CursorLoader(this, uri, proj, null, null, null);
+        Cursor cursor = loader.loadInBackground();
+        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        return cursor.getString(column_index);
     }
 
     /**
