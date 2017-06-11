@@ -15,7 +15,6 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import com.example.shinelon.ocrcamera.helper.ProgressBarDialogFragment;
 import com.example.shinelon.ocrcamera.helper.helperDialogFragment;
 
 import java.io.ByteArrayInputStream;
@@ -32,21 +31,20 @@ import jp.co.cyberagent.android.gpuimage.GPUImageView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     private ImageButton mGalleryButton;
-    private ImageButton mTxtButton;
     private ImageButton mCameraButton;
     private ImageButton mCropButton;
+    private ImageButton mRecognizeButton;
     private File mFile;
     private Uri mUri;
     private Uri uri;
-    private myImageView mImageView;
     private static final int REQUEST_CAMERA = 0;
     private static final int CAMERA_CROP = 1;
     private static final int SELECT = 2;
     private static final int CROP = 3;
-    private static final int REQUEST_RECOGNIZE = 4;
-    private ProgressBarDialogFragment progressDialog;
     private GPUImageView mGPUImageView;
-
+    private String resultUrl = "result.txt";
+    private static final String IMAGE_PATH = "IMAGE_PATH";
+    private static final String OUTPUT_PATH = "OUTPUT_PATH";
 
 
     @Override
@@ -56,18 +54,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         mGalleryButton = (ImageButton) findViewById(R.id.gallery_bt);
-        mTxtButton = (ImageButton) findViewById(R.id.send_bt);
         mCameraButton = (ImageButton) findViewById(R.id.camera_bt);
         mCropButton = (ImageButton) findViewById(R.id.corp_bt);
+        mRecognizeButton = (ImageButton) findViewById(R.id.recognize_bt);
+
         mGPUImageView  = (GPUImageView) findViewById(R.id.image_photo);
         mCropButton.setEnabled(false);
-        mTxtButton.setEnabled(false);
+        mRecognizeButton.setEnabled(false);
         mGPUImageView.setScaleType(GPUImage.ScaleType.CENTER_INSIDE);
-
         mGalleryButton.setOnClickListener(this);
-        mTxtButton.setOnClickListener(this);
         mCameraButton.setOnClickListener(this);
         mCropButton.setOnClickListener(this);
+        mRecognizeButton.setOnClickListener(this);
 
     }
 
@@ -81,17 +79,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 intent2.setType("image/*");
                 startActivityForResult(intent2,SELECT);
                 break;
-            case R.id.send_bt:
-                Intent intent = SecondActivity.newInstance(this);
-                startActivity(intent);
-                break;
             case R.id.camera_bt:
                 //启动相机应用,获得一个File实例以及其所指向的抽象路
                 /**
                  *  /storage/emulated/0/Android/data/com.example.shinelon.ocrcamera/files/Pictures/capturedImage149622891598
                  *  这个目录为app私有存储，并不会服更图库
                  *  有Public和无Public区别在于有Public无法指定外部存储目录下自定义目录而另一个可以
-                 *   mFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),"capturedImage" + String.valueOf(new Date().getTime()) + ".jpg");
+                 *   mFile = new File(getExternalStorageDirectory(Environment.DIRECTORY_PICTURES),"capturedImage" + String.valueOf(new Date().getTime()) + ".jpg");
+                 *   至于getExternalFileDir顾名思义获取file的，即会随着app删除而删除
                  */
                 mFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),"capturedImage" + String.valueOf(new Date().getTime()) + ".jpg");
                 mUri = Uri.fromFile(mFile);
@@ -99,6 +94,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //putExtra()对于从图库选择的图片并不生效，但对于裁剪和相机却是可行的
                 intent3.putExtra(MediaStore.EXTRA_OUTPUT,mUri);
                 startActivityForResult(intent3,REQUEST_CAMERA);
+                break;
+            case R.id.recognize_bt:
+                String imagePath = getUri().getPath();
+                Intent intent = SecondActivity.newInstance(this,imagePath,resultUrl);
+                System.out.println("图片所在位置:"+ imagePath);
+                startActivity(intent);
                 break;
             case R.id.corp_bt:
                 //从原来路径中裁剪照片
@@ -134,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if(resultCode == RESULT_OK){
                     setImage(mUri);
                     mCropButton.setEnabled(true);
-                    mTxtButton.setEnabled(true);
+                    mRecognizeButton.setEnabled(true);
                 }break;
             case SELECT:
                 if(data != null){
@@ -149,6 +150,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
     }
+
+    /**
+     * 裁剪方法
+     * @param uri
+     */
+    public void crop(Uri uri){
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setDataAndType(uri,"image/*");
+        intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
+        startActivityForResult(intent,CROP);
+        setImage(uri);
+        mCropButton.setEnabled(true);
+    }
+
     /**
      * 此方法更新显示的图像
      */
@@ -161,12 +176,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mGPUImageView.saveToPictures("ocrCamera", "capturedImage" + String.valueOf(new Date().getTime()) + ".jpg", new GPUImageView.OnPictureSavedListener() {
                 @Override
                 public void onPictureSaved(Uri uri) {
-                    if(uri != null)
-                    Toast.makeText(getApplicationContext(), "图片已保存", Toast.LENGTH_SHORT).show();
-                    System.out.println(uri.getPath());
+                    if(uri != null){
+                        Toast.makeText(getApplicationContext(), "图片已保存", Toast.LENGTH_SHORT).show();
+                        String imagePath = uri.getPath();
+                        Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,resultUrl);
+                        System.out.println("图片所在位置:"+ imagePath);
+                        startActivity(intent);
+                    }
+                    setUri(uri);
                 }
             });
-            setUri(uri);
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -233,20 +252,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     /**
-     * 裁剪方法
-     * @param uri
-     */
-    public void crop(Uri uri){
-        Intent intent = new Intent("com.android.camera.action.CROP");
-        intent.setDataAndType(uri,"image/*");
-        intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
-        startActivityForResult(intent,CROP);
-        setImage(uri);
-        mCropButton.setEnabled(true);
-        mTxtButton.setEnabled(true);
-    }
-
-    /**
      * 获得目标Uri
      */
 
@@ -263,13 +268,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         uri = mUri;
     }
 
-    /**
-     *     Recognize方法
-     */
-    public void doRecognize(){
-        File file = new File(Environment.getExternalStorageDirectory(),"recognized.txt");
-        Uri uri = Uri.fromFile(file);
-    }
 
     /**
      *设置工具栏
