@@ -45,8 +45,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int CROP = 3;
     private GPUImageView mGPUImageView;
     private String resultUrl = "result.txt";
-    private static final String IMAGE_PATH = "IMAGE_PATH";
-    private static final String OUTPUT_PATH = "OUTPUT_PATH";
+
 
 
     @Override
@@ -184,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         System.out.println("自动图片路径为"+ changeToUrl(mUri));
                         String imagePath = changeToUrl(mUri);
                         Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,resultUrl);
-                        startActivity(intent);
+                        //startActivity(intent);
                     }
                     setUri(mUri);
                 }

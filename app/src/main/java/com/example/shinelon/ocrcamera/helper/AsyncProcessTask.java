@@ -43,9 +43,9 @@ public class AsyncProcessTask extends AsyncTask<String, String, Boolean> {
 
         try {
             Client restClient = new Client();
-            restClient.applicationId = "recognizeCamera";
+            restClient.applicationId = "chenxiaoyan";
             // You should get e-mail from ABBYY Cloud OCR SDK service with the application password
-            restClient.password = "ZnF5pjvwVBgg3OGtXTYYRtEa";
+            restClient.password = "jEn6ZNoAT8iN1ri8Zp/jseu3";
 
             publishProgress( "正在上传图片...");
 
