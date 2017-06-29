@@ -8,8 +8,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.example.shinelon.ocrcamera.helper.AsyncProcessTask;
-
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
@@ -49,7 +47,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
 
     public void doRecognize(){
         // Starting recognition process
-        new AsyncProcessTask(this).execute(imageUrl,outputPath);
+  
     }
 
     public static Intent newInstance(Context context,String...values){
