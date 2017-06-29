@@ -313,66 +313,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-    /**
-    protected class OCRRecognitionTask extends AsyncTask<Void,Integer,String>{
-
-        private ProgressBar mProgressBar;
-        private String txt;
-        //用于初始化
-        @Override
-        public void onPreExecute(){
-            mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
-            mProgressBar.setProgress(0);
-            mProgressBar.setMax(100);
-            FragmentManager fm = getSupportFragmentManager();
-            progressDialog = new ProgressBarDialogFragment();
-            progressDialog.show(fm,"ProgressDialog");
-        }
-
-        //开启子线程
-        @Override
-        public String doInBackground(Void ...params){
-            doRecognize();
-            publishProgress(50);
-            txt = readFromTxt();
-        //实时设置progressbar的进度，由onProgressUpdate()调用
-            publishProgress(100);
-            return  txt;
-        }
-
-        //实时更新progressBar
-        @Override
-        public void onProgressUpdate(Integer... params){
-            mProgressBar.setProgress(params[0]);
-        }
-        @Override
-        public void onPostExecute(String str){
-            Intent intent = SecondActivity.newInstance(getApplicationContext(),str);
-            startActivityForResult(intent,REQUEST_RECOGNIZE);
-        }
-
-        }
-        //从txt文件中读取字段
-        public String readFromTxt(){
-            File file = new File(Environment.getExternalStorageDirectory(),"recognized.txt");
-            StringBuffer  stringBuffer = new StringBuffer();
-            if(!file.exists()){
-
-            }try{
-                FileInputStream in =  new FileInputStream(file);
-                InputStreamReader reader_in = new InputStreamReader(in);
-                BufferedReader reader = new BufferedReader(reader_in);
-                String str = null;
-                while((str = reader.readLine())!= null){
-                     stringBuffer.append(str);
-                }
-
-            }catch(IOException e){
-                e.printStackTrace();
-
-            }
-            return  stringBuffer.toString();
-        }
-        */
+  
     }
 
