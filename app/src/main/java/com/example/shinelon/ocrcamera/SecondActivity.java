@@ -8,9 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
+import com.example.shinelon.ocrcamera.helper.AsycProcessTask;
 
 /**
  * Created by Shinelon on 2017/4/2.识别结果Activity
@@ -47,7 +45,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
 
     public void doRecognize(){
         // Starting recognition process
-  
+        new AsycProcessTask(this).execute(imageUrl,outputPath);
     }
 
     public static Intent newInstance(Context context,String...values){
@@ -64,28 +62,10 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    public void updateResult(Boolean success) {
-        if (!success)
-            return;
-        try {
-            StringBuilder contents = new StringBuilder();
+    public void updateResult(String message) {
 
-            FileInputStream fis = openFileInput(outputPath);
-            try {
-                InputStreamReader reader = new InputStreamReader(fis, "UTF-8");
-                BufferedReader bufReader = new BufferedReader(reader);
-                String text = null;
-                while ((text = bufReader.readLine()) != null) {
-                    contents.append(text).append(System.getProperty("line.separator"));
-                }
-            } finally {
-                fis.close();
-            }
+        displayMessage(message);
 
-            displayMessage(contents.toString());
-        } catch (Exception e) {
-            displayMessage("Error: " + e.getMessage());
-        }
     }
 
     public void displayMessage( String text )

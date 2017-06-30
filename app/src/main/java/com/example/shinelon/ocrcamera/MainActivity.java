@@ -17,15 +17,18 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.baidu.ocr.sdk.OCR;
+import com.baidu.ocr.sdk.OnResultListener;
+import com.baidu.ocr.sdk.exception.OCRError;
+import com.baidu.ocr.sdk.model.AccessToken;
+import com.example.shinelon.ocrcamera.helper.Messager;
 import com.example.shinelon.ocrcamera.helper.helperDialogFragment;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
-
 import jp.co.cyberagent.android.gpuimage.GPUImage;
 import jp.co.cyberagent.android.gpuimage.GPUImageSharpenFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageView;
@@ -68,8 +71,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCropButton.setOnClickListener(this);
         mRecognizeButton.setOnClickListener(this);
 
+        //授权方式
+        initAccessToken();
     }
 
+    private void initAccessToken() {
+
+        OCR.getInstance().initAccessToken(new OnResultListener<AccessToken>() {
+            @Override
+            public void onResult(AccessToken accessToken) {
+                String token = accessToken.getAccessToken();
+            }
+
+            @Override
+            public void onError(OCRError error) {
+                error.printStackTrace();
+                Messager.showError(MainActivity.this,error.getMessage(),"licence方式获取token失败");
+            }
+        }, getApplicationContext());
+    }
 
     @Override
     public void onClick(View view){
@@ -137,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     setImage(mUri);
                     mCropButton.setEnabled(true);
                     mRecognizeButton.setEnabled(true);
+
                 }break;
             case SELECT:
                 if(data != null){
@@ -183,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         System.out.println("自动图片路径为"+ changeToUrl(mUri));
                         String imagePath = changeToUrl(mUri);
                         Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,resultUrl);
-                        //startActivity(intent);
+                        startActivity(intent);
                     }
                     setUri(mUri);
                 }
