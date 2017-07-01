@@ -1,10 +1,32 @@
 package com.example.shinelon.ocrcamera;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.WindowManager;
 
 /**
  * Created by Shinelon on 2017/6/30.
  */
 
 public class SplashActivity extends AppCompatActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceBundle){
+        super.onCreate(savedInstanceBundle);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getSupportActionBar().hide();
+        setContentView(R.layout.splash_layout);
+        Log.d("SPLASHACTIVITY","666666666666666666666666");
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(SplashActivity.this,LoginActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        },2000);
+    }
+
 }
