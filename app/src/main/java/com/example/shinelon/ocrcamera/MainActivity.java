@@ -201,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 public void onPictureSaved(Uri mUri) {
                     if(mUri != null){
                         Toast.makeText(getApplicationContext(), "图片已保存", Toast.LENGTH_SHORT).show();
-                        System.out.println("自动图片路径为"+ changeToUrl(mUri));
+                        Log.d("自动图片路径为", changeToUrl(mUri));
                         String imagePath = changeToUrl(mUri);
                         Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath);
                         startActivity(intent);
@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 注意，此方法用于将Uri转化为绝对路径，因为GPUImage的saveToImage()返回的为媒体库的路径，如
+     * 注意，此方法用于将Uri转化为绝对路径，因为图库选择的uri和savedToPictures()返回的为媒体库的路径，如
      * /external/images/media/7861
      * @param uri
      * @return
