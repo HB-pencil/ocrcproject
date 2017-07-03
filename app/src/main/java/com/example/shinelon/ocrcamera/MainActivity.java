@@ -11,6 +11,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -47,7 +48,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int SELECT = 2;
     private static final int CROP = 3;
     private GPUImageView mGPUImageView;
-    private String resultUrl = "result.txt";
 
 
 
@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                  *  /storage/emulated/0/Android/data/com.example.shinelon.ocrcamera/files/Pictures/capturedImage149622891598
                  *  这个目录为app私有存储，并不会服更图库
                  *  有Public和无Public区别在于有Public无法指定外部存储目录下自定义目录而另一个可以
-                 *   mFile = new File(getExternalStorageDirectory(Environment.DIRECTORY_PICTURES),"capturedImage" + String.valueOf(new Date().getTime()) + ".jpg");
+                 *   mFile = new File(getExternalStorageDirectory(),filename);
                  *   至于getExternalFileDir顾名思义获取file的，即会随着app删除而删除
                  */
                 mFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),"capturedImage" + String.valueOf(new Date().getTime()) + ".jpg");
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.recognize_bt:
                 String imagePath = changeToUrl(getUri());
-                Intent intent = SecondActivity.newInstance(this,imagePath,resultUrl);
+                Intent intent = SecondActivity.newInstance(this,imagePath);
                 System.out.println("手动图片路径为"+ changeToUrl(getUri()));
                 startActivity(intent);
                 break;
@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Uri uri = Uri.fromFile(mFile);
                     intentNotify.setData(uri);
                     this.sendBroadcast(intentNotify);
-                    System.out.println(mUri.getPath());
+                    Log.d("裁剪",uri.getPath());
                     startActivityForResult(intent,CAMERA_CROP);
                 }break;
             //成功裁剪设置图片
@@ -203,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Toast.makeText(getApplicationContext(), "图片已保存", Toast.LENGTH_SHORT).show();
                         System.out.println("自动图片路径为"+ changeToUrl(mUri));
                         String imagePath = changeToUrl(mUri);
-                        Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,resultUrl);
+                        Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath);
                         startActivity(intent);
                     }
                     setUri(mUri);

@@ -10,6 +10,14 @@ import android.widget.EditText;
 
 import com.example.shinelon.ocrcamera.helper.AsycProcessTask;
 
+import java.io.File;
+import java.io.FileOutputStream;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.ResponseBody;
+
 /**
  * Created by Shinelon on 2017/4/2.识别结果Activity
  */
@@ -17,10 +25,8 @@ import com.example.shinelon.ocrcamera.helper.AsycProcessTask;
 public class SecondActivity extends AppCompatActivity implements View.OnClickListener{
 
     private EditText  mEditText;
-    private String outputPath;
     private Button mButton;
     private static final String IMAGE_PATH = "IMAGE_PATH";
-    private static final String OUTPUT_PATH = "OUTPUT_PATH";
     private String imageUrl;
 
     @Override
@@ -37,29 +43,51 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
 
         if( extras != null) {
             imageUrl = extras.getString(IMAGE_PATH);
-            outputPath = extras.getString(OUTPUT_PATH);
-            System.out.println("extras is " + imageUrl + "and" + outputPath);
             doRecognize();
         }
     }
 
     public void doRecognize(){
         // Starting recognition process
-        new AsycProcessTask(this).execute(imageUrl,outputPath);
+        new AsycProcessTask(this).execute(imageUrl);
     }
 
     public static Intent newInstance(Context context,String...values){
         Intent intent = new Intent(context,SecondActivity.class);
         intent.putExtra(IMAGE_PATH,values[0]);
-        intent.putExtra(OUTPUT_PATH,values[1]);
         return  intent;
     }
+
+    private final static String USER_NAME = "user_name";
 
     @Override
     public void onClick(View view){
         if(view.getId() == R.id.confirm_bt){
-            deleteFile(outputPath);
+            String content = mEditText.getText().toString();
+            String account = getIntent().getStringExtra(USER_NAME);
+            String fileName = account + System.currentTimeMillis();
+            try{
+                FileOutputStream out = this.openFileOutput(fileName,MODE_PRIVATE);
+                out.write(content.getBytes());
+                out.close();
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            File file = new File(getFilesDir(),fileName);
+            if(file.exists()){
+
+            }
         }
+    }
+
+    /**
+     * 发送文件
+     * @param file
+     */
+   public void senFile (File file) throws Exception{
+        MediaType mediaType = MediaType.parse("text/plain;charset=utf-s");
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url("").post(ResponseBody.create(mediaType,)).build();
     }
 
     public void updateResult(String message) {
@@ -85,4 +113,6 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
 
         private final String _message;
     }
+
+
 }

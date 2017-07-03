@@ -1,8 +1,8 @@
 package com.example.shinelon.ocrcamera.helper;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.baidu.ocr.sdk.OCR;
 import com.baidu.ocr.sdk.OnResultListener;
@@ -13,7 +13,6 @@ import com.baidu.ocr.sdk.model.WordSimple;
 import com.example.shinelon.ocrcamera.SecondActivity;
 
 import java.io.File;
-import java.io.FileOutputStream;
 
 /**
  * Created by Shinelon on 2017/6/30.
@@ -41,7 +40,6 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
     @Override
     public String doInBackground(String... args){
         String inputFile = args[0];
-        final String outputFile = args[1];
         // 通用文字识别参数设置
         GeneralBasicParams param = new GeneralBasicParams();
         param.setDetectDirection(true);
@@ -63,13 +61,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
              if(sb != null){
                  publishProgress("识别完成");
              }
-             try{
-                 FileOutputStream out = mSecondActivity.openFileOutput(outputFile, Context.MODE_PRIVATE);
-                 out.write(sb.toString().getBytes());
-                 out.close();
-             }catch(Exception e){
-                e.printStackTrace();
-            }
+            Log.d("RESULT",sb.toString());
             setResult(sb.toString());
         }
 
@@ -79,12 +71,13 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
             setResult(error.getMessage());
         }
     });
-        try{
-            Thread.sleep(2000);
+       try{
+            Thread.sleep(3500);
         }catch(Exception e){
             e.printStackTrace();
         }
-        return str;
+        return getResult();
+
     }
     @Override
     public void onProgressUpdate(String... values){
@@ -104,9 +97,9 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
 public void setResult(String result){
     str = result;
 }
+
 public String getResult(){
     return str;
 }
-
 
 }
