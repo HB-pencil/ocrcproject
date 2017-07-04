@@ -13,4 +13,8 @@
          android:id="@+id/about_item"
          android:title="关于"
          app:showAsAction="never"/>
+     <item
+          android:id="@+id/exit_item"
+          android:title="退出"
+          app:showAsAction="never"/>
 </menu>

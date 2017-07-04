@@ -12,6 +12,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -55,8 +56,11 @@ public class LoginActivity extends AppCompatActivity {
         mLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-               try {
+                Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+                intent.putExtra(USER_NAME,mLoginEdit.getText().toString());
+                startActivity(intent);
+                finish();
+              /** try {
                     if (checkLogin()) {
                         loginAccount();
                     } else {
@@ -64,7 +68,7 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                }
+                }*/
 
             }
         });

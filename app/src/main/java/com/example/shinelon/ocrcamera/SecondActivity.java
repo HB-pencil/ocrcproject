@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,11 +13,6 @@ import com.example.shinelon.ocrcamera.helper.AsycProcessTask;
 
 import java.io.File;
 import java.io.FileOutputStream;
-
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.ResponseBody;
 
 /**
  * Created by Shinelon on 2017/4/2.识别结果Activity
@@ -37,7 +33,6 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
         mButton = (Button) findViewById(R.id.confirm_bt);
         mEditText = (EditText) findViewById(R.id.edit_text);
         mButton.setOnClickListener(this);
-
 
         Bundle extras = getIntent().getExtras();
 
@@ -84,11 +79,11 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
      * 发送文件
      * @param file
      */
-   public void senFile (File file) throws Exception{
+  /** public void senFile (File file) throws Exception{
         MediaType mediaType = MediaType.parse("text/plain;charset=utf-s");
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder().url("").post(ResponseBody.create(mediaType,)).build();
-    }
+    }*/
 
     public void updateResult(String message) {
 
@@ -114,5 +109,12 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
         private final String _message;
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent keyEvent){
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            moveTaskToBack(true);
+        }
+        return super.onKeyDown(keyCode,keyEvent);
+    }
 
 }

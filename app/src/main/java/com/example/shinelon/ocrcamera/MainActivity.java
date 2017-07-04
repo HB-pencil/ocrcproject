@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCameraButton.setOnClickListener(this);
         mCropButton.setOnClickListener(this);
         mRecognizeButton.setOnClickListener(this);
+
 
         //授权方式
         initAccessToken();
@@ -157,7 +159,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     setImage(mUri);
                     mCropButton.setEnabled(true);
                     mRecognizeButton.setEnabled(true);
-
                 }break;
             case SELECT:
                 if(data != null){
@@ -204,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Log.d("自动图片路径为", changeToUrl(mUri));
                         String imagePath = changeToUrl(mUri);
                         Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath);
-                        startActivity(intent);
+                        //startActivity(intent);
                     }
                     setUri(mUri);
                 }
@@ -328,12 +329,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.setting_item:
                 break;
+            case R.id.exit_item:
+
         }
         return super.onContextItemSelected(menuItem);
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent keyEvent){
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            moveTaskToBack(true);
+        }
+        return super.onKeyDown(keyCode,keyEvent);
+    }
 
 
   
-    }
+}
 
