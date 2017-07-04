@@ -58,7 +58,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                 sb.append(word.getWords());
                 sb.append("\n");
             }
-             if(sb != null){
+             if(!sb.toString().equals("")){
                  publishProgress("识别完成");
              }
             Log.d("RESULT",sb.toString());
@@ -71,9 +71,10 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
             setResult(error.getMessage());
         }
     });
-       try{
-            Thread.sleep(3500);
-        }catch(Exception e){
+
+        try{
+            Thread.sleep(3000);
+        }catch (Exception e){
             e.printStackTrace();
         }
         return getResult();
@@ -85,10 +86,11 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
     }
     @Override
     public void onPostExecute(String result){
+
          if(mProgressDialog.isShowing()){
+             mSecondActivity.updateResult(result);
              mProgressDialog.dismiss();
          }
-         mSecondActivity.updateResult(result);
     }
 
 /**

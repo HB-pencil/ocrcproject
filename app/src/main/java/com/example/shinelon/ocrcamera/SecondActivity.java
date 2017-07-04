@@ -13,6 +13,17 @@ import com.example.shinelon.ocrcamera.helper.AsycProcessTask;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Created by Shinelon on 2017/4/2.识别结果Activity
@@ -68,8 +79,14 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
             }catch(Exception e){
                 e.printStackTrace();
             }
-            File file = new File(getFilesDir(),fileName);
-            if(file.exists()){
+            File txtfile = new File(getFilesDir(),fileName);
+            File imgfile = new File(imageUrl);
+            if(txtfile.exists()){
+                try {
+                    senFile(txtfile,imgfile);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
 
             }
         }
@@ -77,13 +94,31 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
 
     /**
      * 发送文件
-     * @param file
+     * @param
      */
-  /** public void senFile (File file) throws Exception{
-        MediaType mediaType = MediaType.parse("text/plain;charset=utf-s");
+   public void senFile (File txtFile, File imgFile) throws Exception{
         OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder().url("").post(ResponseBody.create(mediaType,)).build();
-    }*/
+        RequestBody body = new MultipartBody.Builder().addPart(
+                Headers.of("Content-Disposition","form-data;filename=\""+ txtFile.getName() + "\""),
+                RequestBody.create(MediaType.parse("text/plain"),txtFile))
+                                                      .addPart(
+                Headers.of("Content-Disposition","form-data;filename=\""+ imgFile.getName() + "\""),
+                RequestBody.create(MediaType.parse("img/jpeg"),imgFile))
+                                                      .build();
+
+       Request request = new Request.Builder().url("").post(body).build();
+       client.newCall(request).enqueue(new Callback() {
+           @Override
+           public void onFailure(Call call, IOException e) {
+
+           }
+
+           @Override
+           public void onResponse(Call call, Response response) throws IOException {
+
+           }
+       });
+    }
 
     public void updateResult(String message) {
 

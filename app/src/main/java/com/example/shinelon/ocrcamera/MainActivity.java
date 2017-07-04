@@ -25,12 +25,14 @@ import com.baidu.ocr.sdk.exception.OCRError;
 import com.baidu.ocr.sdk.model.AccessToken;
 import com.example.shinelon.ocrcamera.helper.Messager;
 import com.example.shinelon.ocrcamera.helper.helperDialogFragment;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
+
 import jp.co.cyberagent.android.gpuimage.GPUImage;
 import jp.co.cyberagent.android.gpuimage.GPUImageSharpenFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageView;
@@ -71,7 +73,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCameraButton.setOnClickListener(this);
         mCropButton.setOnClickListener(this);
         mRecognizeButton.setOnClickListener(this);
-
 
         //授权方式
         initAccessToken();
@@ -143,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Intent intent = new Intent("com.android.camera.action.CROP");
                     intent.setDataAndType(mUri,"image/*");
                     intent.putExtra(MediaStore.EXTRA_OUTPUT,mUri);
+                    setUri(mUri);
                     /**
                      * 原来我们在保存成功后，还要发一个系统广播通知手机有图片更新，发生广播给系统更新图库
                      */
@@ -151,18 +153,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     intentNotify.setData(uri);
                     this.sendBroadcast(intentNotify);
                     Log.d("裁剪",uri.getPath());
+
                     startActivityForResult(intent,CAMERA_CROP);
                 }break;
-            //成功裁剪设置图片
+            //成功裁剪完设置图片
             case CAMERA_CROP:
                 if(resultCode == RESULT_OK){
-                    setImage(mUri);
+                    setImage(getUri());
                     mCropButton.setEnabled(true);
                     mRecognizeButton.setEnabled(true);
                 }break;
             case SELECT:
                 if(data != null){
                     Uri uri = data.getData();
+                    Log.d("图库URI",uri.getPath());
                     crop(uri);
                 }
                 break;
@@ -179,11 +183,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * @param uri
      */
     public void crop(Uri uri){
+        //启动裁剪功能，裁剪结束后覆盖原来图片
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(uri,"image/*");
         intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
-        startActivityForResult(intent,CROP);
-        setImage(uri);
+        setUri(uri);
+        startActivityForResult(intent,CAMERA_CROP);
         mCropButton.setEnabled(true);
         mRecognizeButton.setEnabled(true);
     }
@@ -205,11 +210,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Log.d("自动图片路径为", changeToUrl(mUri));
                         String imagePath = changeToUrl(mUri);
                         Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath);
-                        //startActivity(intent);
+                        try{
+                            Thread.sleep(1000);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        startActivity(intent);
                     }
-                    setUri(mUri);
                 }
             });
+            setUri(uri);
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -231,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 压缩图片方法由于使用GPUImageView，故而将自定义View及其相关压缩等注释掉，次方法暂时不用
+     * 压缩图片方法由于使用GPUImageView，故而将自定义View及其相关压缩等注释掉，此方法暂时不用
      */
 
     public Bitmap compressPhoto(Uri uri){
@@ -330,6 +340,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.setting_item:
                 break;
             case R.id.exit_item:
+                finish();
+                break;
 
         }
         return super.onContextItemSelected(menuItem);
