@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -61,10 +62,11 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
     public static Intent newInstance(Context context,String...values){
         Intent intent = new Intent(context,SecondActivity.class);
         intent.putExtra(IMAGE_PATH,values[0]);
+        intent.putExtra(USER_NAME,values[1]);
         return  intent;
     }
 
-    private final static String USER_NAME = "user_name";
+    private final static String USER_NAME = "username";
 
     @Override
     public void onClick(View view){
@@ -80,12 +82,15 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
                 e.printStackTrace();
             }
             File txtfile = new File(getFilesDir(),fileName);
+            Log.d("SecondActivity",txtfile.getPath());
             File imgfile = new File(imageUrl);
             if(txtfile.exists()){
                 try {
                     senFile(txtfile,imgfile);
                 }catch (Exception e){
                     e.printStackTrace();
+                }finally {
+                    deleteFile(fileName);
                 }
 
             }
@@ -99,10 +104,13 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
    public void senFile (File txtFile, File imgFile) throws Exception{
         OkHttpClient client = new OkHttpClient();
         RequestBody body = new MultipartBody.Builder().addPart(
-                Headers.of("Content-Disposition","form-data;filename=\""+ txtFile.getName() + "\""),
+                Headers.of("Content-Disposition","form-data;name=\"username\""),
+                RequestBody.create(null,getIntent().getStringExtra(USER_NAME)))
+                                                      .addPart(
+                Headers.of("Content-Disposition","form-data;name=\"txt\";filename=\""+ txtFile.getName() + "\""),
                 RequestBody.create(MediaType.parse("text/plain"),txtFile))
                                                       .addPart(
-                Headers.of("Content-Disposition","form-data;filename=\""+ imgFile.getName() + "\""),
+                Headers.of("Content-Disposition","form-data;name=\"img\"filename=\""+ imgFile.getName() + "\""),
                 RequestBody.create(MediaType.parse("img/jpeg"),imgFile))
                                                       .build();
 

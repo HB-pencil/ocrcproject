@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int SELECT = 2;
     private static final int CROP = 3;
     private GPUImageView mGPUImageView;
-
+    private final static String USER_NAME = "username";
 
 
     @Override
@@ -209,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Toast.makeText(getApplicationContext(), "图片已保存", Toast.LENGTH_SHORT).show();
                         Log.d("自动图片路径为", changeToUrl(mUri));
                         String imagePath = changeToUrl(mUri);
-                        Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath);
+                        Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,getIntent().getStringExtra(USER_NAME));
                         try{
                             Thread.sleep(1000);
                         }catch (Exception e){
