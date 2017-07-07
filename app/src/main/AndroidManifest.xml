@@ -34,7 +34,15 @@
         <activity android:name=".LoginActivity">
 
         </activity>
+        <activity android:name=".ForgetPassActicity" android:parentActivityName=".LoginActivity">
 
+        </activity>
+        <activity android:name=".RegisterActivity" android:parentActivityName=".LoginActivity">
+
+        </activity>
+        <activity android:name=".UserInfoActivity" android:parentActivityName=".MainActivity">
+
+        </activity>
     </application>
 
 </manifest>

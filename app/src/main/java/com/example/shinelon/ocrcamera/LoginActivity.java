@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -14,8 +15,14 @@ import android.widget.TextView;
 
 import com.alibaba.fastjson.JSON;
 import com.example.shinelon.ocrcamera.helper.JavaBean;
+import com.example.shinelon.ocrcamera.helper.UserInfoLab;
+import com.example.shinelon.ocrcamera.helper.messageDialog;
 
-import okhttp3.FormBody;
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -34,6 +41,8 @@ public class LoginActivity extends AppCompatActivity {
     private TextView mForgetButton;
     private final static String USERNAME = "username";
     private final static String PASSWORD = "password";
+    private final static String PHONE = "phone";
+    private Boolean result = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,10 +68,6 @@ public class LoginActivity extends AppCompatActivity {
         mLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(LoginActivity.this,MainActivity.class);
-                intent.putExtra(USERNAME,mLoginEdit.getText().toString());
-                startActivity(intent);
-                finish();
               try {
                     if (checkLogin()) {
                         loginAccount();
@@ -87,7 +92,8 @@ public class LoginActivity extends AppCompatActivity {
         mForgetButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Intent intent = new Intent(LoginActivity.this,ForgetPassActicity.class);
+                startActivity(intent);
             }
         });
     }
@@ -96,23 +102,39 @@ public class LoginActivity extends AppCompatActivity {
      * 验证登录信息
      */
     public boolean checkLogin() throws Exception {
+
         String account = mLoginEdit.getText().toString();
         String password = mPassEdit.getText().toString();
         OkHttpClient client = new OkHttpClient();
-        RequestBody body = new FormBody.Builder()
-                .add(USERNAME, account)
-                .add(PASSWORD, password)
-                .build();
 
-        Request request = new Request.Builder().url("http://10.110.101.226:80/api/user/token").post(body).build();
-        Response response = client.newCall(request).execute();
-        if(response.isSuccessful()){
-            parseUserInfo(response);
-            return true;
+        if(!(account.equals("")&&password.equals(""))){
+            String json ="{\""+ PHONE + "\":\"" + account + "\",\"" + PASSWORD + "\":\"" + password + "\"}";
+            RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
+            Request request = new Request.Builder().url("http://10.110.101.226:80/api/user/token").post(body).build();
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    e.printStackTrace();
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    if(response.isSuccessful()){
+                        parseUserInfo(response);
+                        Log.d("okhttp:",response.body().string());
+                        result = true;
+                    }else{
+                        result = false;
+                    }
+                }
+            });
         }else {
-            return false;
+            messageDialog dialog = new messageDialog();
+            dialog.show(getSupportFragmentManager(),null);
+            result = false;
         }
 
+       return result;
     }
 
     /**
@@ -122,7 +144,7 @@ public class LoginActivity extends AppCompatActivity {
         try {
             if (checkLogin()) {
                 Intent intent = new Intent(LoginActivity.this,MainActivity.class);
-                intent.putExtra(USERNAME,mLoginEdit.getText().toString());
+                intent.putExtra(USERNAME,UserInfoLab.getUserInfo().getName());
                 startActivity(intent);
                 finish();
             } else {
@@ -145,5 +167,8 @@ public class LoginActivity extends AppCompatActivity {
         Response response = resultResponse;
         String resultJson = response.body().toString();
         JavaBean javaBean = JSON.parseObject(resultJson,JavaBean.class);
+        UserInfoLab.getUserInfo().setName(javaBean.getUser().getUsername());
+        UserInfoLab.getUserInfo().setPhone(javaBean.getUser().getPhone());
+        UserInfoLab.getUserInfo().setUserId(javaBean.getUser().getUserId());
     }
 }
