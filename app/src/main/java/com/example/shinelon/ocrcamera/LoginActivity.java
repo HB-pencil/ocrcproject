@@ -2,7 +2,10 @@ package com.example.shinelon.ocrcamera;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -12,11 +15,15 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
+import com.example.shinelon.ocrcamera.helper.ButtonPoster;
 import com.example.shinelon.ocrcamera.helper.JavaBean;
 import com.example.shinelon.ocrcamera.helper.UserInfoLab;
 import com.example.shinelon.ocrcamera.helper.messageDialog;
+
+import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -42,7 +49,7 @@ public class LoginActivity extends AppCompatActivity {
     private final static String USERNAME = "username";
     private final static String PASSWORD = "password";
     private final static String PHONE = "phone";
-    private Boolean result = false;
+    private Boolean result;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,7 +67,11 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if (i == EditorInfo.IME_ACTION_DONE ) {
-                    loginAccount();
+                    try {
+                        checkLogin();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
                 return true;
             }
@@ -68,16 +79,11 @@ public class LoginActivity extends AppCompatActivity {
         mLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-              try {
-                    if (checkLogin()) {
-                        loginAccount();
-                    } else {
-
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
+                 try{
+                     checkLogin();
+                 }catch (Exception e){
+                     e.printStackTrace();
+                 }
             }
         });
 
@@ -101,74 +107,115 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * 验证登录信息
      */
-    public boolean checkLogin() throws Exception {
+    public void checkLogin() throws Exception {
 
         String account = mLoginEdit.getText().toString();
         String password = mPassEdit.getText().toString();
         OkHttpClient client = new OkHttpClient();
 
-        if(!(account.equals("")&&password.equals(""))){
+        if(!account.equals("")&&!password.equals("")){
             String json ="{\""+ PHONE + "\":\"" + account + "\",\"" + PASSWORD + "\":\"" + password + "\"}";
             RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
-            Request request = new Request.Builder().url("http://10.110.101.226:80/api/user/token").post(body).build();
+            Request request = new Request.Builder().url("http://10.110.101.226:80/api/user/login").post(body).build();
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     e.printStackTrace();
+                    new Handler(LoginActivity.this.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(LoginActivity.this, "连接服务器失败，请检查网络！", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
 
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     if(response.isSuccessful()){
-                        parseUserInfo(response);
-                        Log.d("okhttp:",response.body().string());
-                        result = true;
+                        String str = response.body().string();
+                        Log.d("okhttp:",str);
+                        Log.d("okhttp:",response.code()+"");
+                        String code="";
+                        try{
+                            JSONObject jsonObject = new JSONObject(str);
+                            code = jsonObject.getString("code");
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        if(code.equals("200")){
+                            parseUserInfo(str);
+                            Log.d("okhttp:",str);
+                            mLoginButton.post(new ButtonPoster("登陆",mLoginButton,false));
+                            loginAccount();
+                            new Handler(getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(LoginActivity.this, "登陆成功！", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }else if(!mLoginEdit.getText().toString().equals("")&&!mPassEdit.getText().toString().equals("")){
+
+                            new Handler(getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
+                                    AlertDialog dialog = builder.setMessage("账号或密码错误或无网络，请重新输入或稍后再试！")
+                                            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialogInterface, int i) {
+
+                                                }
+                                            }).create();
+                                    dialog.show();
+                                }
+                            });
+                        }
                     }else{
-                        result = false;
+                        new Handler(getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(LoginActivity.this,"访问出错！",Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
                 }
             });
         }else {
             messageDialog dialog = new messageDialog();
             dialog.show(getSupportFragmentManager(),null);
-            result = false;
         }
-
-       return result;
     }
 
     /**
      * 登录行为封装
      */
     public void loginAccount(){
-        try {
-            if (checkLogin()) {
                 Intent intent = new Intent(LoginActivity.this,MainActivity.class);
                 intent.putExtra(USERNAME,UserInfoLab.getUserInfo().getName());
                 startActivity(intent);
                 finish();
-            } else {
-                AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
-                AlertDialog dialog = builder.setMessage("账号或密码错误或无网络，请重新输入或稍后再试！")
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-
-                            }
-                        }).create();
-                dialog.show();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
-    public void parseUserInfo(Response resultResponse){
-        Response response = resultResponse;
-        String resultJson = response.body().toString();
+
+
+
+    /**
+     * 获取JAVABEAN
+     * @param resultJson
+     */
+    public void parseUserInfo(String resultJson){
         JavaBean javaBean = JSON.parseObject(resultJson,JavaBean.class);
         UserInfoLab.getUserInfo().setName(javaBean.getUser().getUsername());
         UserInfoLab.getUserInfo().setPhone(javaBean.getUser().getPhone());
         UserInfoLab.getUserInfo().setUserId(javaBean.getUser().getUserId());
+
+        String token = javaBean.getToken();
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor spEdit = preferences.edit();
+        spEdit.putString("token",token);
+        spEdit.apply();
+
+        Log.d("JavaBean",javaBean.getUser().getUsername());
+        Log.d("UserInfo",UserInfoLab.getUserInfo().getName());
     }
 }

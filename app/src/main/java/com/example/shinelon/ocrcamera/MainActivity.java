@@ -335,7 +335,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 helperDialogFragment dialogFragment = new helperDialogFragment();
                 dialogFragment.show(manager,"使用技巧");
                 break;
-            case R.id.about_item:
+            case R.id.info_item:
+                Intent intent = new Intent(this,UserInfoActivity.class);
+                startActivity(intent);
                 break;
             case R.id.setting_item:
                 break;

@@ -3,6 +3,7 @@ package com.example.shinelon.ocrcamera;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,8 @@ import android.widget.Toast;
 
 import com.example.shinelon.ocrcamera.helper.UserInfoLab;
 import com.example.shinelon.ocrcamera.helper.messageDialog;
+
+import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -47,7 +50,7 @@ public class reviseKeyFragment extends Fragment {
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(!(mEditText1.getText().toString().equals("")&&mEditText2.getText().toString().equals(""))){
+                if(!mEditText1.getText().toString().equals("")&&!mEditText2.getText().toString().equals("")){
                     if(mEditText1.getText().toString().equals(mEditText2.getText().toString())){
                         String json ="{\"password\":\"" + mEditText1.getText().toString() + "\"}";
                         RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
@@ -59,25 +62,49 @@ public class reviseKeyFragment extends Fragment {
                             @Override
                             public void onFailure(Call call, IOException e) {
                                 e.printStackTrace();
+                                new Handler(getActivity().getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getActivity(), "请检查网络！", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                             }
 
                             @Override
                             public void onResponse(Call call, Response response) throws IOException {
-                                 if(response.isSuccessful()){
-                                     new Handler(getActivity().getMainLooper()).post(new Runnable() {
-                                         @Override
-                                         public void run() {
-                                             Toast.makeText(getActivity(), "修改密码成功！", Toast.LENGTH_SHORT).show();
-                                         }
-                                     });
-                                 }else{
-                                     new Handler(getActivity().getMainLooper()).post(new Runnable() {
-                                         @Override
-                                         public void run() {
-                                             Toast.makeText(getActivity(), "修改密码失败，请稍后再试！", Toast.LENGTH_SHORT).show();
-                                         }
-                                     });
-                                 }
+                                if(response.isSuccessful()){
+                                    String str = response.body().string();
+                                    Log.d("修改密码：",str);
+                                    String result="";
+                                    try{
+                                        JSONObject jsonObject = new JSONObject(str);
+                                        result = jsonObject.getString("code");
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                    if(result.equals("200")){
+                                        new Handler(getActivity().getMainLooper()).post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(getActivity(), "修改密码成功！", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }else{
+                                        new Handler(getActivity().getMainLooper()).post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(getActivity(), "修改失败，请稍后再试！", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                }else{
+                                    new Handler(getActivity().getMainLooper()).post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(getActivity(), "访问服务器失败，请稍后再试！", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                                }
                             }
                         });
                     }else{

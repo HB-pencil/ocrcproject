@@ -10,12 +10,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import com.example.shinelon.ocrcamera.helper.ButtonPoster;
 import com.example.shinelon.ocrcamera.helper.messageDialog;
-
+import org.json.JSONObject;
 import java.io.IOException;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -50,7 +48,7 @@ public class revisePhoneFragment extends Fragment {
         mButton1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               if(!(mEditText1.getText().toString().equals("")&&mEditText2.getText().toString().equals("")&&mEditText3.getText().toString().equals(""))){
+               if(!mEditText1.getText().toString().equals("")&&!mEditText2.getText().toString().equals("")&&!mEditText3.getText().toString().equals("")){
                    String json ="{\"oldphone\":\"" + mEditText2.getText().toString() +"\",\"phone\":\"" + mEditText1.getText().toString() +"\",\"password\":\"" + mEditText3.getText().toString() + "\"}";
                    RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                    final Request request = new Request.Builder()
@@ -61,12 +59,48 @@ public class revisePhoneFragment extends Fragment {
                        @Override
                        public void onFailure(Call call, IOException e) {
                            e.printStackTrace();
+                           new Handler(getActivity().getMainLooper()).post(new Runnable() {
+                               @Override
+                               public void run() {
+                                   Toast.makeText(getActivity(), "请检查网络！", Toast.LENGTH_SHORT).show();
+                               }
+                           });
                        }
 
                        @Override
                        public void onResponse(Call call, Response response) throws IOException {
-                           Log.d("okhttp",response.body().string());
-                           if(response.isSuccessful()){}
+                           if(response.isSuccessful()){
+                               String result="";
+                               try{
+                                   JSONObject jsonObject = new JSONObject(response.body().string());
+                                   result = jsonObject.getString("code");
+                               }catch (Exception e){
+                                   e.printStackTrace();
+                               }
+                               Log.d("okhttp",response.body().string());
+                               if(result.equals("200")){
+                                   new Handler(getActivity().getMainLooper()).post(new Runnable() {
+                                       @Override
+                                       public void run() {
+                                           Toast.makeText(getActivity(), "修改手机成功！", Toast.LENGTH_SHORT).show();
+                                       }
+                                   });
+                               }else{
+                                   new Handler(getActivity().getMainLooper()).post(new Runnable() {
+                                       @Override
+                                       public void run() {
+                                           Toast.makeText(getActivity(), "修改手机失败，请稍后再试！", Toast.LENGTH_SHORT).show();
+                                       }
+                                   });
+                               }
+                           }else{
+                               new Handler(getActivity().getMainLooper()).post(new Runnable() {
+                                   @Override
+                                   public void run() {
+                                       Toast.makeText(getActivity(), "访问失败，请稍后再试！", Toast.LENGTH_SHORT).show();
+                                   }
+                               });
+                           }
                        }
                    });
                }else{
@@ -105,28 +139,47 @@ public class revisePhoneFragment extends Fragment {
                             @Override
                             public void onFailure(Call call, IOException e) {
                                 e.printStackTrace();
+                                new Handler(getActivity().getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getActivity(), "请检查网络！", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                             }
 
                             @Override
                             public void onResponse(Call call, Response response) throws IOException {
-                                Log.d("okhttp", response.body().string());
-                                Log.d("okhttp", "" + response.code());
-                                if (response.isSuccessful()) {
-                                    new Handler(getActivity().getMainLooper()).post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(getActivity(), "验证码已发送！", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                                } else {
-                                    Log.d("okhttp", "fail");
-                                    new Handler(getActivity().getMainLooper()).post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(getActivity(), "验证码发送失败，请稍后再试!", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
+                                if(response.isSuccessful()){
+                                    String str = response.body().string();
+                                    String result="";
+                                    try{
+                                        JSONObject jsonObject = new JSONObject(str);
+                                        result = jsonObject.getString("code");
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                    Log.d("okhttp",str);
+                                    Log.d("okhttp", "" + response.code());
+                                    if (result.equals("200")) {
+                                        new Handler(getActivity().getMainLooper()).post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(getActivity(), "验证码已发送！", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    } else {
+                                        Log.d("okhttp", "fail");
+                                        new Handler(getActivity().getMainLooper()).post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(getActivity(), "验证码发送失败，请稍后再试!", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                }else{
+
                                 }
+
                             }
                         });
 

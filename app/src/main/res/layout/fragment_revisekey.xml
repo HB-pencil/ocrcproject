@@ -9,10 +9,11 @@
         style="@style/loginButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="350dp"
         android:id="@+id/revise_key_done"/>
     <LinearLayout
-        android:layout_centerInParent="true"
+        android:layout_marginTop="100dp"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

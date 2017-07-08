@@ -12,11 +12,13 @@ import android.widget.Toast;
 import com.example.shinelon.ocrcamera.helper.ButtonPoster;
 import com.example.shinelon.ocrcamera.helper.messageDialog;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.FormBody;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -47,11 +49,11 @@ public class ForgetPassActicity extends AppCompatActivity implements View.OnClic
         mPhone = (EditText) findViewById(R.id.phone_forget);
         mCode = (EditText) findViewById(R.id.code_forget);
         mNewpass = (EditText) findViewById(R.id.pass_new);
-        mCodeBt = (Button) findViewById(R.id.reget_button);
+        mCodeBt = (Button) findViewById(R.id.re_button);
         mDoneBt = (Button) findViewById(R.id.done_button);
         mName = (EditText) findViewById(R.id.name_forget);
 
-        mCode.setOnClickListener(this);
+        mCodeBt.setOnClickListener(this);
         mDoneBt.setOnClickListener(this);
     }
 
@@ -63,7 +65,7 @@ public class ForgetPassActicity extends AppCompatActivity implements View.OnClic
         String name = mName.getText().toString();
         OkHttpClient client = new OkHttpClient();
         switch (view.getId()){
-            case R.id.reget_button:
+            case R.id.re_button:
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -79,10 +81,9 @@ public class ForgetPassActicity extends AppCompatActivity implements View.OnClic
                         mCodeBt.post(new ButtonPoster("获取验证码",mCodeBt,true));
                     }
                 }).start();
-                 if(!(phone.equals(""))){
-                     RequestBody body = new FormBody.Builder()
-                             .add(PHONE,phone)
-                             .build();
+                 if(!phone.equals("")){
+                     String json ="{\"" + PHONE + "\":\""+ mPhone.getText().toString() +  "\"}" ;
+                     RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                      Request request = new Request.Builder()
                              .url("http://10.110.101.226:80/api/user/password/captcha")
                              .post(body)
@@ -92,12 +93,28 @@ public class ForgetPassActicity extends AppCompatActivity implements View.OnClic
                              @Override
                              public void onFailure(Call call, IOException e) {
                                  e.printStackTrace();
+                                 new Handler(getMainLooper()).post(new Runnable() {
+                                     @Override
+                                     public void run() {
+                                         Toast.makeText(ForgetPassActicity.this,"请检查网络",Toast.LENGTH_SHORT).show();
+                                     }
+                                 });
                              }
 
                              @Override
                              public void onResponse(Call call, Response response) throws IOException {
-                                     if (response.isSuccessful()) {
-                                         Log.d("okhttp", response.body().string());
+                                 String str = response.body().string();
+                                 Log.d("忘记密码：",str);
+                                 String result="";
+                                 try{
+                                     JSONObject jsonObject = new JSONObject(str);
+                                     result = jsonObject.getString("code");
+                                 }catch (Exception e){
+                                     e.printStackTrace();
+                                 }
+                                 if(response.isSuccessful()){
+                                     if (result.equals("200")) {
+                                         Log.d("okhttp", str);
                                          Log.d("okhttp", "" + response.code());
                                          new Handler(getMainLooper()).post(new Runnable() {
                                              @Override
@@ -114,7 +131,15 @@ public class ForgetPassActicity extends AppCompatActivity implements View.OnClic
                                              }
                                          });
                                      }
+                                 }else{
+                                     new Handler(getMainLooper()).post(new Runnable() {
+                                         @Override
+                                         public void run() {
+                                             Toast.makeText(ForgetPassActicity.this,"访问出错！",Toast.LENGTH_SHORT).show();
+                                         }
+                                     });
                                  }
+                             }
                          });
                      }catch (Exception e){
                          e.printStackTrace();
@@ -126,29 +151,41 @@ public class ForgetPassActicity extends AppCompatActivity implements View.OnClic
                  }
                 break;
             case R.id.done_button:
-                if(!(phone.equals("") && code.equals("") && newpass.equals("")&&name.equals(""))){
-                    RequestBody body = new FormBody.Builder()
-                            .add(USERNAME,name)
-                            .add(PHONE,phone)
-                            .add(CODE,code)
-                            .add(PASSWORD,newpass)
-                            .build();
+                if(!phone.equals("") && !code.equals("") && !newpass.equals("")&& !name.equals("")){
+                    String json ="{\"" + USERNAME + "\":\"" + name +"\",\""+PHONE +"\":\"" + phone +"\",\"" + CODE
+                            + "\":\"" + code + "\",\"" + PASSWORD + "\":\"" + newpass + "\"}" ;
+                    RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                     Request request = new Request.Builder()
                             .put(body)
                             .url("http://10.110.101.226:80/api/user/password")
                             .build();
-                    try{
-                       client.newCall(request).enqueue(new Callback() {
+                    try {
+                        client.newCall(request).enqueue(new Callback() {
                             @Override
                             public void onFailure(Call call, IOException e) {
                                 e.printStackTrace();
+                                new Handler(getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(ForgetPassActicity.this,"请检查网络",Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                             }
 
                             @Override
                             public void onResponse(Call call, Response response) throws IOException {
-                                {
-                                    if (response.isSuccessful()) {
-                                        Log.d("okhttp", response.body().string());
+                                if(response.isSuccessful()){
+                                    String str = response.body().string();
+                                    Log.d("修改密码：",str);
+                                    String result = "";
+                                    try {
+                                        JSONObject jsonObject = new JSONObject(str);
+                                        result = jsonObject.getString("code");
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                    if (result.equals("200")) {
+                                        Log.d("okhttp",str);
                                         Log.d("okhttp", "" + response.code());
                                         new Handler(getMainLooper()).post(new Runnable() {
                                             @Override
@@ -165,13 +202,20 @@ public class ForgetPassActicity extends AppCompatActivity implements View.OnClic
                                             }
                                         });
                                     }
+                                }else{
+                                    new Handler(getMainLooper()).post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(ForgetPassActicity.this,"访问出错",Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
                                 }
-                         }
-                       });
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }else {
+
+                            }
+                        });
+                    }catch (Exception e){e.printStackTrace();}
+
+                }else{
                     messageDialog dialog = new messageDialog();
                     dialog.show(getSupportFragmentManager(),null);
                 }

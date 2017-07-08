@@ -47,8 +47,10 @@
                />
            <EditText
                android:id="@+id/phone_info"
+               android:enabled="false"
                android:layout_width="0dp"
-               android:inputType="none"
+               android:inputType="phone"
+               android:textColor="@color/white"
                android:layout_height="45dp"
                android:layout_weight="6"
                android:background="@null"/>
@@ -70,8 +72,10 @@
                android:layout_height="45dp"
                />
            <EditText
-               android:inputType="none"
+               android:inputType="text"
+               android:enabled="false"
                android:id="@+id/user_info"
+               android:textColor="@color/white"
                android:layout_width="0dp"
                android:layout_height="45dp"
                android:layout_weight="6"

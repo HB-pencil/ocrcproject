@@ -14,6 +14,8 @@ import android.widget.Toast;
 import com.example.shinelon.ocrcamera.helper.ButtonPoster;
 import com.example.shinelon.ocrcamera.helper.messageDialog;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -93,27 +95,49 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                             @Override
                             public void onFailure(Call call, IOException e) {
                                 e.printStackTrace();
+                                new Handler(RegisterActivity.this.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(RegisterActivity.this, "连接服务器失败，请检查网络！", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                             }
 
                             @Override
                             public void onResponse(Call call, Response response) throws IOException {
-                                Log.d("okhttp", response.body().string());
-                                Log.d("okhttp", "" + response.code());
-                                if (response.isSuccessful()) {
-                                    new Handler(getMainLooper()).post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(RegisterActivity.this, "验证码已发送！", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                                } else {
-                                    Log.d("okhttp", "fail");
-                                    new Handler(getMainLooper()).post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(RegisterActivity.this, "验证码发送失败，请稍后再试!", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
+                                if(response.isSuccessful()){
+                                    String str = response.body().string();
+                                    String result="";
+                                    try{
+                                        JSONObject jsonObject = new JSONObject(str);
+                                        result = jsonObject.getString("code");
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                    Log.d("okhttp",str);
+                                    Log.d("okhttp", "" + response.code());
+                                    if (result.equals("200")) {
+                                        new Handler(getMainLooper()).post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(RegisterActivity.this, "验证码已发送！", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    } else {
+                                        Log.d("okhttp", "fail");
+                                        new Handler(getMainLooper()).post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(RegisterActivity.this, "验证码发送失败，请稍后再试!", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                }else{new Handler(RegisterActivity.this.getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(RegisterActivity.this, "访问失败！", Toast.LENGTH_SHORT).show();
+                                     }
+                                 });
                                 }
                             }
                         });
@@ -144,7 +168,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
                 Log.d("注册测试",account+name+pass1+code);
 
-                if (!(account.equals("") && name.equals("") && pass1.equals("") && pass2.equals("") && code.equals(""))) {
+                if (!account.equals("") &&!name.equals("") && !pass1.equals("") && !pass2.equals("") && !code.equals("")) {
                     Log.d("成功判别","Success!");
                     if (!pass1.equals(pass2)) {
                         Toast.makeText(this, "前后两次输入密码不一致！", Toast.LENGTH_SHORT);
@@ -152,7 +176,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                     String json ="{\"" + USERNAME + "\":\"" + name +"\",\""+PHONE +"\":\"" + account +"\",\"" + CODE
                             + "\":\"" + code + "\",\"" + PASSWORD + "\":\"" + pass1 + "\"}" ;
                     RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
-                    Request request = new Request.Builder()
+                    final Request request = new Request.Builder()
                             .url(" http://10.110.101.226:80/api/user/register")
                             .post(body)
                             .build();
@@ -160,27 +184,49 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                         client.newCall(request).enqueue(new Callback() {
                             @Override
                             public void onFailure(Call call, IOException e) {
-
+                                e.printStackTrace();
+                                new Handler(getMainLooper()).post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(RegisterActivity.this, "请检查网络！", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                             }
 
                             @Override
                             public void onResponse(Call call, Response response) throws IOException {
-                                if (response.isSuccessful()) {
-                                    
-                                    Log.d("okhttp", response.body().string());
-                                    Log.d("okhttp", "" + response.code());
+                                if(response.isSuccessful()){
+                                    String str = response.body().string();
+                                    String result="";
+                                    try{
+                                        JSONObject jsonObject = new JSONObject(str);
+                                        result = jsonObject.getString("code");
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                    if (result.equals("200")) {
+                                        Log.d("okhttp", str);
+                                        Log.d("okhttp", "" + response.code());
+                                        new Handler(getMainLooper()).post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(RegisterActivity.this, "注册成功！", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    } else {
+                                        Log.d("okhttp", "fail");
+                                        new Handler(getMainLooper()).post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(RegisterActivity.this, "注册失败，请稍后再试", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                }else{
                                     new Handler(getMainLooper()).post(new Runnable() {
                                         @Override
                                         public void run() {
-                                            Toast.makeText(RegisterActivity.this, "注册成功！", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                                } else {
-                                    Log.d("okhttp", "fail");
-                                    new Handler(getMainLooper()).post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(RegisterActivity.this, "注册失败，请稍后再试", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(RegisterActivity.this, "访问失败！", Toast.LENGTH_SHORT).show();
                                         }
                                     });
                                 }

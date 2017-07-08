@@ -3,12 +3,14 @@ package com.example.shinelon.ocrcamera;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.shinelon.ocrcamera.helper.AsycProcessTask;
 
@@ -118,12 +120,27 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
        client.newCall(request).enqueue(new Callback() {
            @Override
            public void onFailure(Call call, IOException e) {
-
+               e.printStackTrace();
+               new Handler(SecondActivity.this.getMainLooper()).post(new Runnable() {
+                   @Override
+                   public void run() {
+                       Toast.makeText(SecondActivity.this, "请检查网络！", Toast.LENGTH_SHORT).show();
+                   }
+               });
            }
 
            @Override
            public void onResponse(Call call, Response response) throws IOException {
+                if(response.isSuccessful()){
 
+                }else{
+                    new Handler(SecondActivity.this.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(SecondActivity.this, "访问服务器失败，请稍后再试！", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
            }
        });
     }

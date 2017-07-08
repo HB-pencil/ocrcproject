@@ -5,8 +5,19 @@ package com.example.shinelon.ocrcamera.helper;
  */
 
 public class UserInfoLab {
+
     private String phone;
     private String name;
+    private static UserInfoLab mUserInfoLab;
+
+    private UserInfoLab(){}
+
+    public static UserInfoLab getUserInfo(){
+        if(mUserInfoLab == null){
+            mUserInfoLab = new UserInfoLab();
+        }
+        return  mUserInfoLab;
+    }
 
     public void setPhone(String phone) {
         this.phone = phone;
@@ -33,10 +44,4 @@ public class UserInfoLab {
     }
 
     private String userId;
-    private UserInfoLab(){
-
-    }
-    public static UserInfoLab getUserInfo(){
-        return new UserInfoLab();
-    }
 }
