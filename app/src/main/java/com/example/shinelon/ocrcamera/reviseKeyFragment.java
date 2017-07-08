@@ -54,8 +54,10 @@ public class reviseKeyFragment extends Fragment {
                     if(mEditText1.getText().toString().equals(mEditText2.getText().toString())){
                         String json ="{\"password\":\"" + mEditText1.getText().toString() + "\"}";
                         RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
+                        String userid = UserInfoLab.getUserInfo().getUserId();
+                        Log.d("userid",userid);
                         Request request = new Request.Builder()
-                                .url("http://10.110.101.226:80/api/user/{"+ UserInfoLab.getUserInfo().getUserId() +"}/password")
+                                .url("http://10.110.101.226:80/api/user/"+ userid +"/password")
                                 .put(body)
                                 .build();
                         client.newCall(request).enqueue(new Callback() {
