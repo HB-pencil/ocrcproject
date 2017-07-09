@@ -341,6 +341,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(intent);
                 break;
             case R.id.setting_item:
+                Intent i = new Intent(this,SettingActivity.class);
+                startActivity(i);
                 break;
             case R.id.exit_item:
                 finish();

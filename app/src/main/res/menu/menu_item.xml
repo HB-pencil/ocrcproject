@@ -11,7 +11,7 @@
          app:showAsAction="never"/>
      <item
          android:id="@+id/setting_item"
-         android:title="设置"
+         android:title="关于"
          app:showAsAction="never"/>
      <item
           android:id="@+id/exit_item"

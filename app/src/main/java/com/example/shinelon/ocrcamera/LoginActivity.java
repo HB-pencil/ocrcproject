@@ -152,12 +152,11 @@ public class LoginActivity extends AppCompatActivity {
                                 }
                             });
                         }else if(!mLoginEdit.getText().toString().equals("")&&!mPassEdit.getText().toString().equals("")){
-
                             new Handler(getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
                                     AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
-                                    AlertDialog dialog = builder.setMessage("账号或密码错误或无网络，请重新输入或稍后再试！")
+                                    AlertDialog dialog = builder.setMessage("账号或密码错误，请重新输入或稍后再试！")
                                             .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialogInterface, int i) {
