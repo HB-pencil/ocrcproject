@@ -121,7 +121,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.recognize_bt:
                 String imagePath = changeToUrl(getUri());
-                Intent intent = SecondActivity.newInstance(this,imagePath);
+                Log.d("识别按钮",imagePath);
+                Intent intent = SecondActivity.newInstance(this,imagePath,USER_NAME);
                 System.out.println("手动图片路径为"+ changeToUrl(getUri()));
                 startActivity(intent);
                 break;
@@ -202,7 +203,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mGPUImageView.setFilter(new GPUImageSharpenFilter());
             //Bitmap bitmap = compressPhoto(uri);
             //mImageView.setImageBitmap(bitmap);
-            mGPUImageView.saveToPictures("ocrCamera", "capturedImage" + String.valueOf(new Date().getTime()) + ".jpg", new GPUImageView.OnPictureSavedListener() {
+            mGPUImageView.saveToPictures("ocrCamera", "capturedImage" + String.valueOf(new Date().getTime()) + "未识别.jpg", new GPUImageView.OnPictureSavedListener() {
                 @Override
                 public void onPictureSaved(Uri mUri) {
                     if(mUri != null){

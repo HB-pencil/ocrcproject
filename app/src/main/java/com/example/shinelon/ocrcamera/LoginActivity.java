@@ -2,10 +2,8 @@ package com.example.shinelon.ocrcamera;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -208,12 +206,6 @@ public class LoginActivity extends AppCompatActivity {
         UserInfoLab.getUserInfo().setName(javaBean.getUser().getUsername());
         UserInfoLab.getUserInfo().setPhone(javaBean.getUser().getPhone());
         UserInfoLab.getUserInfo().setUserId(javaBean.getUser().getUserId());
-
-        String token = javaBean.getToken();
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor spEdit = preferences.edit();
-        spEdit.putString("token",token);
-        spEdit.apply();
 
         Log.d("JavaBean",javaBean.getUser().getUsername());
         Log.d("UserInfo",UserInfoLab.getUserInfo().getName());
