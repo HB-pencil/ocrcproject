@@ -10,6 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
+        android:layout_marginRight="20dp"
         android:layout_alignParentRight="true"
         android:layout_below="@+id/info_main"
         android:id="@+id/revise_phone"/>
@@ -18,6 +19,7 @@
         style="@style/loginButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
         android:layout_marginTop="40dp"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/info_main"

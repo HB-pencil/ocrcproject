@@ -57,7 +57,7 @@ public class reviseKeyFragment extends Fragment {
                         String userid = UserInfoLab.getUserInfo().getUserId();
                         Log.d("userid",userid);
                         Request request = new Request.Builder()
-                                .url("http://10.110.101.226:80/api/user/"+ userid +"/password")
+                                .url("http://10.110.101.219:80/api/user/"+ userid +"/password")
                                 .put(body)
                                 .build();
                         client.newCall(request).enqueue(new Callback() {

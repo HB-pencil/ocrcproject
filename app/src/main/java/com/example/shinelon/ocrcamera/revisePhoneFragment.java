@@ -10,10 +10,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import com.example.shinelon.ocrcamera.helper.ButtonPoster;
 import com.example.shinelon.ocrcamera.helper.messageDialog;
+
 import org.json.JSONObject;
+
 import java.io.IOException;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -113,25 +117,11 @@ public class revisePhoneFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 if(!mEditText2.getText().toString().equals("")){
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            for (int i = 60; i > 0; i--) {
-                                try {
-                                    Thread.sleep(1000);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                                String str = i + "秒";
-                                mButton1.post(new ButtonPoster(str,mButton1,false));
-                            }
-                            mButton1.post(new ButtonPoster("获取验证码",mButton1,true));
-                        }
-                    }).start();
+
                     String json ="{\"oldphone\":\"" + mEditText2.getText().toString() + "\"}";
                     RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                     Request request = new Request.Builder()
-                            .url("http://10.110.101.226:80/api/user/phone/captcha")
+                            .url("http://10.110.101.219:80/api/user/phone/captcha")
                             .post(body)
                             .build();
                     try {
@@ -149,6 +139,21 @@ public class revisePhoneFragment extends Fragment {
 
                             @Override
                             public void onResponse(Call call, Response response) throws IOException {
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        for (int i = 60; i > 0; i--) {
+                                            try {
+                                                Thread.sleep(1000);
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                            String str = i + "秒";
+                                            mButton1.post(new ButtonPoster(str,mButton1,false));
+                                        }
+                                        mButton1.post(new ButtonPoster("获取验证码",mButton1,true));
+                                    }
+                                }).start();
                                 if(response.isSuccessful()){
                                     String str = response.body().string();
                                     String result="";

@@ -66,26 +66,12 @@ public class ForgetPassActicity extends AppCompatActivity implements View.OnClic
         OkHttpClient client = new OkHttpClient();
         switch (view.getId()){
             case R.id.re_button:
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        for(int i = 60;i>0;i--){
-                            try{
-                                Thread.sleep(1000);
-                            }catch (Exception e){
-                                e.printStackTrace();
-                            }
-                            String str = i + "秒";
-                            mCodeBt.post(new ButtonPoster(str,mCodeBt,false));
-                        }
-                        mCodeBt.post(new ButtonPoster("获取验证码",mCodeBt,true));
-                    }
-                }).start();
+
                  if(!phone.equals("")){
                      String json ="{\"" + PHONE + "\":\""+ mPhone.getText().toString() +  "\"}" ;
                      RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                      Request request = new Request.Builder()
-                             .url("http://10.110.101.226:80/api/user/password/captcha")
+                             .url("http://10.110.101.219:80/api/user/password/captcha")
                              .post(body)
                              .build();
                      try{
@@ -113,6 +99,21 @@ public class ForgetPassActicity extends AppCompatActivity implements View.OnClic
                                      e.printStackTrace();
                                  }
                                  if(response.isSuccessful()){
+                                     new Thread(new Runnable() {
+                                         @Override
+                                         public void run() {
+                                             for(int i = 60;i>0;i--){
+                                                 try{
+                                                     Thread.sleep(1000);
+                                                 }catch (Exception e){
+                                                     e.printStackTrace();
+                                                 }
+                                                 String str = i + "秒";
+                                                 mCodeBt.post(new ButtonPoster(str,mCodeBt,false));
+                                             }
+                                             mCodeBt.post(new ButtonPoster("获取验证码",mCodeBt,true));
+                                         }
+                                     }).start();
                                      if (result.equals("200")) {
                                          Log.d("okhttp", str);
                                          Log.d("okhttp", "" + response.code());
@@ -157,7 +158,7 @@ public class ForgetPassActicity extends AppCompatActivity implements View.OnClic
                     RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                     Request request = new Request.Builder()
                             .put(body)
-                            .url("http://10.110.101.226:80/api/user/password")
+                            .url("http://10.110.101.219:80/api/user/password")
                             .build();
                     try {
                         client.newCall(request).enqueue(new Callback() {

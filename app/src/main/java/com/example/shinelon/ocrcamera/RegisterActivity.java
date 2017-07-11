@@ -69,25 +69,10 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         switch (view.getId()) {
             case R.id.get_code:
                 if (!mEditTextAccount.getText().toString().equals("")) {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            for (int i = 60; i > 0; i--) {
-                                try {
-                                    Thread.sleep(1000);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                                String str = i + "秒";
-                                mButtonCode.post(new ButtonPoster(str,mButtonCode,false));
-                            }
-                            mButtonCode.post(new ButtonPoster("获取验证码",mButtonCode,true));
-                        }
-                    }).start();
                     String json ="{\"phone\":"+ mEditTextAccount.getText().toString() +"}";
                     RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                     Request request = new Request.Builder()
-                            .url("http://10.110.101.226:80/api/user/register/captcha")
+                            .url("http://10.110.101.219:80/api/user/register/captcha")
                             .post(body)
                             .build();
                     try {
@@ -106,6 +91,21 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                             @Override
                             public void onResponse(Call call, Response response) throws IOException {
                                 if(response.isSuccessful()){
+                                    new Thread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            for (int i = 60; i > 0; i--) {
+                                                try {
+                                                    Thread.sleep(1000);
+                                                } catch (Exception e) {
+                                                    e.printStackTrace();
+                                                }
+                                                String str = i + "秒";
+                                                mButtonCode.post(new ButtonPoster(str,mButtonCode,false));
+                                            }
+                                            mButtonCode.post(new ButtonPoster("获取验证码",mButtonCode,true));
+                                        }
+                                    }).start();
                                     String str = response.body().string();
                                     String result="";
                                     try{
@@ -177,7 +177,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                             + "\":\"" + code + "\",\"" + PASSWORD + "\":\"" + pass1 + "\"}" ;
                     RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                     final Request request = new Request.Builder()
-                            .url(" http://10.110.101.226:80/api/user/register")
+                            .url(" http://10.110.101.219:80/api/user/register")
                             .post(body)
                             .build();
                     try {
