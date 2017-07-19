@@ -1,7 +1,9 @@
 package com.example.shinelon.ocrcamera;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -55,9 +57,12 @@ public class reviseKeyFragment extends Fragment {
                         String json ="{\"password\":\"" + mEditText1.getText().toString() + "\"}";
                         RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                         String userid = UserInfoLab.getUserInfo().getUserId();
-                        Log.d("userid",userid);
+                        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                        String token = sp.getString("token","");
+                        Log.d("userid + token",userid + token);
                         Request request = new Request.Builder()
-                                .url("http://10.110.101.219:80/api/user/"+ userid +"/password")
+                                .url("http://10.110.101.226:80/api/user/"+ userid +"/password")
+                                .addHeader("Authorization",token)
                                 .put(body)
                                 .build();
                         client.newCall(request).enqueue(new Callback() {

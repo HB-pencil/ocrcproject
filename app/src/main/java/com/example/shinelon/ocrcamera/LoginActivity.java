@@ -2,8 +2,10 @@ package com.example.shinelon.ocrcamera;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -114,7 +116,7 @@ public class LoginActivity extends AppCompatActivity {
         if(!account.equals("")&&!password.equals("")){
             String json ="{\""+ PHONE + "\":\"" + account + "\",\"" + PASSWORD + "\":\"" + password + "\"}";
             RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
-            Request request = new Request.Builder().url("http://10.110.101.219:80/api/user/login").post(body).build();
+            Request request = new Request.Builder().url("http://10.110.101.226:80/api/user/login").post(body).build();
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
@@ -202,11 +204,17 @@ public class LoginActivity extends AppCompatActivity {
      */
     public void parseUserInfo(String resultJson){
         JavaBean javaBean = JSON.parseObject(resultJson,JavaBean.class);
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString("token",javaBean.getToken());
+        editor.apply();
+
         UserInfoLab.getUserInfo().setName(javaBean.getUser().getUsername());
         UserInfoLab.getUserInfo().setPhone(javaBean.getUser().getPhone());
         UserInfoLab.getUserInfo().setUserId(javaBean.getUser().getUserId());
 
         Log.d("JavaBean",javaBean.getUser().getUsername());
+        Log.d("Javabean",javaBean.getToken());
         Log.d("UserInfo",UserInfoLab.getUserInfo().getName());
     }
 }

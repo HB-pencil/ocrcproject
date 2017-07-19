@@ -71,7 +71,7 @@ public class ForgetPassActicity extends AppCompatActivity implements View.OnClic
                      String json ="{\"" + PHONE + "\":\""+ mPhone.getText().toString() +  "\"}" ;
                      RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                      Request request = new Request.Builder()
-                             .url("http://10.110.101.219:80/api/user/password/captcha")
+                             .url("http://10.110.101.226:80/api/user/password/captcha")
                              .post(body)
                              .build();
                      try{
@@ -158,7 +158,7 @@ public class ForgetPassActicity extends AppCompatActivity implements View.OnClic
                     RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                     Request request = new Request.Builder()
                             .put(body)
-                            .url("http://10.110.101.219:80/api/user/password")
+                            .url("http://10.110.101.226:80/api/user/password")
                             .build();
                     try {
                         client.newCall(request).enqueue(new Callback() {

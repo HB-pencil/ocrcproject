@@ -72,7 +72,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                     String json ="{\"phone\":"+ mEditTextAccount.getText().toString() +"}";
                     RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                     Request request = new Request.Builder()
-                            .url("http://10.110.101.219:80/api/user/register/captcha")
+                            .url("http://10.110.101.226:80/api/user/register/captcha")
                             .post(body)
                             .build();
                     try {
@@ -177,7 +177,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                             + "\":\"" + code + "\",\"" + PASSWORD + "\":\"" + pass1 + "\"}" ;
                     RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                     final Request request = new Request.Builder()
-                            .url(" http://10.110.101.219:80/api/user/register")
+                            .url(" http://10.110.101.226:80/api/user/register")
                             .post(body)
                             .build();
                     try {

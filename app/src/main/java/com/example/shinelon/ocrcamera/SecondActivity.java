@@ -2,8 +2,10 @@ package com.example.shinelon.ocrcamera;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -117,7 +119,10 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
                        RequestBody.create(MediaType.parse("image/jpeg"),imgFile))
                .build();
        String userId = UserInfoLab.getUserInfo().getUserId();
-       Request request = new Request.Builder().url("http://10.110.101.226:80/api/user/"+ userId + "/picture").post(body).build();
+       Request request = new Request.Builder().url("http://10.110.101.226:80/api/user/"+ userId + "/picture")
+               .post(body)
+               .addHeader("Authorization",getToken())
+               .build();
        client.newCall(request).enqueue(new Callback() {
            @Override
            public void onFailure(Call call, IOException e) {
@@ -181,7 +186,10 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
                         RequestBody.create(MediaType.parse("text/plain"), txtFile))
                 .build();
         String userId = UserInfoLab.getUserInfo().getUserId();
-        Request request = new Request.Builder().url("http://10.110.101.219:80/api/user/" + userId + "/txt").post(body).build();
+        Request request = new Request.Builder().url("http://10.110.101.226:80/api/user/" + userId + "/txt")
+                .post(body)
+                .addHeader("Authorization",getToken())
+                .build();
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -234,6 +242,13 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
                 }
             }
         });
+    }
+
+    public String getToken(){
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        String token = sp.getString("token","");
+        Log.d("SecondActivity",token);
+        return token;
     }
 
             /**
