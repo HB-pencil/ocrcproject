@@ -8,6 +8,8 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -48,6 +50,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
 
         mButton = (Button) findViewById(R.id.confirm_bt);
         mEditText = (EditText) findViewById(R.id.edit_text);
+        mEditText.setEnabled(false);
         mButton.setOnClickListener(this);
 
         Bundle extras = getIntent().getExtras();
@@ -244,6 +247,22 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_second,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.edit:
+                mEditText.setEnabled(true);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     public String getToken(){
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         String token = sp.getString("token","");
@@ -262,6 +281,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
 
             public void displayMessage(String text) {
                 mEditText.post(new MessagePoster(text));
+                Log.d("结果：",text);
             }
 
             class MessagePoster implements Runnable {

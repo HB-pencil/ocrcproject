@@ -23,7 +23,6 @@ import com.baidu.ocr.sdk.OCR;
 import com.baidu.ocr.sdk.OnResultListener;
 import com.baidu.ocr.sdk.exception.OCRError;
 import com.baidu.ocr.sdk.model.AccessToken;
-import com.example.shinelon.ocrcamera.helper.Messager;
 import com.example.shinelon.ocrcamera.helper.helperDialogFragment;
 
 import java.io.ByteArrayInputStream;
@@ -75,32 +74,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mRecognizeButton.setOnClickListener(this);
 
         //授权方式
-        initAccessToken();
+        initAccessTokenWithAkSk();
     }
 
-    private void initAccessToken() {
-
-        OCR.getInstance().initAccessToken(new OnResultListener<AccessToken>() {
+    private void initAccessTokenWithAkSk() {
+        OCR.getInstance().initAccessTokenWithAkSk(new OnResultListener<AccessToken>() {
             @Override
-            public void onResult(AccessToken accessToken) {
-                String token = accessToken.getAccessToken();
+            public void onResult(AccessToken result) {
+                String token = result.getAccessToken();
             }
 
             @Override
             public void onError(OCRError error) {
                 error.printStackTrace();
-                Messager.showError(MainActivity.this,error.getMessage(),"licence方式获取token失败");
+                Toast.makeText(MainActivity.this,"AK，SK方式获取token失败 " + error.getMessage(),Toast.LENGTH_SHORT).show();
             }
-        }, getApplicationContext());
+        }, getApplicationContext(), "qsv0ZAOxsT7cy5eIE5t92IUN", "Kl3cv5v2FaHSaS8gUZu1a16Ny9LzTMXo");
     }
+
+
 
     @Override
     public void onClick(View view){
         switch (view.getId()){
             //从图库中选择图片
             case R.id.gallery_bt:
-                Intent intent2 = new Intent(Intent.ACTION_GET_CONTENT);
-                intent2.setType("image/*");
+                Intent intent2 = new Intent();
+                intent2.setAction(Intent.ACTION_PICK);
+                intent2.setData(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(intent2,SELECT);
                 break;
             case R.id.camera_bt:
@@ -234,10 +235,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     public String changeToUrl(Uri uri){
         String[] proj = { MediaStore.Images.Media.DATA };
-        CursorLoader loader = new CursorLoader(this, uri, proj, null, null, null);
-        Cursor cursor = loader.loadInBackground();
-        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-        cursor.moveToFirst();
+        Cursor cursor;
+        int column_index = 0;
+        //sdk<=11，cursor = manageQuery(uri,proj,null,null,null)
+        CursorLoader loader = new CursorLoader(this,uri,proj,null,null,null);
+        cursor = loader.loadInBackground();
+        if(cursor!=null) {
+            column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+        }
         return cursor.getString(column_index);
     }
 
@@ -325,9 +331,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
         super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.menu_item,menu);
         return true;
     }
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem){
         switch (menuItem.getItemId()){

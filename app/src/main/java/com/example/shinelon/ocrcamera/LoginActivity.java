@@ -80,7 +80,8 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                  try{
-                     checkLogin();
+                     loginAccount();
+                     //checkLogin();
                  }catch (Exception e){
                      e.printStackTrace();
                  }
