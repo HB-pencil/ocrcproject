@@ -23,7 +23,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
     private ProgressDialog mProgressDialog;
     private final SecondActivity mSecondActivity;
     private StringBuilder sb = new StringBuilder();
-    private static String str = "";
+    private static String str ="";//不能为null，不然会报错，因为子线程返回值必须为String
 
     public AsycProcessTask(SecondActivity activity){
         this.mSecondActivity = activity;
@@ -47,6 +47,9 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
 
         publishProgress("开始识别");
 
+        /**
+         * 此方法又开启了一个异步线程！并且是耗时的！！！
+         */
     // 调用通用文字识别服务
     OCR.getInstance().recognizeGeneralBasic(param, new OnResultListener<GeneralResult>() {
         @Override
@@ -58,55 +61,62 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                 sb.append(word.getWords());
                 sb.append("\n");
             }
+            String mResult = sb.toString();
             publishProgress("正在识别");
-             if(sb.toString().length()>=1){
+             if(mResult.length()>=1){
                  publishProgress("识别完成");
+                 setResult(mResult);
              }else{
                  publishProgress("识别失败");
              }
-            Log.d("RESULT",sb.toString());
-            System.out.println("文字识别结果初态  "+sb.toString());
-            setResult(sb.toString());
+            Log.d("RESULT",mResult);
+            System.out.print(mResult);
         }
-
         @Override
         public void onError(OCRError error) {
             // 调用失败，返回OCRError对象
             setResult(error.getMessage());
         }
     });
-
-        try{
-            Thread.sleep(2000);
+        /**
+         * 要有足够长的时间等待ocr线程的完成！
+         */
+        try {
+            Thread.sleep(4000);
         }catch (Exception e){
             e.printStackTrace();
         }
+
+        Log.d("getResult",getResult());
+        System.out.println("我是doinbackground的返回值  "+ getResult());
         return getResult();
-
     }
-
     @Override
     public void onProgressUpdate(String... values){
         mProgressDialog.setMessage(values[0]);
     }
     @Override
     public void onPostExecute(String result){
-
-         if(mProgressDialog.isShowing()){
-             mSecondActivity.updateResult(result);
-             mProgressDialog.dismiss();
-         }
+        Log.d("onPostExecute",result);
+        System.out.println("识别result我被执行了！"+result);
+        if(result.length()>=1){
+            mSecondActivity.updateResult(result);
+        }else{
+            mSecondActivity.updateResult("识别出错，请重试！");
+        }
+        if(mProgressDialog.isShowing()){
+            mProgressDialog.dismiss();
+        }
     }
 
-/**
- * 识别结果
- */
-public void setResult(String result){
-    str = result;
-}
+    public void setResult(String result){
+        str = result;
+        Log.d("setResult()","我是setReult "+str);
+    }
 
-public String getResult(){
-    return str;
-}
+    public String getResult(){
+        Log.d("getResult()","我是getReult "+str);
+        return str;
+    }
 
-}
+    }

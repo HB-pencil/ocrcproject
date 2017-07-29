@@ -283,6 +283,11 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
 
             public void displayMessage(String text) {
                 mEditText.post(new MessagePoster(text));
+                try{
+                    Thread.sleep(500);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
                 if(text.length()<=1){
                     Toast.makeText(this,"识别失败，请检查网络",Toast.LENGTH_SHORT).show();
                 }
