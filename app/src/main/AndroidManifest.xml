@@ -50,6 +50,17 @@
             android:label="">
 
         </activity>
+        
+        <provider
+            android:authorities="com.example.shinelon.ocrcamera.provider"
+            android:exported="false"
+            android:name="android.support.v4.content.FileProvider"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
+
     </application>
 
 </manifest>

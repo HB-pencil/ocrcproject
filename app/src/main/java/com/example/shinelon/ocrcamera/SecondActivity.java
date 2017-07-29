@@ -61,9 +61,11 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    public void doRecognize(){
+    public void doRecognize() {
         // Starting recognition process
         new AsycProcessTask(this).execute(imageUrl);
+        System.out.println("自动识别路径为    " + imageUrl);
+        Log.d("自动识别路径:", imageUrl);
     }
 
     public static Intent newInstance(Context context,String...values){
@@ -281,6 +283,10 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
 
             public void displayMessage(String text) {
                 mEditText.post(new MessagePoster(text));
+                if(text.length()<=1){
+                    Toast.makeText(this,"识别失败，请检查网络",Toast.LENGTH_SHORT).show();
+                }
+                System.out.println("结果"+text);
                 Log.d("结果：",text);
             }
 

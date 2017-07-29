@@ -32,7 +32,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
     @Override
     public void onPreExecute(){
         mProgressDialog = new ProgressDialog(mSecondActivity);
-        mProgressDialog.setMessage("开始识别");
+        mProgressDialog.setMessage("准备识别");
         mProgressDialog.setCancelable(false);
         mProgressDialog.setCanceledOnTouchOutside(false);
         mProgressDialog.show();
@@ -45,7 +45,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
         param.setDetectDirection(true);
         param.setImageFile(new File(inputFile));
 
-        publishProgress("正在识别");
+        publishProgress("开始识别");
 
     // 调用通用文字识别服务
     OCR.getInstance().recognizeGeneralBasic(param, new OnResultListener<GeneralResult>() {
@@ -58,10 +58,14 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                 sb.append(word.getWords());
                 sb.append("\n");
             }
-             if(!sb.toString().equals("")){
+            publishProgress("正在识别");
+             if(sb.toString().length()>=1){
                  publishProgress("识别完成");
+             }else{
+                 publishProgress("识别失败");
              }
             Log.d("RESULT",sb.toString());
+            System.out.println("文字识别结果初态  "+sb.toString());
             setResult(sb.toString());
         }
 
@@ -73,13 +77,14 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
     });
 
         try{
-            Thread.sleep(3000);
+            Thread.sleep(2000);
         }catch (Exception e){
             e.printStackTrace();
         }
         return getResult();
 
     }
+
     @Override
     public void onProgressUpdate(String... values){
         mProgressDialog.setMessage(values[0]);

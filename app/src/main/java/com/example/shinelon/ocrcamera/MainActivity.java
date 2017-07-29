@@ -5,11 +5,13 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.CursorLoader;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -45,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private File mFile;
     private Uri mUri;
     private Uri uri;
+    private String imagePath;
     private static final int REQUEST_CAMERA = 0;
     private static final int CAMERA_CROP = 1;
     private static final int SELECT = 2;
@@ -105,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivityForResult(intent2,SELECT);
                 break;
             case R.id.camera_bt:
-                //启动相机应用,获得一个File实例以及其所指向的抽象路
+                //启动相机应用,获得一个File实例以及其所指向的抽象路径
                 /**
                  *  /storage/emulated/0/Android/data/com.example.shinelon.ocrcamera/files/Pictures/capturedImage149622891598
                  *  这个目录为app私有存储，并不会服更图库
@@ -114,22 +117,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                  *   至于getExternalFileDir顾名思义获取file的，即会随着app删除而删除
                  */
                 mFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),"capturedImage" + String.valueOf(new Date().getTime()) + ".jpg");
-                mUri = Uri.fromFile(mFile);
+                /**
+                 * 判断版本Uri
+                 */
+                if(Build.VERSION.SDK_INT >= 24){
+                     mUri = FileProvider.getUriForFile(this,"com.example.shinelon.ocrcamera",mFile);
+                }else{
+                     mUri = Uri.fromFile(mFile);
+                }
                 Intent intent3 = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 //putExtra()对于从图库选择的图片并不生效，但对于裁剪和相机却是可行的
                 intent3.putExtra(MediaStore.EXTRA_OUTPUT,mUri);
                 startActivityForResult(intent3,REQUEST_CAMERA);
                 break;
             case R.id.recognize_bt:
-                String imagePath = changeToUrl(getUri());
                 Log.d("识别按钮",imagePath);
                 Intent intent = SecondActivity.newInstance(this,imagePath,USER_NAME);
-                System.out.println("手动图片路径为"+ changeToUrl(getUri()));
+                System.out.println("手动识别的图片路径为"+ imagePath);
                 startActivity(intent);
                 break;
             case R.id.corp_bt:
                 //从原来路径中裁剪照片
                 crop(getUri());
+                Log.d("裁剪按钮Uri",getUri().getPath());
                 break;
             default:
                 break;
@@ -151,10 +161,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                      * 原来我们在保存成功后，还要发一个系统广播通知手机有图片更新，发生广播给系统更新图库
                      */
                     Intent intentNotify = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                    Uri uri = Uri.fromFile(mFile);
+                    Uri uri;
+                    if(Build.VERSION.SDK_INT >= 24){
+                        uri = FileProvider.getUriForFile(this,"com.example.shinelon.ocrcamera",mFile);
+                    }else{
+                        uri = Uri.fromFile(mFile);
+                    }
                     intentNotify.setData(uri);
                     this.sendBroadcast(intentNotify);
-                    Log.d("裁剪",uri.getPath());
+                    Log.d("裁剪后",uri.getPath());
 
                     startActivityForResult(intent,CAMERA_CROP);
                 }break;
@@ -167,9 +182,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }break;
             case SELECT:
                 if(data != null){
-                    Uri uri = data.getData();
+                    /**
+                     * 转化为真实路径Uri
+                     */
+                    File file = new File(changeToUrl(data.getData()));
+                    Uri uri;
+                    if(Build.VERSION.SDK_INT >= 24){
+                        uri = FileProvider.getUriForFile(this,"com.example.shinelon.ocrcamera",file);
+                    }else{
+                        uri = Uri.fromFile(file);
+                    }
                     Log.d("图库URI",uri.getPath());
-                    crop(uri);
+                    setUri(uri);
+                    crop(getUri());
                 }
                 break;
             case CROP:
@@ -189,7 +214,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(uri,"image/*");
         intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
-        setUri(uri);
         startActivityForResult(intent,CAMERA_CROP);
         mCropButton.setEnabled(true);
         mRecognizeButton.setEnabled(true);
@@ -204,24 +228,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mGPUImageView.setFilter(new GPUImageSharpenFilter());
             //Bitmap bitmap = compressPhoto(uri);
             //mImageView.setImageBitmap(bitmap);
+            try{
+                Thread.sleep(500);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
             mGPUImageView.saveToPictures("ocrCamera", "capturedImage" + String.valueOf(new Date().getTime()) + "未识别.jpg", new GPUImageView.OnPictureSavedListener() {
                 @Override
                 public void onPictureSaved(Uri mUri) {
                     if(mUri != null){
-                        Toast.makeText(getApplicationContext(), "图片已保存", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "图片已保存", Toast.LENGTH_SHORT).show();
                         Log.d("自动图片路径为", changeToUrl(mUri));
-                        String imagePath = changeToUrl(mUri);
+                        imagePath = changeToUrl(mUri);
+                        System.out.println("转换前uri、uri.getpath()和转换后   "+ mUri.toString()+ "   " + mUri.getPath()+ "     "+ imagePath);
                         Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,getIntent().getStringExtra(USER_NAME));
-                        try{
-                            Thread.sleep(1000);
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
                         startActivity(intent);
                     }
                 }
             });
-            setUri(uri);
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -235,15 +259,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     public String changeToUrl(Uri uri){
         String[] proj = { MediaStore.Images.Media.DATA };
-        Cursor cursor;
-        int column_index = 0;
         //sdk<=11，cursor = manageQuery(uri,proj,null,null,null)
         CursorLoader loader = new CursorLoader(this,uri,proj,null,null,null);
-        cursor = loader.loadInBackground();
-        if(cursor!=null) {
-            column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            cursor.moveToFirst();
-        }
+        Cursor cursor = loader.loadInBackground();
+        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
         return cursor.getString(column_index);
     }
 
@@ -330,8 +350,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
-        super.onCreateOptionsMenu(menu);
-        return true;
+        getMenuInflater().inflate(R.menu.menu_item,menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
 
