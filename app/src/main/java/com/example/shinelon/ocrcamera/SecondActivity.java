@@ -284,7 +284,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
             public void displayMessage(String text) {
                 mEditText.post(new MessagePoster(text));
                 try{
-                    Thread.sleep(500);
+                    Thread.sleep(200);
                 }catch (Exception e){
                     e.printStackTrace();
                 }
