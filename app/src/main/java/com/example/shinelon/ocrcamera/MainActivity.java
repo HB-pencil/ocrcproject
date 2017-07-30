@@ -1,6 +1,9 @@
 package com.example.shinelon.ocrcamera;
 
+import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,9 +12,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -25,6 +30,7 @@ import com.baidu.ocr.sdk.OCR;
 import com.baidu.ocr.sdk.OnResultListener;
 import com.baidu.ocr.sdk.exception.OCRError;
 import com.baidu.ocr.sdk.model.AccessToken;
+import com.example.shinelon.ocrcamera.helper.PermissionChecker;
 import com.example.shinelon.ocrcamera.helper.helperDialogFragment;
 
 import java.io.ByteArrayInputStream;
@@ -54,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int CROP = 3;
     private GPUImageView mGPUImageView;
     private final static String USER_NAME = "username";
+    private PermissionChecker mChecker;
+    private AlertDialog mDialog;
 
 
     @Override
@@ -66,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCameraButton = (ImageButton) findViewById(R.id.camera_bt);
         mCropButton = (ImageButton) findViewById(R.id.corp_bt);
         mRecognizeButton = (ImageButton) findViewById(R.id.recognize_bt);
+        mChecker = new PermissionChecker();
 
         mGPUImageView  = (GPUImageView) findViewById(R.id.image_photo);
         mCropButton.setEnabled(false);
@@ -95,7 +104,63 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }, getApplicationContext(), "qsv0ZAOxsT7cy5eIE5t92IUN", "Kl3cv5v2FaHSaS8gUZu1a16Ny9LzTMXo");
     }
 
+    /**
+     * 6.0以上动态权限检测
+     */
+    private static final String permissions [] = {Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE};
+    @Override
+    public void onStart(){
+        super.onStart();
+        if(Build.VERSION.SDK_INT >= 23) {
+            mChecker.checkPermissions(this, permissions);
+            Log.w("onStart", "我是onStart!");
+        }
+    }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode){
+            case PermissionChecker.REQUEST_STORAGY:
+                for(int i = 0;i<permissions.length;i++){
+                    if( grantResults[i] == PackageManager.PERMISSION_DENIED){
+                    /**  if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                     *   shouldShowRequestPermissionRationale(permissions[i])};
+                     *   该方法第一次返回false,用户拒绝过返回true，用户拒绝过并点了不再提醒返回false
+                    **/
+                        Log.w("回调","我是权限拒绝回调!");
+                        showPermissionDialog();
+                        break;
+                     }
+                }break;
+            default:
+                break;
+        }
+    }
+    /**
+     * 显示权限对话框
+     */
+    public void showPermissionDialog(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("警告")
+                .setMessage("该软件需要用到读写内存权限，否则将无法正常使用，请进入设置后返回或退出！")
+                .setPositiveButton("设置", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mChecker.startAppSetting(MainActivity.this);
+                    }
+                })
+                .setNegativeButton("退出", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                });
+        mDialog = builder.create();
+        mDialog.setCancelable(false);
+        mDialog.setCanceledOnTouchOutside(false);
+        mDialog.show();
+    }
 
     @Override
     public void onClick(View view){
@@ -117,11 +182,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                  *   至于getExternalFileDir顾名思义获取file的，即会随着app删除而删除
                  */
                 mFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),"capturedImage" + String.valueOf(new Date().getTime()) + ".jpg");
+                if(!mFile.exists()){
+                    try{
+                        mFile.createNewFile();
+                        Log.d("createFile"," "+mFile.exists());
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
                 /**
                  * 判断版本Uri
                  */
                 if(Build.VERSION.SDK_INT >= 24){
-                     mUri = FileProvider.getUriForFile(this,"com.example.shinelon.ocrcamera",mFile);
+                     mUri = FileProvider.getUriForFile(this,getPackageName()+".ocrProvider",mFile);
                 }else{
                      mUri = Uri.fromFile(mFile);
                 }
@@ -163,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Intent intentNotify = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
                     Uri uri;
                     if(Build.VERSION.SDK_INT >= 24){
-                        uri = FileProvider.getUriForFile(this,"com.example.shinelon.ocrcamera",mFile);
+                        uri = FileProvider.getUriForFile(this,getPackageName()+".ocrProvider",mFile);
                     }else{
                         uri = Uri.fromFile(mFile);
                     }
@@ -188,7 +261,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     File file = new File(changeToUrl(data.getData()));
                     Uri uri;
                     if(Build.VERSION.SDK_INT >= 24){
-                        uri = FileProvider.getUriForFile(this,"com.example.shinelon.ocrcamera",file);
+                        uri = FileProvider.getUriForFile(this,getPackageName()+".ocrProvider",file);
                     }else{
                         uri = Uri.fromFile(file);
                     }
@@ -387,7 +460,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onKeyDown(keyCode,keyEvent);
     }
 
-
-  
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.e("错误：","!!!!!!!!!!");
+    }
 }
 

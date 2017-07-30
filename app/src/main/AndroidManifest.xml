@@ -6,10 +6,6 @@
     <uses-permission android:name="android.perssion.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.READ_SMS"/>
     <application
         android:allowBackup="true"
         android:icon="@mipmap/icon"
@@ -52,13 +48,13 @@
         </activity>
         
         <provider
-            android:authorities="com.example.shinelon.ocrcamera.provider"
+            android:authorities="com.example.shinelon.ocrcamera.ocrProvider"
             android:exported="false"
             android:name="android.support.v4.content.FileProvider"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"/>
+                android:resource="@xml/paths_file"/>
         </provider>
 
     </application>
