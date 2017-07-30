@@ -1,6 +1,8 @@
 package com.example.shinelon.ocrcamera;
 
 import android.Manifest;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -57,7 +59,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int REQUEST_CAMERA = 0;
     private static final int CAMERA_CROP = 1;
     private static final int SELECT = 2;
-    private static final int CROP = 3;
     private GPUImageView mGPUImageView;
     private final static String USER_NAME = "username";
     private PermissionChecker mChecker;
@@ -89,19 +90,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initAccessTokenWithAkSk();
     }
 
+
     private void initAccessTokenWithAkSk() {
+
         OCR.getInstance().initAccessTokenWithAkSk(new OnResultListener<AccessToken>() {
             @Override
             public void onResult(AccessToken result) {
+
                 String token = result.getAccessToken();
             }
-
             @Override
             public void onError(OCRError error) {
                 error.printStackTrace();
                 Toast.makeText(MainActivity.this,"AK，SK方式获取token失败 " + error.getMessage(),Toast.LENGTH_SHORT).show();
             }
+
         }, getApplicationContext(), "qsv0ZAOxsT7cy5eIE5t92IUN", "Kl3cv5v2FaHSaS8gUZu1a16Ny9LzTMXo");
+
     }
 
     /**
@@ -167,10 +172,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()){
             //从图库中选择图片
             case R.id.gallery_bt:
-                Intent intent2 = new Intent();
-                intent2.setAction(Intent.ACTION_PICK);
-                intent2.setData(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(intent2,SELECT);
+                    Intent intent2 = new Intent();
+                    intent2.setAction(Intent.ACTION_PICK);
+                    intent2.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    startActivityForResult(intent2,SELECT);
                 break;
             case R.id.camera_bt:
                 //启动相机应用,获得一个File实例以及其所指向的抽象路径
@@ -194,12 +199,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                  * 判断版本Uri
                  */
                 if(Build.VERSION.SDK_INT >= 24){
-                     mUri = FileProvider.getUriForFile(this,getPackageName()+".ocrProvider",mFile);
+                    mUri = FileProvider.getUriForFile(this,getPackageName()+".ocrProvider",mFile);
+                    Log.e("FileProvider的mUri",""+mUri.toString());
                 }else{
                      mUri = Uri.fromFile(mFile);
                 }
                 Intent intent3 = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                //putExtra()对于从图库选择的图片并不生效，但对于裁剪和相机却是可行的
                 intent3.putExtra(MediaStore.EXTRA_OUTPUT,mUri);
                 startActivityForResult(intent3,REQUEST_CAMERA);
                 break;
@@ -212,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.corp_bt:
                 //从原来路径中裁剪照片
                 crop(getUri());
-                Log.d("裁剪按钮Uri",getUri().getPath());
+                Log.d("裁剪按钮Uri",getUri().toString());
                 break;
             default:
                 break;
@@ -226,9 +231,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case REQUEST_CAMERA:
                 if(resultCode == RESULT_OK){
                     //启动裁剪功能，裁剪结束后覆盖原来图片
-                    Intent intent = new Intent("com.android.camera.action.CROP");
-                    intent.setDataAndType(mUri,"image/*");
-                    intent.putExtra(MediaStore.EXTRA_OUTPUT,mUri);
+                    if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.N){
+                        mUri = getImageContentUri(this,mFile);
+                    }
+                    crop(mUri);
                     setUri(mUri);
                     /**
                      * 原来我们在保存成功后，还要发一个系统广播通知手机有图片更新，发生广播给系统更新图库
@@ -242,9 +248,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                     intentNotify.setData(uri);
                     this.sendBroadcast(intentNotify);
-                    Log.d("裁剪后",uri.getPath());
-
-                    startActivityForResult(intent,CAMERA_CROP);
                 }break;
             //成功裁剪完设置图片
             case CAMERA_CROP:
@@ -254,23 +257,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     mRecognizeButton.setEnabled(true);
                 }break;
             case SELECT:
-                if(data != null){
-                    /**
-                     * 转化为真实路径Uri
-                     */
-                    File file = new File(changeToUrl(data.getData()));
-                    Uri uri;
-                    if(Build.VERSION.SDK_INT >= 24){
-                        uri = FileProvider.getUriForFile(this,getPackageName()+".ocrProvider",file);
-                    }else{
-                        uri = Uri.fromFile(file);
-                    }
-                    Log.d("图库URI",uri.getPath());
+                if(resultCode == RESULT_OK && data!=null){
+                    Uri uri = data.getData();
+                    Log.d("图库URI",uri.toString()+ "   "+uri.getPath());
                     setUri(uri);
-                    crop(getUri());
+                    crop(uri);
                 }
-                break;
-            case CROP:
                 break;
             default:
                 break;
@@ -279,18 +271,59 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 裁剪方法
+     * 裁剪方法，如果是7.0要多加配置，绕
      * @param uri
      */
     public void crop(Uri uri){
         //启动裁剪功能，裁剪结束后覆盖原来图片
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(uri,"image/*");
-        intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
+        Log.e("调用裁剪方法的Uri",uri.toString());
+        if (Build.VERSION.SDK_INT>= Build.VERSION_CODES.N){
+            if(uri.getAuthority().equals("media")){
+                intent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(mFile));
+            }else{
+                intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
+                File file = new File(changeToUrl(uri));
+                intent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(file));
+            }
+        }else{
+            intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
+        }
+
         startActivityForResult(intent,CAMERA_CROP);
         mCropButton.setEnabled(true);
         mRecognizeButton.setEnabled(true);
     }
+
+    /**
+     *7.0拍照后裁剪Uri
+     */
+    public Uri getImageContentUri(Context context, File imageFile) {
+        String filePath = imageFile.getAbsolutePath();
+        Cursor cursor = context.getContentResolver().query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                new String[] { MediaStore.Images.Media._ID },
+                MediaStore.Images.Media.DATA + "=? ",
+                new String[] { filePath }, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            int id = cursor.getInt(cursor
+                    .getColumnIndex(MediaStore.MediaColumns._ID));
+            Uri baseUri = Uri.parse("content://media/external/images/media");
+            return Uri.withAppendedPath(baseUri, "" + id);
+        } else {
+            if (imageFile.exists()) {
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.DATA, filePath);
+                return context.getContentResolver().insert(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            } else {
+                return null;
+            }
+        }
+    }
+
 
     /**
      * 此方法更新显示的图像
@@ -337,6 +370,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Cursor cursor = loader.loadInBackground();
         int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
         cursor.moveToFirst();
+        Log.w("changtoUri",cursor.getString(column_index));
         return cursor.getString(column_index);
     }
 
