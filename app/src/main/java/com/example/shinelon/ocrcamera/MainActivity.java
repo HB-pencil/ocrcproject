@@ -368,7 +368,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 注意，此方法用于将Uri转化为绝对路径，因为图库选择的uri和savedToPictures()返回的为媒体库的路径，如
-     * /external/images/media/7861
+     * /external/images/media/7861。对于content://media/有效，对于ACYION_PICK的7.0以后返回的provider
+     * 也有效，对于4.4以后的GET_CONTENT返回的document-provider则无效。
      * @param uri
      * @return
      */
