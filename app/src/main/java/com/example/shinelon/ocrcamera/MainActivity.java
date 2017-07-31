@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final static String USER_NAME = "username";
     private PermissionChecker mChecker;
     private AlertDialog mDialog;
+    private Handler handler;
 
 
     @Override
@@ -77,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mRecognizeButton = (ImageButton) findViewById(R.id.recognize_bt);
         mChecker = new PermissionChecker();
 
+        handler = new Handler();
         mGPUImageView  = (GPUImageView) findViewById(R.id.image_photo);
         mCropButton.setEnabled(false);
         mRecognizeButton.setEnabled(false);
@@ -102,7 +105,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onError(OCRError error) {
                 error.printStackTrace();
-                Toast.makeText(MainActivity.this,"AK，SK方式获取token失败 " + error.getMessage(),Toast.LENGTH_SHORT).show();
+                final String message = error.getMessage();
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this,"AK，SK方式获取token失败 " + message,Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
 
         }, getApplicationContext(), "qsv0ZAOxsT7cy5eIE5t92IUN", "Kl3cv5v2FaHSaS8gUZu1a16Ny9LzTMXo");
