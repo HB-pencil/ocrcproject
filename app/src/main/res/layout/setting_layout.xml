@@ -38,7 +38,7 @@
         android:layout_marginTop="10dp"
         android:textColor="@color/white"
         android:textSize="15sp"
-        android:text="平台：Android4.0以上"
+        android:text="平台：Android4.3以上"
         android:layout_gravity="center_horizontal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
