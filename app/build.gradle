@@ -1,6 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        ocr_release {
+            keyAlias 'ocrkey'
+            keyPassword 'ocr123'
+            storeFile file('D:/javasoft/ASproject/ocrkeystore')
+            storePassword 'ocr123'
+        }
+    }
     compileSdkVersion 25
     buildToolsVersion "25.0.1"
     defaultConfig {
@@ -15,9 +23,11 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.ocr_release
+        }
+        debug {
         }
     }
-
 }
 repositories{
     flatDir{
