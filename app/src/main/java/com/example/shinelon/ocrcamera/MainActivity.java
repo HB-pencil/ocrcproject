@@ -344,7 +344,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //Bitmap bitmap = compressPhoto(uri);
             //mImageView.setImageBitmap(bitmap);
             try{
-                Thread.sleep(250);
+                Thread.sleep(300);
             }catch (Exception e){
                 e.printStackTrace();
             }

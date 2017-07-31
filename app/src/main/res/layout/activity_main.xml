@@ -33,7 +33,7 @@
                 android:layout_centerInParent="true"
                 android:scaleType="centerInside"
                 android:src="@drawable/gallery"
-                android:background="@color/black"
+                android:background="@drawable/button_item"
                 android:layout_alignParentTop="true"/>
             <TextView
                 android:layout_width="wrap_content"
@@ -57,7 +57,7 @@
                 android:layout_centerInParent="true"
                 android:scaleType="centerInside"
                 android:src="@drawable/camera"
-                android:background="@color/black"
+                android:background="@drawable/button_item"
                 android:layout_alignParentTop="true"/>
             <TextView
                 android:layout_width="wrap_content"
@@ -82,7 +82,7 @@
                 android:layout_centerInParent="true"
                 android:scaleType="centerInside"
                 android:src="@drawable/corp"
-                android:background="@color/black"
+                android:background="@drawable/button_item"
                 android:layout_alignParentTop="true"/>
             <TextView
                 android:layout_width="wrap_content"
@@ -107,7 +107,7 @@
                 android:layout_centerInParent="true"
                 android:scaleType="centerInside"
                 android:src="@drawable/send"
-                android:background="@color/black"
+                android:background="@drawable/button_item"
                 android:layout_alignParentTop="true"/>
             <TextView
                 android:layout_width="wrap_content"
