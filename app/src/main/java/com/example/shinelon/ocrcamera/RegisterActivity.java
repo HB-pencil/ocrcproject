@@ -1,6 +1,7 @@
 package com.example.shinelon.ocrcamera;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
@@ -72,7 +73,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                     String json ="{\"phone\":"+ mEditTextAccount.getText().toString() +"}";
                     RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                     Request request = new Request.Builder()
-                            .url("http://10.110.101.226:80/api/user/register/captcha")
+                            .url("http://119.29.193.41/api/user/register/captcha")
                             .post(body)
                             .build();
                     try {
@@ -177,7 +178,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                             + "\":\"" + code + "\",\"" + PASSWORD + "\":\"" + pass1 + "\"}" ;
                     RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                     final Request request = new Request.Builder()
-                            .url(" http://10.110.101.226:80/api/user/register")
+                            .url(" http://119.29.193.41/api/user/register")
                             .post(body)
                             .build();
                     try {
@@ -213,6 +214,15 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                                                 Toast.makeText(RegisterActivity.this, "注册成功！", Toast.LENGTH_SHORT).show();
                                             }
                                         });
+                                        Intent intent = new Intent(RegisterActivity.this,LoginActivity.class);
+                                        try {
+                                            Thread.sleep(500);
+                                        }catch (Exception e){
+                                            e.getMessage();
+                                        }
+
+                                        startActivity(intent);
+                                        finish();
                                     } else {
                                         Log.d("okhttp", "fail");
                                         new Handler(getMainLooper()).post(new Runnable() {

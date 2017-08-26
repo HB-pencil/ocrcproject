@@ -80,8 +80,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                  try{
-                     loginAccount();
-                     //checkLogin();
+                     checkLogin();
                  }catch (Exception e){
                      e.printStackTrace();
                  }
@@ -117,7 +116,7 @@ public class LoginActivity extends AppCompatActivity {
         if(!account.equals("")&&!password.equals("")){
             String json ="{\""+ PHONE + "\":\"" + account + "\",\"" + PASSWORD + "\":\"" + password + "\"}";
             RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
-            Request request = new Request.Builder().url("http://10.110.101.226:80/api/user/login").post(body).build();
+            Request request = new Request.Builder().url("http://119.29.193.41/api/user/login").post(body).build();
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {

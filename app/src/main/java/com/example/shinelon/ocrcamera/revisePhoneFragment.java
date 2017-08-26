@@ -56,7 +56,7 @@ public class revisePhoneFragment extends Fragment {
                    String json ="{\"oldphone\":\"" + mEditText2.getText().toString() +"\",\"phone\":\"" + mEditText1.getText().toString() +"\",\"password\":\"" + mEditText3.getText().toString() + "\"}";
                    RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                    final Request request = new Request.Builder()
-                           .url("http://10.110.101.226:80/api/user/phone/captcha")
+                           .url("http://119.29.193.41/api/user/phone/captcha")
                            .post(body)
                            .build();
                    client.newCall(request).enqueue(new Callback() {
@@ -121,7 +121,7 @@ public class revisePhoneFragment extends Fragment {
                     String json ="{\"oldphone\":\"" + mEditText2.getText().toString() + "\"}";
                     RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                     Request request = new Request.Builder()
-                            .url("http://10.110.101.226:80/api/user/phone/captcha")
+                            .url("http://119.29.193.41/api/user/phone/captcha")
                             .post(body)
                             .build();
                     try {

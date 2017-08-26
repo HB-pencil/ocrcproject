@@ -61,7 +61,7 @@ public class reviseKeyFragment extends Fragment {
                         String token = sp.getString("token","");
                         Log.d("userid + token",userid + token);
                         Request request = new Request.Builder()
-                                .url("http://10.110.101.226:80/api/user/"+ userid +"/password")
+                                .url("http://119.29.193.41/api/user/"+ userid +"/password")
                                 .addHeader("Authorization",token)
                                 .put(body)
                                 .build();

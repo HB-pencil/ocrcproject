@@ -118,14 +118,16 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
    public void sendimgFile (File imgFile) throws Exception{
        OkHttpClient client = new OkHttpClient();
        RequestBody body = new MultipartBody.Builder()
+               .setType(MultipartBody.FORM)
                .addPart(Headers.of("Content-Disposition","form-data;name=\""+USER_NAME+"\""),
                        RequestBody.create(null,UserInfoLab.getUserInfo().getName()))
                .addPart(Headers.of("Content-Disposition","form-data;name=\"picture\";filename=\""+ imgFile.getName() +"\""),
                        RequestBody.create(MediaType.parse("image/jpeg"),imgFile))
                .build();
        String userId = UserInfoLab.getUserInfo().getUserId();
-       Request request = new Request.Builder().url("http://10.110.101.226:80/api/user/"+ userId + "/picture")
+       Request request = new Request.Builder().url("http://119.29.193.41/api/user/"+ userId + "/picture")
                .post(body)
+               .header("Authorization",getToken())
                .addHeader("Authorization",getToken())
                .build();
        client.newCall(request).enqueue(new Callback() {
@@ -185,16 +187,19 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
     public void sendtxtFile (File txtFile) throws Exception {
         OkHttpClient client = new OkHttpClient();
         RequestBody body = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
                 .addPart(Headers.of("Content-Disposition", "form-data;name=\"" + USER_NAME + "\""),
                         RequestBody.create(null, UserInfoLab.getUserInfo().getName()))
                 .addPart(Headers.of("Content-Disposition", "form-data;name=\"txt\";filename=\"" + txtFile.getName() + "\""),
                         RequestBody.create(MediaType.parse("text/plain"), txtFile))
                 .build();
         String userId = UserInfoLab.getUserInfo().getUserId();
-        Request request = new Request.Builder().url("http://10.110.101.226:80/api/user/" + userId + "/txt")
-                .post(body)
+        Request request = new Request.Builder()
+                .url("http://119.29.193.41/api/user/" + userId + "/txt")
                 .addHeader("Authorization",getToken())
+                .post(body)
                 .build();
+        Log.e("Tokens:",getToken()+"");
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
