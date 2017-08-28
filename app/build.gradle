@@ -4,9 +4,9 @@ android {
     signingConfigs {
         ocr_release {
             keyAlias 'ocrkey'
-            keyPassword 'ocr123'
+            keyPassword 'hb266932'
             storeFile file('D:/javasoft/ASproject/ocrkeystore')
-            storePassword 'ocr123'
+            storePassword 'hb266932'
         }
     }
     compileSdkVersion 25

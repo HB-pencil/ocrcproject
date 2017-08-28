@@ -346,11 +346,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mGPUImageView.setFilter(new GPUImageSharpenFilter());
             //Bitmap bitmap = compressPhoto(uri);
             //mImageView.setImageBitmap(bitmap);
-            try{
-                Thread.sleep(300);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
+
             mGPUImageView.saveToPictures("ocrCamera", "capturedImage" + String.valueOf(new Date().getTime()) + "未识别.jpg", new GPUImageView.OnPictureSavedListener() {
                 @Override
                 public void onPictureSaved(Uri mUri) {
@@ -360,6 +356,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         imagePath = changeToUrl(mUri);
                         System.out.println("转换前uri、uri.getpath()和转换后   "+ mUri.toString()+ "   " + mUri.getPath()+ "     "+ imagePath);
                         Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,userName);
+                        try{
+                            Thread.sleep(500);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
                         startActivity(intent);
                     }
                 }
