@@ -20,6 +20,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -82,9 +83,9 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
         if(view.getId() == R.id.confirm_bt){
             String content = mEditText.getText().toString();
             String account = getIntent().getStringExtra(USER_NAME);
+            SimpleDateFormat sf = new SimpleDateFormat("yy-MM-dd HH:mm:ss");
             Calendar time = Calendar.getInstance();
-            String fileName = account + time.get(Calendar.YEAR) +"年"+(time.get(Calendar.MONTH)+1)+"月"+time.get(Calendar.DAY_OF_MONTH)+"号"
-                    + time.get(Calendar.HOUR_OF_DAY)+time.get(Calendar.MINUTE)+"分"+time.get(Calendar.SECOND) + "秒";
+            String fileName = account + "-"+ sf.format(time.getTime())+".txt";
             Log.d("文本文件名",fileName);
             file = fileName;
             try{
@@ -125,10 +126,10 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
                        RequestBody.create(MediaType.parse("image/jpeg"),imgFile))
                .build();
        String userId = UserInfoLab.getUserInfo().getUserId();
-       Request request = new Request.Builder().url("http://119.29.193.41/api/user/"+ userId + "/picture")
+       Request request = new Request.Builder()
+               .url("http://119.29.193.41/api/user/"+ userId + "/picture")
+               .addHeader("token",getToken())
                .post(body)
-               .header("Authorization",getToken())
-               .addHeader("Authorization",getToken())
                .build();
        client.newCall(request).enqueue(new Callback() {
            @Override
@@ -165,7 +166,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
                             new Handler(getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(SecondActivity.this, "发送失败，请稍后再试！", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(SecondActivity.this, "发送图片失败，请稍后再试！", Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }
@@ -196,7 +197,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
         String userId = UserInfoLab.getUserInfo().getUserId();
         Request request = new Request.Builder()
                 .url("http://119.29.193.41/api/user/" + userId + "/txt")
-                .addHeader("Authorization",getToken())
+                .addHeader("token",getToken())
                 .post(body)
                 .build();
         Log.e("Tokens:",getToken()+"");
@@ -236,7 +237,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
                         new Handler(getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(SecondActivity.this, "发送失败，请稍后再试！", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(SecondActivity.this, "发送文本失败，请稍后再试！", Toast.LENGTH_SHORT).show();
                             }
                         });
                     }

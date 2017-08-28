@@ -34,6 +34,7 @@ import com.baidu.ocr.sdk.OnResultListener;
 import com.baidu.ocr.sdk.exception.OCRError;
 import com.baidu.ocr.sdk.model.AccessToken;
 import com.example.shinelon.ocrcamera.helper.PermissionChecker;
+import com.example.shinelon.ocrcamera.helper.UserInfoLab;
 import com.example.shinelon.ocrcamera.helper.helperDialogFragment;
 
 import java.io.ByteArrayInputStream;
@@ -61,10 +62,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int CAMERA_CROP = 1;
     private static final int SELECT = 2;
     private GPUImageView mGPUImageView;
-    private final static String USER_NAME = "username";
     private PermissionChecker mChecker;
     private AlertDialog mDialog;
     private Handler handler;
+    private String userName;
 
 
     @Override
@@ -78,6 +79,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCropButton = (ImageButton) findViewById(R.id.corp_bt);
         mRecognizeButton = (ImageButton) findViewById(R.id.recognize_bt);
         mChecker = new PermissionChecker();
+
+        userName = UserInfoLab.getUserInfo().getPhone();
 
         handler = new Handler();
         mGPUImageView  = (GPUImageView) findViewById(R.id.image_photo);
@@ -219,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.recognize_bt:
                 Log.d("识别按钮",imagePath);
-                Intent intent = SecondActivity.newInstance(this,imagePath,USER_NAME);
+                Intent intent = SecondActivity.newInstance(this,imagePath,userName);
                 System.out.println("手动识别的图片路径为"+ imagePath);
                 startActivity(intent);
                 break;
@@ -356,7 +359,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Log.d("自动图片路径为", changeToUrl(mUri));
                         imagePath = changeToUrl(mUri);
                         System.out.println("转换前uri、uri.getpath()和转换后   "+ mUri.toString()+ "   " + mUri.getPath()+ "     "+ imagePath);
-                        Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,getIntent().getStringExtra(USER_NAME));
+                        Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,userName);
                         startActivity(intent);
                     }
                 }
