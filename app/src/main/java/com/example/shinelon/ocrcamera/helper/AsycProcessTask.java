@@ -82,7 +82,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
          * 要有足够长的时间等待ocr线程的完成！
          */
         try {
-            Thread.sleep(4000);
+            Thread.sleep(5000);
         }catch (Exception e){
             e.printStackTrace();
         }
