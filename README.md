@@ -1,2 +1,2 @@
 # ocrCamera
-Use ocr to recognise the txt`
+Use ocr to recognise image and transform into txt
