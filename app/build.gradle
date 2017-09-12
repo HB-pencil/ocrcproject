@@ -24,6 +24,8 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.ocr_release
+            zipAlignEnabled true
+
         }
         debug {
         }
@@ -40,6 +42,8 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.3'
+    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.3'
     compile 'com.android.support:appcompat-v7:25.3.0'
     compile 'junit:junit:4.12'
     compile 'jp.co.cyberagent.android.gpuimage:gpuimage-library:1.4.1'

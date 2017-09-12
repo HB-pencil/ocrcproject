@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:allowBackup="true"
+        android:name=".helper.CheckApplication"
         android:icon="@mipmap/icon"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/icon"
