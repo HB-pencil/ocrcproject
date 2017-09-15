@@ -13,6 +13,8 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,7 +51,9 @@ public class LoginActivity extends AppCompatActivity {
     private final static String USERNAME = "username";
     private final static String PASSWORD = "password";
     private final static String PHONE = "phone";
-    private Boolean result;
+    private JavaBean javaBean;
+    private CheckBox mSavedA;
+    private CheckBox mSavedP;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,6 +66,11 @@ public class LoginActivity extends AppCompatActivity {
         mLoginButton = (Button) findViewById(R.id.login_bt);
         mRegisterButton = (TextView) findViewById(R.id.register_t);
         mForgetButton = (TextView) findViewById(R.id.forget_t);
+        mSavedA = (CheckBox) findViewById(R.id.saveA);
+        mSavedP = (CheckBox) findViewById(R.id.saveP);
+
+        mLoginEdit.setText(getAccount());
+        mPassEdit.setText(getPass());
 
         mPassEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -79,8 +88,15 @@ public class LoginActivity extends AppCompatActivity {
         mLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                SharedPreferences mPreferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
                  try{
                      checkLogin();
+                     if(!mSavedA.isChecked()){
+                         mPreferences.edit().putString("saved_account","").apply();
+                     }
+                     if(!mSavedP.isChecked()){
+                         mPreferences.edit().putString("saved_pass","").apply();
+                     }
                  }catch (Exception e){
                      e.printStackTrace();
                  }
@@ -102,7 +118,59 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        mSavedA.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    String str = mLoginEdit.getText().toString();
+                    if(str.equals("")){
+                        Toast.makeText(LoginActivity.this,"请先输入账号",Toast.LENGTH_SHORT).show();
+                        mSavedA.setChecked(false);
+                    }else{
+                        preferences.edit().putString("saved_account",str).apply();
+                    }
+                }else{
+                    preferences.edit().putString("saved_account","").apply();
+                }
+            }
+        });
+        mSavedP.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    String str = mPassEdit.getText().toString();
+                    if(str.equals("")){
+                        Toast.makeText(LoginActivity.this,"请先输入密码",Toast.LENGTH_SHORT).show();
+                        mSavedP.setChecked(false);
+                    }else{
+                        preferences.edit().putString("saved_pass",str).apply();
+                    }
+                }else{
+                    preferences.edit().putString("saved_pass","").apply();
+                }
+            }
+        });
+
+
+
     }
+
+    /**
+     * 获取记住的信息
+     */
+    public String getAccount(){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        return preferences.getString("saved_account","");
+    }
+
+    public String getPass(){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        return preferences.getString("saved_pass","");
+    }
+
 
     /**
      * 验证登录信息
@@ -142,8 +210,8 @@ public class LoginActivity extends AppCompatActivity {
                         }catch (Exception e){
                             e.printStackTrace();
                         }
+                        parseUserInfo(str);
                         if(code.equals("200")){
-                            parseUserInfo(str);
                             Log.d("okhttp:",str);
                             mLoginButton.post(new ButtonPoster("登陆",mLoginButton,false));
                             loginAccount();
@@ -173,7 +241,7 @@ public class LoginActivity extends AppCompatActivity {
                         new Handler(getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(LoginActivity.this,"访问出错！",Toast.LENGTH_SHORT).show();
+                                Toast.makeText(LoginActivity.this,javaBean.getMessage(),Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -203,7 +271,7 @@ public class LoginActivity extends AppCompatActivity {
      * @param resultJson
      */
     public void parseUserInfo(String resultJson){
-        JavaBean javaBean = JSON.parseObject(resultJson,JavaBean.class);
+        javaBean = JSON.parseObject(resultJson,JavaBean.class);
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sp.edit();
         editor.putString("token",javaBean.getToken());
@@ -217,4 +285,16 @@ public class LoginActivity extends AppCompatActivity {
         Log.d("Javabean",javaBean.getToken());
         Log.d("UserInfo",UserInfoLab.getUserInfo().getName());
     }
+
+    /**
+     * 记住账号及密码功能
+     */
+    public void rememberAccount(){
+
+    }
+
+    public void rememberPassword(){
+
+    }
+
 }
