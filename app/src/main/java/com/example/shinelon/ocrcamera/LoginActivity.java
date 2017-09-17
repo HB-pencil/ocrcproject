@@ -71,14 +71,17 @@ public class LoginActivity extends AppCompatActivity {
 
         mLoginEdit.setText(getAccount());
         mPassEdit.setText(getPass());
+        mSavedA.setChecked(getCheckedA());
+        mSavedP.setChecked(getCheckedP());
 
         mPassEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if (i == EditorInfo.IME_ACTION_DONE ) {
-                    try {
+                    try{
                         checkLogin();
-                    } catch (Exception e) {
+                        doHandle();
+                    }catch (Exception e){
                         e.printStackTrace();
                     }
                 }
@@ -88,15 +91,9 @@ public class LoginActivity extends AppCompatActivity {
         mLoginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SharedPreferences mPreferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
                  try{
                      checkLogin();
-                     if(!mSavedA.isChecked()){
-                         mPreferences.edit().putString("saved_account","").apply();
-                     }
-                     if(!mSavedP.isChecked()){
-                         mPreferences.edit().putString("saved_pass","").apply();
-                     }
+                     doHandle();
                  }catch (Exception e){
                      e.printStackTrace();
                  }
@@ -148,8 +145,10 @@ public class LoginActivity extends AppCompatActivity {
                     }else{
                         preferences.edit().putString("saved_pass",str).apply();
                     }
+                    preferences.edit().putBoolean("isReP",true).apply();
                 }else{
                     preferences.edit().putString("saved_pass","").apply();
+                    preferences.edit().putBoolean("isReP",false).apply();
                 }
             }
         });
@@ -164,6 +163,16 @@ public class LoginActivity extends AppCompatActivity {
     public String getAccount(){
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         return preferences.getString("saved_account","");
+    }
+
+    public Boolean getCheckedA(){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        return preferences.getBoolean("isReA",false);
+    }
+
+    public Boolean getCheckedP(){
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        return preferences.getBoolean("isReP",false);
     }
 
     public String getPass(){
@@ -286,15 +295,29 @@ public class LoginActivity extends AppCompatActivity {
         Log.d("UserInfo",UserInfoLab.getUserInfo().getName());
     }
 
+
     /**
-     * 记住账号及密码功能
+     * 记住密码处理逻辑
      */
-    public void rememberAccount(){
-
-    }
-
-    public void rememberPassword(){
-
+    public void doHandle(){
+        SharedPreferences mPreferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
+        try{
+            checkLogin();
+            if(!mSavedA.isChecked()){
+                mPreferences.edit().putString("saved_account","").apply();
+                mPreferences.edit().putBoolean("isReA",false).apply();
+            }else {
+                mPreferences.edit().putBoolean("isReA",true).apply();
+            }
+            if(!mSavedP.isChecked()){
+                mPreferences.edit().putString("saved_pass","").apply();
+                mPreferences.edit().putBoolean("isReP",false).apply();
+            }else {
+                mPreferences.edit().putBoolean("isReP",true).apply();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 }

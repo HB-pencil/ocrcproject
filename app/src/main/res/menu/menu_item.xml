@@ -14,6 +14,14 @@
          android:title="关于"
          app:showAsAction="never"/>
      <item
+         android:id="@+id/upload_record"
+         android:title="上传记录"
+         app:showAsAction="never"/>
+     <item
+         android:id="@+id/check_update"
+         android:title="检查更新"
+         app:showAsAction="never"/>
+     <item
           android:id="@+id/exit_item"
           android:title="退出"
           app:showAsAction="never"/>

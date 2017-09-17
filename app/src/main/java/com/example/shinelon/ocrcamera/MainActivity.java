@@ -26,27 +26,39 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.alibaba.fastjson.JSON;
 import com.baidu.ocr.sdk.OCR;
 import com.baidu.ocr.sdk.OnResultListener;
 import com.baidu.ocr.sdk.exception.OCRError;
 import com.baidu.ocr.sdk.model.AccessToken;
+import com.example.shinelon.ocrcamera.helper.CheckHelper;
 import com.example.shinelon.ocrcamera.helper.PermissionChecker;
+import com.example.shinelon.ocrcamera.helper.UpdateInfo;
 import com.example.shinelon.ocrcamera.helper.UserInfoLab;
 import com.example.shinelon.ocrcamera.helper.helperDialogFragment;
+
+import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.Date;
 
 import jp.co.cyberagent.android.gpuimage.GPUImage;
 import jp.co.cyberagent.android.gpuimage.GPUImageSharpenFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageView;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
@@ -66,6 +78,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private AlertDialog mDialog;
     private Handler handler;
     private String userName;
+    private OkHttpClient mOkHttpClient;
+    private UpdateInfo info;
+    private Boolean isNewVersion = true;
+    public static String downloadUrl = "";
+
 
 
     @Override
@@ -92,6 +109,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCropButton.setOnClickListener(this);
         mRecognizeButton.setOnClickListener(this);
 
+        //check the latest available of the version
+        checkUpdate();
+
+        //overflow menu
+        setOverflowShowingAlways();
         //授权方式
         initAccessTokenWithAkSk();
     }
@@ -492,6 +514,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Intent i = new Intent(this,SettingActivity.class);
                 startActivity(i);
                 break;
+            case R.id.upload_record:
+                break;
+            case R.id.check_update:
+                checkUpdate();
+                if(isNewVersion){
+                    Toast.makeText(this,"当前版本已经是最新！",Toast.LENGTH_SHORT).show();
+                }
+                break;
             case R.id.exit_item:
                 finish();
                 break;
@@ -508,10 +538,91 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onKeyDown(keyCode,keyEvent);
     }
 
+    /**
+     * 总是从上面弹出菜单
+     */
+    public void setOverflowShowingAlways(){
+        try{
+            ViewConfiguration config = ViewConfiguration.get(this);
+            Field menuKeyFiled = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
+            menuKeyFiled.setAccessible(true);
+            menuKeyFiled.setBoolean(config,false);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 检查更新
+     */
+    public void checkUpdate(){
+        mOkHttpClient = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("http://119.29.193.41/api/app/update")
+                .build();
+        mOkHttpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                new Handler(MainActivity.this.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this, "连接服务器失败，请检查网络！", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if(response.isSuccessful()){
+                    String str = response.body().string();
+                    Log.e("str:",str + "");
+                    int code = 0;
+                    try{
+                        JSONObject jsonObject = new JSONObject(str);
+                        code = jsonObject.getInt("code");
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                    parseJson(str);
+                    if(code == 200){
+                        final CheckHelper helper = new CheckHelper(MainActivity.this,info);
+                        if(helper.hasNewVersion()){
+                            new Handler(getMainLooper()).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    helper.showDialog(MainActivity.this);
+                                }
+                            });
+                            isNewVersion = false;
+                        }else {
+                            isNewVersion = true;
+                        }
+                    }else{
+                        new Handler(getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MainActivity.this,info.getMessage(),Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    }
+
+    public void parseJson(String json){
+        info = JSON.parseObject(json, UpdateInfo.class);
+        downloadUrl = info.getData().getUpdateUrl();
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.e("错误：","!!!!!!!!!!");
     }
+
+
+
 }
 
