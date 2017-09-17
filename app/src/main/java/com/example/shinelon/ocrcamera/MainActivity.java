@@ -116,6 +116,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setOverflowShowingAlways();
         //授权方式
         initAccessTokenWithAkSk();
+
+        Log.d("ACTIVITY创建","activity创建");
     }
 
 
@@ -523,7 +525,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.exit_item:
-                finish();
+                System.exit(0);
                 break;
 
         }
@@ -617,9 +619,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        Log.e("错误：","onPause()");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.e("错误：","onStop()");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.e("错误：","onReume()");
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.e("错误：","!!!!!!!!!!");
+        Log.e("错误：","onDestroy()");
     }
 
 

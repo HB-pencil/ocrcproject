@@ -14,7 +14,8 @@
         android:roundIcon="@mipmap/icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity" android:configChanges="orientation|keyboardHidden|screenSize">
+        <activity android:name=".MainActivity" android:configChanges="orientation|keyboardHidden"
+            android:launchMode="singleTask">
         </activity>
 
         <activity android:name=".SecondActivity" android:parentActivityName=".MainActivity"
@@ -45,7 +46,6 @@
         </activity>
         <activity android:name=".SettingActivity" android:parentActivityName=".MainActivity"
             android:label="">
-
         </activity>
         
         <provider

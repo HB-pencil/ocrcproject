@@ -74,6 +74,8 @@ public class LoginActivity extends AppCompatActivity {
         mSavedA.setChecked(getCheckedA());
         mSavedP.setChecked(getCheckedP());
 
+        Log.d("我是onCreate()","调用");
+
         mPassEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
@@ -153,8 +155,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-
-
     }
 
     /**
@@ -222,12 +222,12 @@ public class LoginActivity extends AppCompatActivity {
                         parseUserInfo(str);
                         if(code.equals("200")){
                             Log.d("okhttp:",str);
-                            mLoginButton.post(new ButtonPoster("登陆",mLoginButton,false));
+                            mLoginButton.post(new ButtonPoster("登录",mLoginButton,false));
                             loginAccount();
                             new Handler(getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(LoginActivity.this, "登陆成功！", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(LoginActivity.this, "登录成功！", Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }else if(!mLoginEdit.getText().toString().equals("")&&!mPassEdit.getText().toString().equals("")){

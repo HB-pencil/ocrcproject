@@ -165,7 +165,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 String name = mEditTextName.getText().toString();
                 String pass1 = mEditTextPass1.getText().toString();
                 String pass2 = mEditTextPass2.getText().toString();
-                String code = mEditTextCode.getText().toString();
+                final String code = mEditTextCode.getText().toString();
 
                 Log.d("注册测试",account+name+pass1+code);
 
@@ -198,6 +198,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                             public void onResponse(Call call, Response response) throws IOException {
                                 if(response.isSuccessful()){
                                     String str = response.body().string();
+                                    Log.d("注册",str+"");
                                     String result="";
                                     try{
                                         JSONObject jsonObject = new JSONObject(str);
@@ -223,6 +224,13 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
                                         startActivity(intent);
                                         finish();
+                                    }else if(code.equals("400")){
+                                        new Handler(getMainLooper()).post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(RegisterActivity.this, "手机号已被使用！若被占用，请联系管理员!", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
                                     } else {
                                         Log.d("okhttp", "fail");
                                         new Handler(getMainLooper()).post(new Runnable() {

@@ -153,9 +153,10 @@ public class AsyncDownload extends AsyncTask<String,Long,Boolean> {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             Intent intent = new Intent(Intent.ACTION_VIEW);
-                            if(Build.VERSION.SDK_INT> Build.VERSION_CODES.N){
+                            if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.N){
                                 Uri mUri = FileProvider.getUriForFile(mContext,"com.example.shinelon.ocrcamera.ocrProvider",file);
                                 intent.setDataAndType(mUri,"application/vnd.android.package-archive");
+                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                             }else{
                                 intent.setDataAndType(Uri.fromFile(file),"application/vnd.android.package-archive");
                                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
