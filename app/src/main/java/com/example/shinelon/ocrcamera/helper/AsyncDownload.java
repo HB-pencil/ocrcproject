@@ -33,7 +33,6 @@ public class AsyncDownload extends AsyncTask<String,Long,Boolean> {
     Context mContext;
     Boolean result = true;
     float total;
-    float current;
     ProgressDialog mProgressDialog;
     File file;
 

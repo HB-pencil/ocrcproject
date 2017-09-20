@@ -47,7 +47,7 @@
         <activity android:name=".SettingActivity" android:parentActivityName=".MainActivity"
             android:label="">
         </activity>
-        
+        <activity android:name=".UploadRecordActivity" android:parentActivityName=".MainActivity"/>
         <provider
             android:authorities="com.example.shinelon.ocrcamera.ocrProvider"
             android:exported="false"

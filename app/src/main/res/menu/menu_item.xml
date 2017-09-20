@@ -11,11 +11,11 @@
          app:showAsAction="never"/>
      <item
          android:id="@+id/setting_item"
-         android:title="关于"
+         android:title="关于软件"
          app:showAsAction="never"/>
      <item
          android:id="@+id/upload_record"
-         android:title="上传记录"
+         android:title="文本记录"
          app:showAsAction="never"/>
      <item
          android:id="@+id/check_update"
@@ -23,6 +23,6 @@
          app:showAsAction="never"/>
      <item
           android:id="@+id/exit_item"
-          android:title="退出"
+          android:title="点击退出"
           app:showAsAction="never"/>
 </menu>

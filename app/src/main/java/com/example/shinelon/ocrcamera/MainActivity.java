@@ -1,6 +1,7 @@
 package com.example.shinelon.ocrcamera;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -82,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private UpdateInfo info;
     private Boolean isNewVersion = true;
     public static String downloadUrl = "";
+    private ProgressDialog mProgressDialog;
 
 
 
@@ -98,6 +100,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mChecker = new PermissionChecker();
 
         userName = UserInfoLab.getUserInfo().getPhone();
+
+        mProgressDialog = new ProgressDialog(this);
 
         handler = new Handler();
         mGPUImageView  = (GPUImageView) findViewById(R.id.image_photo);
@@ -513,10 +517,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(intent);
                 break;
             case R.id.setting_item:
-                Intent i = new Intent(this,SettingActivity.class);
-                startActivity(i);
+                Intent intent1 = new Intent(this,SettingActivity.class);
+                startActivity(intent1);
                 break;
             case R.id.upload_record:
+                mProgressDialog.setMessage("正在努力加载,请稍后");
+                mProgressDialog.setProgress(50);
+                mProgressDialog.setMax(100);
+                mProgressDialog.setCancelable(false);
+                mProgressDialog.show();
+                Intent intent2 = new Intent(this,UploadRecordActivity.class);
+                startActivity(intent2);
                 break;
             case R.id.check_update:
                 checkUpdate();
@@ -628,6 +639,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onStop() {
         super.onStop();
         Log.e("错误：","onStop()");
+        if(mProgressDialog.isShowing()){
+            mProgressDialog.dismiss();
+        }
     }
 
     @Override

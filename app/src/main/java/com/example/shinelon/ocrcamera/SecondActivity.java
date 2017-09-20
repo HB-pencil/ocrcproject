@@ -271,7 +271,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
         return super.onOptionsItemSelected(item);
     }
 
-    public String getToken(){
+    public  String getToken(){
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         String token = sp.getString("token","");
         Log.d("SecondActivity",token);
