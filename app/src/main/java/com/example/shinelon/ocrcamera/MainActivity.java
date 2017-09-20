@@ -521,13 +521,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(intent1);
                 break;
             case R.id.upload_record:
-                mProgressDialog.setMessage("正在努力加载,请稍后");
-                mProgressDialog.setProgress(50);
-                mProgressDialog.setMax(100);
+                mProgressDialog.setMessage("正在努力加载,请稍后");;
                 mProgressDialog.setCancelable(false);
                 mProgressDialog.show();
                 Intent intent2 = new Intent(this,UploadRecordActivity.class);
                 startActivity(intent2);
+                break;
+            case R.id.upload_image:
+                mProgressDialog.setMessage("正在努力加载,请稍后");
+                mProgressDialog.setCancelable(false);
+                mProgressDialog.show();
+                Intent intent3 = new Intent(this,UploadRecordImage.class);
+                startActivity(intent3);
                 break;
             case R.id.check_update:
                 checkUpdate();

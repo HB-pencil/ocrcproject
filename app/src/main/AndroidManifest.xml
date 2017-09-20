@@ -14,13 +14,11 @@
         android:roundIcon="@mipmap/icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity" android:configChanges="orientation|keyboardHidden"
-            android:launchMode="singleTask">
-        </activity>
 
+        <activity android:name=".MainActivity" android:configChanges="orientation|keyboardHidden"
+            android:launchMode="singleTask"/>
         <activity android:name=".SecondActivity" android:parentActivityName=".MainActivity"
-                  android:configChanges="orientation|keyboardHidden|screenSize">
-        </activity>
+                  android:configChanges="orientation|keyboardHidden|screenSize"/>
 
         <activity android:name=".SplashActivity">
             <intent-filter>
@@ -29,25 +27,16 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".LoginActivity">
-
-        </activity>
-        <activity android:name=".ForgetPassActicity" android:parentActivityName=".LoginActivity">
-
-        </activity>
-        <activity android:name=".RegisterActivity" android:parentActivityName=".LoginActivity">
-
-        </activity>
-        <activity android:name=".UserInfoActivity" android:parentActivityName=".MainActivity">
-
-        </activity>
-        <activity android:name=".ReviseActivity" android:parentActivityName=".UserInfoActivity">
-
-        </activity>
+        <activity android:name=".LoginActivity"/>
+        <activity android:name=".ForgetPassActicity" android:parentActivityName=".LoginActivity"/>
+        <activity android:name=".RegisterActivity" android:parentActivityName=".LoginActivity"/>
+        <activity android:name=".UserInfoActivity" android:parentActivityName=".MainActivity"/>
+        <activity android:name=".ReviseActivity" android:parentActivityName=".UserInfoActivity"/>
         <activity android:name=".SettingActivity" android:parentActivityName=".MainActivity"
-            android:label="">
-        </activity>
+            android:label=""/>
         <activity android:name=".UploadRecordActivity" android:parentActivityName=".MainActivity"/>
+        <activity android:name=".UploadRecordImage" android:parentActivityName=".MainActivity"/>
+
         <provider
             android:authorities="com.example.shinelon.ocrcamera.ocrProvider"
             android:exported="false"

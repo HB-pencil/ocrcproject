@@ -18,6 +18,10 @@
          android:title="文本记录"
          app:showAsAction="never"/>
      <item
+          android:id="@+id/upload_image"
+          android:title="图片记录"
+          app:showAsAction="never"/>
+     <item
          android:id="@+id/check_update"
          android:title="检查更新"
          app:showAsAction="never"/>
