@@ -52,13 +52,15 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:clipToPadding="true"
+        android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true">
         <TextView
-            android:id="@+id/upload_status"
+            android:id="@+id/upload_status_ima"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:textSize="12sp"
+            android:textStyle="bold"
             android:gravity="center"
             android:text="未下载"/>
         <RelativeLayout
@@ -68,30 +70,31 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center">
             <ImageView
-                android:id="@+id/image_status"
+                android:id="@+id/image_status_ima"
                 android:layout_centerInParent="true"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:scaleType="fitCenter"
                 android:layout_alignParentTop="true"/>
             <TextView
-                android:id="@+id/tips"
-                android:layout_below="@+id/image_status"
+                android:id="@+id/tips_ima"
+                android:layout_below="@+id/image_status_ima"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
+                android:textStyle="bold"
                 android:textSize="12sp"
-                android:text="点击下载"/>
+                android:text="点击下载"
+                android:layout_marginBottom="2dp"/>
             <TextView
                 android:id="@+id/total_size_ima"
-                android:layout_below="@+id/tips"
+                android:layout_below="@+id/tips_ima"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:gravity="center"
                 android:textSize="12sp"
                 tools:text="500KB"/>
-
         </RelativeLayout>
     </LinearLayout>
 

@@ -223,6 +223,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                                         }
 
                                         startActivity(intent);
+                                        overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                                         finish();
                                     }else if(code.equals("400")){
                                         new Handler(getMainLooper()).post(new Runnable() {

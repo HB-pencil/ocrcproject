@@ -216,6 +216,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     intent2.setAction(Intent.ACTION_PICK);
                     intent2.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     startActivityForResult(intent2,SELECT);
+                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
             case R.id.camera_bt:
                 //启动相机应用,获得一个File实例以及其所指向的抽象路径
@@ -247,12 +248,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Intent intent3 = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 intent3.putExtra(MediaStore.EXTRA_OUTPUT,mUri);
                 startActivityForResult(intent3,REQUEST_CAMERA);
+                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
             case R.id.recognize_bt:
                 Log.d("识别按钮",imagePath);
                 Intent intent = SecondActivity.newInstance(this,imagePath,userName);
                 System.out.println("手动识别的图片路径为"+ imagePath);
                 startActivity(intent);
+                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
             case R.id.corp_bt:
                 //从原来路径中裁剪照片
@@ -332,6 +335,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         startActivityForResult(intent,CAMERA_CROP);
+        overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
         mCropButton.setEnabled(true);
         mRecognizeButton.setEnabled(true);
     }
@@ -390,6 +394,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             e.printStackTrace();
                         }
                         startActivity(intent);
+                        overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);;
                     }
                 }
             });
@@ -515,10 +520,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.info_item:
                 Intent intent = new Intent(this,UserInfoActivity.class);
                 startActivity(intent);
+                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
             case R.id.setting_item:
                 Intent intent1 = new Intent(this,SettingActivity.class);
                 startActivity(intent1);
+                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
             case R.id.upload_record:
                 mProgressDialog.setMessage("正在努力加载,请稍后");;
@@ -526,6 +533,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mProgressDialog.show();
                 Intent intent2 = new Intent(this,UploadRecordActivity.class);
                 startActivity(intent2);
+                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
             case R.id.upload_image:
                 mProgressDialog.setMessage("正在努力加载,请稍后");
@@ -533,6 +541,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mProgressDialog.show();
                 Intent intent3 = new Intent(this,UploadRecordImage.class);
                 startActivity(intent3);
+                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
             case R.id.check_update:
                 checkUpdate();

@@ -199,9 +199,9 @@ public class UploadRecordImage extends AppCompatActivity{
             super(view);
             imaName = (TextView) view.findViewById(R.id.ima_name);
             imaUpload = (TextView) view.findViewById(R.id.ima_time);
-            uploadStatus = (TextView) view.findViewById(R.id.upload_status);
-            imageType = (ImageView) view.findViewById(R.id.image_status);
-            tipsText = (TextView) view.findViewById(R.id.tips);
+            uploadStatus = (TextView) view.findViewById(R.id.upload_status_ima);
+            imageType = (ImageView) view.findViewById(R.id.image_status_ima);
+            tipsText = (TextView) view.findViewById(R.id.tips_ima);
             totalSize = (TextView) view.findViewById(R.id.total_size_ima);
             mRelativeLayout = (RelativeLayout) view.findViewById(R.id.download_status_ima);
             mRelativeLayout.setOnClickListener(this);

@@ -40,11 +40,13 @@ public class UserInfoActivity extends AppCompatActivity implements View.OnClickL
                 Intent i = new Intent(this,ReviseActivity.class);
                 i.putExtra("mark",revisePhoneBt.getText().toString());
                 startActivity(i);
+                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
             case R.id.revise_key:
                 Intent o = new Intent(this,ReviseActivity.class);
                 o.putExtra("mark",reviseKeyBt.getText().toString());
                 startActivity(o);
+                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
         }
     }
