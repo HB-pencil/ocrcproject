@@ -148,9 +148,6 @@ public class UploadRecordImage extends AppCompatActivity{
             if(viewType == TYPE_NORMAL){
                 View view = getLayoutInflater().inflate(R.layout.list_view_ima,parent,false);
                 return new CustomViewHolder(view);
-            }else if(viewType == TYPE_FOOT){
-                View view = getLayoutInflater().inflate(R.layout.list_more,parent,false);
-                return new FootViewHolder(view);
             }else {
                 View view = getLayoutInflater().inflate(R.layout.list_more_empty,parent,false);
                 return new EmptyViewHolder(view);
@@ -187,7 +184,7 @@ public class UploadRecordImage extends AppCompatActivity{
         }
     }
 
-    private class CustomViewHolder extends  RecyclerView.ViewHolder implements View.OnClickListener{
+    private class CustomViewHolder extends  RecyclerView.ViewHolder implements View.OnClickListener {
         TextView imaName;
         TextView imaUpload;
         TextView uploadStatus;
@@ -195,7 +192,8 @@ public class UploadRecordImage extends AppCompatActivity{
         TextView tipsText;
         TextView totalSize;
         RelativeLayout mRelativeLayout;
-        CustomViewHolder(View view){
+
+        CustomViewHolder(View view) {
             super(view);
             imaName = (TextView) view.findViewById(R.id.ima_name);
             imaUpload = (TextView) view.findViewById(R.id.ima_time);
@@ -208,16 +206,12 @@ public class UploadRecordImage extends AppCompatActivity{
         }
 
         @Override
-        public void onClick(View view){
-            Toast.makeText(UploadRecordImage.this,"点击了下载区域！",Toast.LENGTH_SHORT).show();
+        public void onClick(View view) {
+            Toast.makeText(UploadRecordImage.this, "点击了下载区域！", Toast.LENGTH_SHORT).show();
+
+
         }
 
-    }
-
-    private class FootViewHolder extends RecyclerView.ViewHolder{
-        FootViewHolder(View view){
-            super(view);
-        }
     }
 
     private class EmptyViewHolder extends RecyclerView.ViewHolder{

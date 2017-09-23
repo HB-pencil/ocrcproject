@@ -81,8 +81,7 @@ public class LoginActivity extends AppCompatActivity {
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if (i == EditorInfo.IME_ACTION_DONE ) {
                     try{
-                        checkLogin();
-                        doHandle();
+                       doHandle();
                     }catch (Exception e){
                         e.printStackTrace();
                     }
@@ -94,7 +93,6 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                  try{
-                     checkLogin();
                      doHandle();
                  }catch (Exception e){
                      e.printStackTrace();
@@ -211,19 +209,19 @@ public class LoginActivity extends AppCompatActivity {
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     if(response.isSuccessful()){
-                        String str = response.body().string();
+                        final String str = response.body().string();
                         Log.d("okhttp:",str);
                         Log.d("okhttp:",response.code()+"");
-                        String code="";
+                        int code = 0;
                         try{
                             JSONObject jsonObject = new JSONObject(str);
-                            code = jsonObject.getString("code");
+                            code = jsonObject.getInt("code");
                         }catch (Exception e){
                             e.printStackTrace();
                         }
-                        parseUserInfo(str);
-                        if(code.equals("200")){
+                        if(code == 200){
                             Log.d("okhttp:",str);
+                            parseUserInfo(str);
                             mLoginButton.post(new ButtonPoster("登录",mLoginButton,false));
                             loginAccount();
                             new Handler(getMainLooper()).post(new Runnable() {
@@ -232,19 +230,26 @@ public class LoginActivity extends AppCompatActivity {
                                     Toast.makeText(LoginActivity.this, "登录成功！", Toast.LENGTH_SHORT).show();
                                 }
                             });
-                        }else if(!mLoginEdit.getText().toString().equals("")&&!mPassEdit.getText().toString().equals("")){
+                        }else{
                             new Handler(getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
-                                    AlertDialog dialog = builder.setMessage("账号或密码错误，请重新输入或稍后再试！")
-                                            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    JSONObject jsonObject = null;
+                                    try{
+                                        jsonObject = new JSONObject(str);
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
+                                        AlertDialog dialog = builder.setMessage(jsonObject.getString("message")+"!")
+                                                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                                    @Override
+                                                    public void onClick(DialogInterface dialogInterface, int i) {
 
-                                                }
-                                            }).create();
-                                    dialog.show();
+                                                    }
+                                                }).create();
+                                        dialog.show();
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+
                                 }
                             });
                         }
@@ -303,6 +308,7 @@ public class LoginActivity extends AppCompatActivity {
      * 记住密码处理逻辑
      */
     public void doHandle(){
+
         SharedPreferences mPreferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
         try{
             checkLogin();

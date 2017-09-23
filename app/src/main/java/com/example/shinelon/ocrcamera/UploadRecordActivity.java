@@ -2,8 +2,6 @@ package com.example.shinelon.ocrcamera;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,26 +44,17 @@ import okhttp3.Response;
 public class UploadRecordActivity extends AppCompatActivity {
 
     RecyclerView recyclerView;
+    ProgressBar progressBar;
     TxtInfo txtInfo;
     OkHttpClient client;
     static final int TYPE_NORMAL = 0;
-    static final int TYPE_FOOT = 1;
-    static final int TYPE_EMPTY = 2;
+    static final int TYPE_EMPTY = 1;
     List<TxtInfo.DataBean.ListBean> txtList;
     Boolean hasNextPage;
     LinearLayoutManager manager;
     CustomAdapter mAdapter;
     int number = 1;
-    File mFile;
-
-
-    public void setFile(File file) {
-        mFile = file;
-    }
-
-    public File getFile() {
-        return mFile;
-    }
+    static String parentPath;
 
     @Override
     public void onCreate(Bundle savedInstanceSate) {
@@ -72,9 +62,12 @@ public class UploadRecordActivity extends AppCompatActivity {
         setContentView(R.layout.upload_record);
         client = new OkHttpClient();
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         manager = new LinearLayoutManager(this);
 
         recyclerView.setLayoutManager(manager);
+        File file = new File(Environment.getExternalStorageDirectory(),"ocrCamera");
+        parentPath = file.getAbsolutePath();
         setData(number);
         /**
          * 异步线程
@@ -93,29 +86,41 @@ public class UploadRecordActivity extends AppCompatActivity {
         mAdapter = new CustomAdapter(txtList);
         recyclerView.setAdapter(mAdapter);
 
+        doUpdate();//遍历list判断文件是否下载，是否要更新视图
+
+
         recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
+
                 if (manager.findLastVisibleItemPosition() + 1 == manager.getItemCount()) {
                     hasNextPage = txtInfo.getData().isHasNextPage();
                     Log.e("###", "" + hasNextPage);
                     if (hasNextPage) {
+                        progressBar.setVisibility(View.VISIBLE);
                         number++;
                         setData(number);
-                        try {
-                            Thread.sleep(2000);
-                        } catch (Exception e) {
+                        try{
+                            Thread.sleep(500);
+                        }catch (Exception e){
                             e.printStackTrace();
                         }
-                        txtList.addAll(txtInfo.getData().getList());
-                        mAdapter.notifyDataSetChanged();
-                    } else {
-                        Toast.makeText(UploadRecordActivity.this, "没有更多内容了！", Toast.LENGTH_SHORT).show();
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                txtList.addAll(txtInfo.getData().getList());
+                                mAdapter.notifyDataSetChanged();
+                                progressBar.setVisibility(View.GONE);
+                            }
+                        },2000);
+
                     }
                 }
             }
         });
+
+
     }
 
     @Override
@@ -169,9 +174,6 @@ public class UploadRecordActivity extends AppCompatActivity {
             if (viewType == TYPE_NORMAL) {
                 View view = getLayoutInflater().inflate(R.layout.list_view_txt, parent, false);
                 return new CustomViewHolder(view);
-            } else if (viewType == TYPE_FOOT) {
-                View view = getLayoutInflater().inflate(R.layout.list_more, parent, false);
-                return new FootViewHolder(view);
             } else {
                 View view = getLayoutInflater().inflate(R.layout.list_more_empty, parent, false);
                 return new EmptyViewHolder(view);
@@ -181,26 +183,48 @@ public class UploadRecordActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             if (getItemViewType(position) == TYPE_NORMAL) {
+
                 ((CustomViewHolder) holder).txtName.setText(txtList.get(position).getFileName());
                 ((CustomViewHolder) holder).txtUpload.setText(txtList.get(position).getCreateTime());
                 ((CustomViewHolder) holder).totalSize.setText(txtList.get(position).getFileSize());
-                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.download);
-                ((CustomViewHolder) holder).imageType.setImageBitmap(bitmap);
-            } else {
-                return;
+
+                String fileName = ((CustomViewHolder)holder).txtName.getText().toString();
+                File file = new File(parentPath,fileName);
+
+                if(file.exists()){
+
+                    ((CustomViewHolder) holder).uploadStatus_1.setVisibility(View.INVISIBLE);
+                    ((CustomViewHolder) holder).uploadStatus_2.setVisibility(View.VISIBLE);
+
+                    ((CustomViewHolder) holder).imageType_1.setVisibility(View.INVISIBLE);
+                    ((CustomViewHolder) holder).imageType_2.setVisibility(View.VISIBLE);
+
+                    ((CustomViewHolder) holder).tipsText_1.setVisibility(View.INVISIBLE);
+                    ((CustomViewHolder) holder).tipsText_2.setVisibility(View.VISIBLE);
+
+                }else {
+
+                    ((CustomViewHolder) holder).uploadStatus_1.setVisibility(View.VISIBLE);
+                    ((CustomViewHolder) holder).uploadStatus_2.setVisibility(View.INVISIBLE);
+
+                    ((CustomViewHolder) holder).imageType_1.setVisibility(View.VISIBLE);
+                    ((CustomViewHolder) holder).imageType_2.setVisibility(View.INVISIBLE);
+
+                    ((CustomViewHolder) holder).tipsText_1.setVisibility(View.VISIBLE);
+                    ((CustomViewHolder) holder).tipsText_2.setVisibility(View.INVISIBLE);
+
+                }
             }
         }
 
         @Override
         public int getItemCount() {
-            return listofTxt.size() + 2;
+            return listofTxt.size() + 1;
         }
 
         @Override
         public int getItemViewType(int position) {
-            if (position == getItemCount() - 2) {
-                return TYPE_FOOT;
-            } else if (position == getItemCount() - 1) {
+            if (position == getItemCount() - 1) {
                 return TYPE_EMPTY;
             } else {
                 return TYPE_NORMAL;
@@ -211,9 +235,12 @@ public class UploadRecordActivity extends AppCompatActivity {
     private class CustomViewHolder extends RecyclerView.ViewHolder {
         TextView txtName;
         TextView txtUpload;
-        TextView uploadStatus;
-        ImageView imageType;
-        TextView tipsText;
+        TextView uploadStatus_1;
+        ImageView imageType_1;
+        TextView tipsText_1;
+        TextView uploadStatus_2;
+        ImageView imageType_2;
+        TextView tipsText_2;
         TextView totalSize;
         RelativeLayout mRelativeLayout;
 
@@ -221,9 +248,12 @@ public class UploadRecordActivity extends AppCompatActivity {
             super(view);
             txtName = (TextView) view.findViewById(R.id.txt_name);
             txtUpload = (TextView) view.findViewById(R.id.txt_time);
-            uploadStatus = (TextView) view.findViewById(R.id.upload_status_txt);
-            imageType = (ImageView) view.findViewById(R.id.image_status_txt);
-            tipsText = (TextView) view.findViewById(R.id.tips_txt);
+            uploadStatus_1 = (TextView) view.findViewById(R.id.upload_status_txt_1);
+            imageType_1 = (ImageView) view.findViewById(R.id.image_status_txt_1);
+            tipsText_1 = (TextView) view.findViewById(R.id.tips_txt_1);
+            uploadStatus_2 = (TextView) view.findViewById(R.id.upload_status_txt_2);
+            imageType_2 = (ImageView) view.findViewById(R.id.image_status_txt_2);
+            tipsText_2 = (TextView) view.findViewById(R.id.tips_txt_2);
             totalSize = (TextView) view.findViewById(R.id.total_size_txt);
             mRelativeLayout = (RelativeLayout) view.findViewById(R.id.download_status_txt);
             mRelativeLayout.setOnClickListener(new ClickListener(view));
@@ -239,33 +269,39 @@ public class UploadRecordActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View view) {
+
                 int position = recyclerView.getChildAdapterPosition(itemView);
                 Log.e("位置", position + "");
-                Toast.makeText(UploadRecordActivity.this, "点击了下载区域！", Toast.LENGTH_SHORT).show();
                 Log.e("POSITION", position + " ");
+
                 downloadFile(position);
-                if (uploadStatus.getText().toString().equals("已下载")) {
+
+                if (uploadStatus_1.getVisibility() != View.VISIBLE) {
+
                     Intent intent = new Intent();
+                    TextView nameText = (TextView)itemView.findViewById(R.id.txt_name);
+                    String fileName = nameText.getText().toString();
+                    File file = new File(parentPath,fileName);
+
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        Uri uri = FileProvider.getUriForFile(UploadRecordActivity.this, getPackageName() + ".ocrProvider", getFile());
+
+                        Uri uri = FileProvider.getUriForFile(UploadRecordActivity.this, getPackageName() + ".ocrProvider", file);
+
                         intent.setAction(Intent.ACTION_VIEW);
                         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                         intent.setDataAndType(uri, "text/plain");
                     } else {
                         intent.setAction(Intent.ACTION_VIEW);
-                        intent.setDataAndType(Uri.fromFile(getFile()), "text/plain");
+                        intent.setDataAndType(Uri.fromFile(file), "text/plain");
                     }
+
                     startActivity(intent);
                     overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 }
             }
         }
     }
-        private class FootViewHolder extends RecyclerView.ViewHolder {
-            FootViewHolder(View view) {
-                super(view);
-            }
-        }
+
 
         private class EmptyViewHolder extends RecyclerView.ViewHolder {
             EmptyViewHolder(View view) {
@@ -311,7 +347,7 @@ public class UploadRecordActivity extends AppCompatActivity {
         /**
          * 写入磁盘
          */
-        public void writeToDisk(InputStream inputStream, int position) {
+        public void writeToDisk(InputStream inputStream, final int position) {
             FileOutputStream out = null;
             byte[] buf = new byte[1024];
             int length = -1;
@@ -329,19 +365,8 @@ public class UploadRecordActivity extends AppCompatActivity {
                     out.write(buf, 0, length);
                 }
                 out.close();
-                setFile(afile);
-                CustomViewHolder holder = (CustomViewHolder) recyclerView.getChildViewHolder(recyclerView.getChildAt(position));
+                updateView(position);
 
-                holder.uploadStatus.setText("已下载");
-                holder.uploadStatus.setTextColor(getResources().getColor(R.color.red));
-
-                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.open);
-                holder.imageType.setImageBitmap(bitmap);
-
-                holder.tipsText.setText("点击打开");
-                holder.tipsText.setTextColor(getResources().getColor(R.color.red));
-
-                holder.totalSize.setTextColor(getResources().getColor(R.color.red));
             } catch (Exception e) {
                 e.printStackTrace();
                 new Handler(getMainLooper()).post(new Runnable() {
@@ -353,5 +378,50 @@ public class UploadRecordActivity extends AppCompatActivity {
             }
         }
 
+    /**
+     * 视图更新行为封装
+      */
+    public void doUpdate(){
+        for(int i = 0;i<txtList.size();i++){
+            if(isFileDownloaded(i)){
+                updateView(i);
+            }
+        }
+     }
 
+    /**
+     * 检查文件是否已经下载
+     */
+     public Boolean isFileDownloaded(int index){
+         File file = new File(Environment.getExternalStorageDirectory(),"ocrCamera");
+         File afile = new File(file,txtList.get(index).getFileName());
+         if(afile.exists()){
+             return true;
+         }else {
+             return false;
+         }
+     }
+
+    /**
+     * 更新子View视图
+     */
+    public void updateView(final int position){
+        new Handler(getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                int realPosition = position - manager.findFirstCompletelyVisibleItemPosition();
+                CustomViewHolder holder = (CustomViewHolder) recyclerView.getChildViewHolder(recyclerView.getChildAt(realPosition));
+
+                holder.uploadStatus_1.setVisibility(View.INVISIBLE);
+                holder.uploadStatus_2.setVisibility(View.VISIBLE);
+
+                holder.imageType_1.setVisibility(View.INVISIBLE);
+                holder.imageType_2.setVisibility(View.VISIBLE);
+
+                holder.tipsText_1.setVisibility(View.INVISIBLE);
+                holder.tipsText_2.setVisibility(View.VISIBLE);
+            }
+        });
     }
+
+}
