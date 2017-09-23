@@ -3,30 +3,37 @@
       xmlns:app="http://schemas.android.com/apk/res-auto">
      <item
          android:id="@+id/help_item"
+         android:icon="@drawable/help"
          android:title="使用帮助"
-         app:showAsAction="never"/>
+         app:showAsAction="ifRoom"/>
      <item
          android:id="@+id/info_item"
+         android:icon="@drawable/user"
          android:title="个人信息"
          app:showAsAction="never"/>
      <item
          android:id="@+id/setting_item"
+         android:icon="@drawable/info"
          android:title="关于软件"
          app:showAsAction="never"/>
      <item
          android:id="@+id/upload_record"
+         android:icon="@drawable/txt"
          android:title="文本记录"
          app:showAsAction="never"/>
      <item
-          android:id="@+id/upload_image"
-          android:title="图片记录"
-          app:showAsAction="never"/>
+         android:id="@+id/upload_image"
+         android:icon="@drawable/img"
+         android:title="图片记录"
+         app:showAsAction="never"/>
      <item
          android:id="@+id/check_update"
+         android:icon="@drawable/update"
          android:title="检查更新"
          app:showAsAction="never"/>
      <item
-          android:id="@+id/exit_item"
-          android:title="点击退出"
-          app:showAsAction="never"/>
+         android:id="@+id/exit_item"
+         android:icon="@drawable/exit"
+         android:title="点击退出"
+         app:showAsAction="never"/>
 </menu>

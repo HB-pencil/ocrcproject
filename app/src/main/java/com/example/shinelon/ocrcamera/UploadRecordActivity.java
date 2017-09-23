@@ -60,15 +60,19 @@ public class UploadRecordActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceSate) {
         super.onCreate(savedInstanceSate);
         setContentView(R.layout.upload_record);
+
         client = new OkHttpClient();
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         manager = new LinearLayoutManager(this);
 
         recyclerView.setLayoutManager(manager);
+
         File file = new File(Environment.getExternalStorageDirectory(),"ocrCamera");
         parentPath = file.getAbsolutePath();
+
         setData(number);
+
         /**
          * 异步线程
          */
@@ -109,7 +113,6 @@ public class UploadRecordActivity extends AppCompatActivity {
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                txtList.addAll(txtInfo.getData().getList());
                                 mAdapter.notifyDataSetChanged();
                                 progressBar.setVisibility(View.GONE);
                             }
@@ -151,6 +154,7 @@ public class UploadRecordActivity extends AppCompatActivity {
                     try {
                         str = response.body().string();
                         txtInfo = JSONObject.parseObject(str, TxtInfo.class);
+                        txtList.addAll(txtInfo.getData().getList());//数据集必须及时更新，notify可以延迟
                         Log.e("******结果******", str);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -183,6 +187,7 @@ public class UploadRecordActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             if (getItemViewType(position) == TYPE_NORMAL) {
+                Log.e("TYPE",getItemViewType(position)+"");
 
                 ((CustomViewHolder) holder).txtName.setText(txtList.get(position).getFileName());
                 ((CustomViewHolder) holder).txtUpload.setText(txtList.get(position).getCreateTime());
@@ -271,10 +276,9 @@ public class UploadRecordActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 int position = recyclerView.getChildAdapterPosition(itemView);
-                Log.e("位置", position + "");
-                Log.e("POSITION", position + " ");
 
                 downloadFile(position);
+                Log.e("POSITION_CLICK",position+"");
 
                 if (uploadStatus_1.getVisibility() != View.VISIBLE) {
 
@@ -409,7 +413,7 @@ public class UploadRecordActivity extends AppCompatActivity {
         new Handler(getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-                int realPosition = position - manager.findFirstCompletelyVisibleItemPosition();
+                int realPosition = position - manager.findFirstVisibleItemPosition();
                 CustomViewHolder holder = (CustomViewHolder) recyclerView.getChildViewHolder(recyclerView.getChildAt(realPosition));
 
                 holder.uploadStatus_1.setVisibility(View.INVISIBLE);

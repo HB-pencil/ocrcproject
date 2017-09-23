@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 
 import com.example.shinelon.ocrcamera.MainActivity;
 
@@ -18,7 +19,20 @@ public class CheckHelper {
 
     private Context mActivity;
     private UpdateInfo mInfo;
+    private String mUpdateMessage;
 
+    public void setUpdateMessage(String updateMessage) {
+        if(updateMessage==null){
+            mUpdateMessage = "本次暂无更新内容详细信息！";
+        }else{
+            mUpdateMessage = updateMessage;
+        }
+
+    }
+
+    public String getUpdateMessage() {
+        return mUpdateMessage;
+    }
 
     public CheckHelper(){}
 
@@ -33,6 +47,8 @@ public class CheckHelper {
      */
     public boolean hasNewVersion(){
         int newVersion =  mInfo.getData().getLatestVersionCode();
+        String updateInfo = mInfo.getData().getUpgradeInfo();
+        Log.e("更新信息：",updateInfo + "");
         int oldVersion = 1000;
         try{
             PackageManager manager =  mActivity.getPackageManager();
@@ -42,6 +58,7 @@ public class CheckHelper {
             e.getMessage();
         }
         if(oldVersion<newVersion){
+            setUpdateMessage(updateInfo);
             return true;
         }else {
             return false;
@@ -54,7 +71,8 @@ public class CheckHelper {
     public void showDialog(final FragmentActivity activity){
         AlertDialog.Builder builder = new AlertDialog.Builder(activity)
                 .setCancelable(false)
-                .setMessage("检测到新版本，要更新吗？")
+                .setTitle("检测到新版本，要更新吗？")
+                .setMessage("本次更新内容："+getUpdateMessage())
                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                  @Override
                  public void onClick(DialogInterface dialog, int which) {

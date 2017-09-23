@@ -49,7 +49,7 @@ public class UpdateInfo {
         private int latestVersionCode;
         private String latestVersionName;
         private String updateUrl;
-        private String updateInfo;
+        private String upgradeInfo;
         private String updateTime;
 
         public void setAppName(String appName) {
@@ -72,9 +72,7 @@ public class UpdateInfo {
             this.updateUrl = updateUrl;
         }
 
-        public void setUpdateInfo(String updateInfo) {
-            this.updateInfo = updateInfo;
-        }
+
 
         public void setUpdateTime(String updateTime) {
             this.updateTime = updateTime;
@@ -100,8 +98,13 @@ public class UpdateInfo {
             return updateUrl;
         }
 
-        public String getUpdateInfo() {
-            return updateInfo;
+        public String getUpgradeInfo() {
+            return upgradeInfo;
+        }
+
+        public void setUpgradeInfo(String upgradeInfo) {
+
+            this.upgradeInfo = upgradeInfo;
         }
 
         public String getUpdateTime() {

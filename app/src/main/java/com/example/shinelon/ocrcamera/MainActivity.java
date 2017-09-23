@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Date;
 
 import jp.co.cyberagent.android.gpuimage.GPUImage;
@@ -123,7 +124,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Log.d("ACTIVITY创建","activity创建");
     }
-
 
     private void initAccessTokenWithAkSk() {
 
@@ -558,6 +558,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    public boolean onMenuOpened(int featureId, Menu menu) {
+        return super.onMenuOpened(featureId, menu);
+    }
+
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent keyEvent){
         if(keyCode == KeyEvent.KEYCODE_BACK){
             moveTaskToBack(true);
@@ -670,6 +675,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.e("错误：","onDestroy()");
     }
 
+
+    /**
+     * 强制显示overflow中的icon
+     * @param view
+     * @param menu  Menu为接口类
+     * @return
+     */
+    @Override
+    protected boolean onPrepareOptionsPanel(View view, Menu menu) {
+        if (menu != null) {
+            if(menu.getClass().getSimpleName().equals("MenuBuilder")) {
+                try { Method m = menu.getClass().getDeclaredMethod( "setOptionalIconsVisible", Boolean.TYPE);
+                    m.setAccessible(true); m.invoke(menu, true);
+                } catch (Exception e) {
+                    Log.e(getClass().getSimpleName(), "unable to set icons for overflow menu", e);
+                }
+            }
+        } return super.onPrepareOptionsPanel(view, menu);
+    }
 
 
 }

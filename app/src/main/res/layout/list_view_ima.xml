@@ -47,55 +47,93 @@
         </LinearLayout>
     </RelativeLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="80dp"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:clipToPadding="true"
-        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
         android:layout_alignParentEnd="true">
         <TextView
-            android:id="@+id/upload_status_ima"
+            android:id="@+id/upload_status_ima_1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
+            android:layout_centerHorizontal="true"
             android:textSize="12sp"
             android:textStyle="bold"
             android:gravity="center"
+            android:layout_marginBottom="2dp"
             android:text="未下载"/>
+        <TextView
+            android:id="@+id/upload_status_ima_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="2dp"
+            android:textColor="@color/red"
+            android:visibility="invisible"
+            android:text="已下载"/>
         <RelativeLayout
             android:id="@+id/download_status_ima"
             android:clickable="true"
+            android:layout_below="@+id/upload_status_ima_1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
             android:layout_gravity="center">
             <ImageView
-                android:id="@+id/image_status_ima"
+                android:id="@+id/image_status_ima_1"
                 android:layout_centerInParent="true"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_margin="2dp"
+                android:src="@drawable/download"
                 android:scaleType="fitCenter"
                 android:layout_alignParentTop="true"/>
+            <ImageView
+                android:id="@+id/image_status_ima_2"
+                android:layout_centerInParent="true"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                android:layout_margin="2dp"
+                android:src="@drawable/open_file"
+                android:scaleType="fitCenter"
+                android:visibility="invisible"
+                android:layout_alignParentTop="true"/>
             <TextView
-                android:id="@+id/tips_ima"
-                android:layout_below="@+id/image_status_ima"
+                android:id="@+id/tips_ima_1"
+                android:layout_below="@+id/image_status_ima_1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:textStyle="bold"
                 android:textSize="12sp"
-                android:text="点击下载"
-                android:layout_marginBottom="2dp"/>
+                android:textStyle="bold"
+                android:text="点击下载"/>
+            <TextView
+                android:id="@+id/tips_ima_2"
+                android:layout_below="@+id/image_status_ima_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="invisible"
+                android:textColor="@color/red"
+                android:text="点击打开"/>
             <TextView
                 android:id="@+id/total_size_ima"
-                android:layout_below="@+id/tips_ima"
+                android:layout_below="@+id/tips_ima_1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:gravity="center"
                 android:textSize="12sp"
                 tools:text="500KB"/>
+
         </RelativeLayout>
-    </LinearLayout>
+    </RelativeLayout>
 
 </RelativeLayout>
