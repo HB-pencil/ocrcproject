@@ -322,7 +322,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(uri,"image/*");
         Log.e("调用裁剪方法的Uri",uri.toString());
-        if (Build.VERSION.SDK_INT>= Build.VERSION_CODES.N){
+        //PICK原来6.0就失效了
+        if (Build.VERSION.SDK_INT>= Build.VERSION_CODES.M){
             if(uri.getAuthority().equals("media")){
                 intent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(mFile));
             }else{
