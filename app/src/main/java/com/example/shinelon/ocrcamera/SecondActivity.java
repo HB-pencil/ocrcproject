@@ -306,6 +306,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
                     _message = message;
                 }
 
+                @Override
                 public void run() {
                     mEditText.setText(_message);
                 }

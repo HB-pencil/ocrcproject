@@ -12,4 +12,7 @@
     <string name="using_tips_4">④相机对准目标内容使用自动聚焦功能</string>
     <string name="using_tips_5">⑤建议使用强冷色调滤镜</string>
     <string name="result_tip">请改正识别错误的文本并确认</string>
+    <string name="version_info">版本号：%1$s</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
 </resources>

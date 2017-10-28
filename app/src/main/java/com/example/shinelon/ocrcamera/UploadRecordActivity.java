@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -30,7 +31,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-
+import android.support.v7.widget.Toolbar;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -47,6 +48,8 @@ public class UploadRecordActivity extends AppCompatActivity {
     ProgressBar progressBar;
     TxtInfo txtInfo;
     OkHttpClient client;
+    Toolbar toolbar;
+    CollapsingToolbarLayout collapsingToolbarLayout;
     static final int TYPE_NORMAL = 0;
     static final int TYPE_EMPTY = 1;
     List<TxtInfo.DataBean.ListBean> txtList;
@@ -60,6 +63,14 @@ public class UploadRecordActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceSate) {
         super.onCreate(savedInstanceSate);
         setContentView(R.layout.upload_record);
+
+        toolbar = (Toolbar) findViewById(R.id.upload_bar);
+        toolbar.setTitleTextColor(getResources().getColor(R.color.white));
+        setSupportActionBar(toolbar);
+
+        collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.contentPanel);
+        collapsingToolbarLayout.setCollapsedTitleTextColor(getResources().getColor(R.color.white));
+        collapsingToolbarLayout.setExpandedTitleColor(getResources().getColor(R.color.white));
 
         client = new OkHttpClient();
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -136,9 +147,45 @@ public class UploadRecordActivity extends AppCompatActivity {
         super.onPause();
     }
 
+    /**
+     * 使用RxJava+Retrofit
+     * @param number
+     *
+    public void serData(int number){
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://119.29.193.41/api/user/")
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .build();
+        RetorfitRequest server = retrofit.create(RetorfitRequest.class);
+        server.getResult(getToken(),UserInfoLab.getUserInfo().getUserId(),"txt",number)
+                .subscribeOn(Schedulers.io())
+                .observerOn(Schedulers.io())
+                .subscribe(new Subscriber<TxtInfo>(){
+                    @Override
+                    public void onNext(TxtInfo info) {
+                        txtList.addAll(info.getData().getList());
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+
+                    }
+                });
+
+
+    }
+
+*/
+
+
     public void setData(int number) {
         final Request request = new Request.Builder()
-                .url("http://119.29.193.41/api/user/" + UserInfoLab.getUserInfo().getUserId() + "/txt/7/" + number)
+                .url("http://119.29.193.41/api/user/" + UserInfoLab.getUserInfo().getUserId() + "/txt/8/" + number)
                 .addHeader("token", getToken())
                 .build();
         client.newCall(request).enqueue(new Callback() {
@@ -399,11 +446,7 @@ public class UploadRecordActivity extends AppCompatActivity {
      public Boolean isFileDownloaded(int index){
          File file = new File(Environment.getExternalStorageDirectory(),"ocrCamera");
          File afile = new File(file,txtList.get(index).getFileName());
-         if(afile.exists()){
-             return true;
-         }else {
-             return false;
-         }
+         return afile.exists();
      }
 
     /**

@@ -185,7 +185,7 @@ public class ForgetPassActicity extends AppCompatActivity implements View.OnClic
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
-                                    if (result.equals("200")) {
+                                    if ("200".equals(result)) {
                                         Log.d("okhttp",str);
                                         Log.d("okhttp", "" + response.code());
                                         new Handler(getMainLooper()).post(new Runnable() {

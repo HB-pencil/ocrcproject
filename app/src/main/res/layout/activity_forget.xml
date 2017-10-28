@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:background="@color/black"
+              android:background="@drawable/back"
               android:fitsSystemWindows="true"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
@@ -13,48 +13,51 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            style="@style/loginButton">
+            android:layout_margin="5dp">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="4dp"
                 android:textColor="@color/white"
                 android:gravity="center"
+                android:layout_gravity="center"
                 android:textSize="18sp"
-                android:text="用户名"/>
+                android:text="用户名:"/>
             <EditText
                 android:id="@+id/name_forget"
                 android:layout_width="250dp"
                 android:layout_height="45dp"
                 android:layout_margin="5dp"
-                android:background="@color/white"/>
+                android:textColor="@color/white"
+                android:hint="请输入注册名"
+                android:textColorHint="@color/white"/>
         </LinearLayout>
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            style="@style/loginButton">
+            android:layout_margin="5dp">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="4dp"
+                android:layout_gravity="center"
                 android:textColor="@color/white"
                 android:gravity="center"
                 android:textSize="18sp"
-                android:text="手机号"/>
+                android:text="手机号:"/>
             <EditText
                 android:id="@+id/phone_forget"
                 android:layout_width="250dp"
                 android:layout_height="45dp"
                 android:layout_margin="5dp"
-                android:background="@color/white"/>
+                android:textColor="@color/white"
+                android:hint="请填写手机号"
+                android:textColorHint="@color/white"/>
         </LinearLayout>
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            style="@style/loginButton">
+            android:layout_margin="5dp">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -62,19 +65,21 @@
                 android:textColor="@color/white"
                 android:gravity="center"
                 android:textSize="18sp"
-                android:text="验证码"/>
+                android:layout_gravity="center"
+                android:text="验证码:"/>
             <EditText
                 android:id="@+id/code_forget"
-                android:layout_width="100dp"
+                android:layout_width="110dp"
                 android:layout_height="45dp"
                 android:layout_margin="5dp"
-                android:background="@color/white"/>
+                android:textColor="@color/white"
+                android:hint="输入验证码"
+                android:textColorHint="@color/white"/>
         </LinearLayout>
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            style="@style/loginButton">
+            android:layout_margin="5dp">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -82,13 +87,16 @@
                 android:textColor="@color/white"
                 android:gravity="center"
                 android:textSize="18sp"
-                android:text="新密码"/>
+                android:layout_gravity="center"
+                android:text="新密码:"/>
             <EditText
                 android:id="@+id/pass_new"
                 android:layout_width="250dp"
                 android:layout_height="45dp"
                 android:layout_margin="5dp"
-                android:background="@color/white"/>
+                android:textColor="@color/white"
+                android:hint="新密码"
+                android:textColorHint="@color/white"/>
         </LinearLayout>
         <Button
             android:layout_width="match_parent"

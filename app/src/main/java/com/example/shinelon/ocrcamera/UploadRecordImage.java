@@ -30,7 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-
+import android.support.v7.widget.Toolbar;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -43,6 +43,7 @@ import okhttp3.Response;
 
 public class UploadRecordImage extends AppCompatActivity{
 
+    Toolbar toolbar;
     RecyclerView recyclerView;
     ImaInfo imaInfo;
     OkHttpClient client;
@@ -60,8 +61,11 @@ public class UploadRecordImage extends AppCompatActivity{
     @Override
     public void onCreate(Bundle savedInstanceSate) {
         super.onCreate(savedInstanceSate);
-
         setContentView(R.layout.upload_record);
+
+        toolbar = (Toolbar) findViewById(R.id.upload_bar);
+        setSupportActionBar(toolbar);
+
         client = new OkHttpClient();
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         manager = new LinearLayoutManager(this);
@@ -153,7 +157,7 @@ public class UploadRecordImage extends AppCompatActivity{
 
     public void setData(int number){
         final Request request = new Request.Builder()
-                .url("http://119.29.193.41:80/api/user/"+ UserInfoLab.getUserInfo().getUserId() +"/picture/7/"+ number)
+                .url("http://119.29.193.41:80/api/user/"+ UserInfoLab.getUserInfo().getUserId() +"/picture/8/"+ number)
                 .addHeader("token",getToken())
                 .build();
         client.newCall(request).enqueue(new Callback() {
@@ -407,11 +411,7 @@ public class UploadRecordImage extends AppCompatActivity{
     public Boolean isFileDownloaded(int index){
         File file = new File(Environment.getExternalStorageDirectory(),"ocrCamera");
         File afile = new File(file,imaList.get(index).getFileName());
-        if(afile.exists()){
-            return true;
-        }else {
-            return false;
-        }
+        return afile.exists();
     }
 
     /**

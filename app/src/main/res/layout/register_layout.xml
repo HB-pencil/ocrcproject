@@ -3,7 +3,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:fitsSystemWindows="true"
-                android:background="@color/black">
+                android:background="@drawable/back">
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -13,7 +13,6 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/loginButton"
             android:padding="5dp"
             android:layout_marginBottom="4dp">
             <TextView
@@ -26,7 +25,8 @@
                 android:id="@+id/phone_account"
                 android:layout_width="250dp"
                 android:layout_height="45dp"
-                android:background="@color/white"
+                android:textColor="@color/white"
+                android:textColorHint="@color/white"
                 android:textSize="15sp"
                 android:inputType="phone"
                 android:hint="请使用手机号码注册"/>
@@ -34,7 +34,6 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/loginButton"
             android:padding="5dp"
             android:layout_marginBottom="4dp">
             <TextView
@@ -47,7 +46,8 @@
                 android:id="@+id/name"
                 android:layout_width="250dp"
                 android:layout_height="45dp"
-                android:background="@color/white"
+                android:textColor="@color/white"
+                android:textColorHint="@color/white"
                 android:textSize="15sp"
                 android:inputType="text"
                 android:hint="请输入您的真实姓名！"/>
@@ -55,7 +55,6 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/loginButton"
             android:padding="5dp"
             android:layout_marginBottom="4dp">
             <TextView
@@ -68,7 +67,8 @@
                 android:id="@+id/password_1"
                 android:layout_width="250dp"
                 android:layout_height="45dp"
-                android:background="@color/white"
+                android:textColor="@color/white"
+                android:textColorHint="@color/white"
                 android:textSize="15sp"
                 android:inputType="textPassword"
                 android:hint="请输入注册密码！"/>
@@ -76,7 +76,6 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/loginButton"
             android:padding="5dp"
             android:layout_marginBottom="4dp">
             <TextView
@@ -89,7 +88,8 @@
                 android:id="@+id/password_2"
                 android:layout_width="250dp"
                 android:layout_height="45dp"
-                android:background="@color/white"
+                android:textColor="@color/white"
+                android:textColorHint="@color/white"
                 android:inputType="textPassword"
                 android:textSize="15sp"
                 android:hint="请再次输入注册密码确认！"/>
@@ -98,7 +98,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="left"
-            style="@style/loginButton"
             android:padding="5dp"
             android:layout_marginBottom="4dp">
             <TextView
@@ -111,7 +110,8 @@
                 android:id="@+id/check_code"
                 android:layout_width="100dp"
                 android:layout_height="45dp"
-                android:background="@color/white"
+                android:textColor="@color/white"
+                android:textColorHint="@color/white"
                 android:inputType="text"
                 android:textSize="15sp"
                 android:hint="请输入验证码！"/>

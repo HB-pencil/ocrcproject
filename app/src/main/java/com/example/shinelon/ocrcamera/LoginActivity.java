@@ -58,7 +58,6 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getSupportActionBar().hide();
         setContentView(R.layout.login_layout);
 
         mLoginEdit = (EditText) findViewById(R.id.login_et);

@@ -17,9 +17,13 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.FileProvider;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -29,8 +33,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
-
 import com.alibaba.fastjson.JSON;
 import com.baidu.ocr.sdk.OCR;
 import com.baidu.ocr.sdk.OnResultListener;
@@ -51,7 +55,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Date;
 
 import jp.co.cyberagent.android.gpuimage.GPUImage;
 import jp.co.cyberagent.android.gpuimage.GPUImageSharpenFilter;
@@ -61,9 +64,10 @@ import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import android.support.v7.widget.Toolbar;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener,NavigationView.OnNavigationItemSelectedListener{
     private ImageButton mGalleryButton;
     private ImageButton mCameraButton;
     private ImageButton mCropButton;
@@ -85,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Boolean isNewVersion = true;
     public static String downloadUrl = "";
     private ProgressDialog mProgressDialog;
-
+    private Toolbar toolbar;
 
 
     @Override
@@ -113,6 +117,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCameraButton.setOnClickListener(this);
         mCropButton.setOnClickListener(this);
         mRecognizeButton.setOnClickListener(this);
+
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,drawerLayout,toolbar,R.string.open,R.string.close);
+
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        View view =  navigationView.getHeaderView(0);
+        TextView mText = (TextView) view.findViewById(R.id.description);
+        mText.setText(UserInfoLab.getUserInfo().getName());
 
         //check the latest available of the version
         checkUpdate();
@@ -227,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                  *   mFile = new File(getExternalStorageDirectory(),filename);
                  *   至于getExternalFileDir顾名思义获取file的，即会随着app删除而删除
                  */
-                mFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),"capturedImage" + String.valueOf(new Date().getTime()) + ".jpg");
+                mFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),"capturedImage" + String.valueOf(System.currentTimeMillis() + ".jpg"));
                 if(!mFile.exists()){
                     try{
                         mFile.createNewFile();
@@ -380,7 +399,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //Bitmap bitmap = compressPhoto(uri);
             //mImageView.setImageBitmap(bitmap);
 
-            mGPUImageView.saveToPictures("ocrCamera", "capturedImage" + String.valueOf(new Date().getTime()) + "未识别.jpg", new GPUImageView.OnPictureSavedListener() {
+            mGPUImageView.saveToPictures("ocrCamera", "capturedImage" + String.valueOf(System.currentTimeMillis()) + "未识别.jpg", new GPUImageView.OnPictureSavedListener() {
                 @Override
                 public void onPictureSaved(Uri mUri) {
                     if(mUri != null){
@@ -395,7 +414,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             e.printStackTrace();
                         }
                         startActivity(intent);
-                        overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);;
+                        overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                     }
                 }
             });
@@ -518,32 +537,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 helperDialogFragment dialogFragment = new helperDialogFragment();
                 dialogFragment.show(manager,"使用技巧");
                 break;
-            case R.id.info_item:
-                Intent intent = new Intent(this,UserInfoActivity.class);
-                startActivity(intent);
-                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
-                break;
-            case R.id.setting_item:
-                Intent intent1 = new Intent(this,SettingActivity.class);
-                startActivity(intent1);
-                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
-                break;
-            case R.id.upload_record:
-                mProgressDialog.setMessage("正在努力加载,请稍后");;
-                mProgressDialog.setCancelable(false);
-                mProgressDialog.show();
-                Intent intent2 = new Intent(this,UploadRecordActivity.class);
-                startActivity(intent2);
-                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
-                break;
-            case R.id.upload_image:
-                mProgressDialog.setMessage("正在努力加载,请稍后");
-                mProgressDialog.setCancelable(false);
-                mProgressDialog.show();
-                Intent intent3 = new Intent(this,UploadRecordImage.class);
-                startActivity(intent3);
-                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
-                break;
             case R.id.check_update:
                 checkUpdate();
                 if(isNewVersion){
@@ -553,6 +546,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.exit_item:
                 System.exit(0);
                 break;
+            default:break;
 
         }
         return super.onContextItemSelected(menuItem);
@@ -583,6 +577,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        switch (id){
+            case  R.id.info_item:
+                Intent intent = new Intent(this,UserInfoActivity.class);
+                startActivity(intent);
+                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
+                break;
+            case R.id.upload_record:
+                mProgressDialog.setMessage("正在努力加载,请稍后");
+                mProgressDialog.setCancelable(false);
+                mProgressDialog.show();
+                Intent intent2 = new Intent(this,UploadRecordActivity.class);
+                startActivity(intent2);
+                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
+                break;
+            case R.id.upload_image:
+                mProgressDialog.setMessage("正在努力加载,请稍后");
+                mProgressDialog.setCancelable(false);
+                mProgressDialog.show();
+                Intent intent3 = new Intent(this,UploadRecordImage.class);
+                startActivity(intent3);
+                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
+                break;
+            case R.id.contact_us:
+                Uri uri = Uri.parse("mailto:hardblack@aliyun.com");
+                Intent intent4 = new Intent(Intent.ACTION_SENDTO,uri);
+                startActivity(intent4);
+                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
+                break;
+            case R.id.setting_item:
+                Intent intent1 = new Intent(this,SettingActivity.class);
+                startActivity(intent1);
+                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
+                break;
+            default:break;
+        }
+        return true;
     }
 
     /**
