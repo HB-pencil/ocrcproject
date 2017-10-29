@@ -27,7 +27,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -90,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static String downloadUrl = "";
     private ProgressDialog mProgressDialog;
     private Toolbar toolbar;
+    private DrawerLayout drawerLayout;
 
 
     @Override
@@ -117,6 +117,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCameraButton.setOnClickListener(this);
         mCropButton.setOnClickListener(this);
         mRecognizeButton.setOnClickListener(this);
+
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -557,12 +559,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onMenuOpened(featureId, menu);
     }
 
+
+
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent keyEvent){
-        if(keyCode == KeyEvent.KEYCODE_BACK){
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        } else {
             moveTaskToBack(true);
         }
-        return super.onKeyDown(keyCode,keyEvent);
     }
 
     /**

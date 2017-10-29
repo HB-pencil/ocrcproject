@@ -11,11 +11,11 @@ import android.view.WindowManager;
  */
 
 public class SplashActivity extends AppCompatActivity {
+
     @Override
     public void onCreate(Bundle savedInstanceBundle){
         super.onCreate(savedInstanceBundle);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getSupportActionBar().hide();
         setContentView(R.layout.splash_layout);
         new Handler().postDelayed(new Runnable() {
             @Override

@@ -7,28 +7,15 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
-
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:windowTranslucentStatus">true</item>
-        <item name="drawerArrowStyle">@style/DrawderArrowStyle</item>
-        <item name="actionOverflowButtonStyle">@style/overflowButton</item>
+    </style>
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-    </style>
-    
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light">
-        <item name="actionMenuTextColor">@color/white</item>
-    </style>
-    
-    <style name="DrawderArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">
-        <item name="spinBars">true</item>
-        <item name="color">@color/white</item>
-    </style>
 
-    <style name="titleColor">
-
-    </style>
 
     <style name="ConfirmButton" >
         <item name="android:background">@drawable/confirm_bt</item>

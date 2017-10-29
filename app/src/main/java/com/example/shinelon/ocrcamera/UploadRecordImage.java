@@ -157,7 +157,7 @@ public class UploadRecordImage extends AppCompatActivity{
 
     public void setData(int number){
         final Request request = new Request.Builder()
-                .url("http://119.29.193.41:80/api/user/"+ UserInfoLab.getUserInfo().getUserId() +"/picture/8/"+ number)
+                .url("http://119.29.193.41:80/api/user/"+ UserInfoLab.getUserInfo().getUserId() +"/picture/7/"+ number)
                 .addHeader("token",getToken())
                 .build();
         client.newCall(request).enqueue(new Callback() {

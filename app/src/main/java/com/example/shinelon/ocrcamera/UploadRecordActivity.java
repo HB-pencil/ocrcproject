@@ -65,12 +65,7 @@ public class UploadRecordActivity extends AppCompatActivity {
         setContentView(R.layout.upload_record);
 
         toolbar = (Toolbar) findViewById(R.id.upload_bar);
-        toolbar.setTitleTextColor(getResources().getColor(R.color.white));
         setSupportActionBar(toolbar);
-
-        collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.contentPanel);
-        collapsingToolbarLayout.setCollapsedTitleTextColor(getResources().getColor(R.color.white));
-        collapsingToolbarLayout.setExpandedTitleColor(getResources().getColor(R.color.white));
 
         client = new OkHttpClient();
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -185,7 +180,7 @@ public class UploadRecordActivity extends AppCompatActivity {
 
     public void setData(int number) {
         final Request request = new Request.Builder()
-                .url("http://119.29.193.41/api/user/" + UserInfoLab.getUserInfo().getUserId() + "/txt/8/" + number)
+                .url("http://119.29.193.41/api/user/" + UserInfoLab.getUserInfo().getUserId() + "/txt/7/" + number)
                 .addHeader("token", getToken())
                 .build();
         client.newCall(request).enqueue(new Callback() {
@@ -458,7 +453,7 @@ public class UploadRecordActivity extends AppCompatActivity {
             public void run() {
                 int realPosition = position - manager.findFirstVisibleItemPosition();
                 CustomViewHolder holder = (CustomViewHolder) recyclerView.getChildViewHolder(recyclerView.getChildAt(realPosition));
-
+                Log.e("holder",""+(holder==null));
                 holder.uploadStatus_1.setVisibility(View.INVISIBLE);
                 holder.uploadStatus_2.setVisibility(View.VISIBLE);
 

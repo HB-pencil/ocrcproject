@@ -14,21 +14,18 @@
         android:roundIcon="@mipmap/icon"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
+        <activity android:name=".SplashActivity" android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action  android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
         <activity android:name=".MainActivity" android:configChanges="orientation|keyboardHidden"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar"
             android:label="@string/app_name"/>
         <activity android:name=".SecondActivity" android:parentActivityName=".MainActivity"
                   android:configChanges="orientation|keyboardHidden|screenSize"/>
-
-        <activity android:name=".SplashActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
-
         <activity android:name=".LoginActivity" android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:name=".ForgetPassActicity" android:parentActivityName=".LoginActivity"/>
         <activity android:name=".RegisterActivity" android:parentActivityName=".LoginActivity"/>
@@ -38,10 +35,8 @@
             android:label=""/>
         <activity android:name=".UploadRecordActivity" android:label="上传记录" android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity android:name=".UploadRecordImage" android:label="上传记录" android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <provider
             android:authorities="com.example.shinelon.ocrcamera.ocrProvider"
             android:exported="false"
@@ -51,7 +46,5 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/paths_file"/>
         </provider>
-
     </application>
-
 </manifest>
