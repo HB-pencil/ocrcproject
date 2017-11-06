@@ -1,7 +1,6 @@
 package com.example.shinelon.ocrcamera.helper;
 
-import okhttp3.ResponseBody;
-import retrofit2.Call;
+import io.reactivex.Observable;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Path;
@@ -12,7 +11,15 @@ import retrofit2.http.Path;
  */
 
 public interface RetorfitRequest {
-    @GET("{userid/{type}/8/{number}")
-    Call<ResponseBody> getResult(@Header("token") String token, @Path("userid") String userid,
-                                 @Path("type") String type, @Path("number") int number);
+    /**
+     *
+     * @param token token
+     * @param userid 用户id
+     * @param type 文本/图片
+     * @param number 每页数量
+     * @return 返回
+     */
+    @GET("{userid}/{type}/8/{number}")
+    Observable<TxtInfo> getResult(@Header("token") String token, @Path("userid") String userid,
+                                  @Path("type") String type, @Path("number") int number);
 }

@@ -2,6 +2,7 @@ package com.example.shinelon.ocrcamera;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import android.support.v7.widget.Toolbar;
 import okhttp3.Call;
@@ -56,7 +58,6 @@ public class UploadRecordImage extends AppCompatActivity{
     CustomAdapter mAdapter;
     int number = 1;
     static String parentPath;
-    ProgressBar progressBar;
 
     @Override
     public void onCreate(Bundle savedInstanceSate) {
@@ -72,11 +73,9 @@ public class UploadRecordImage extends AppCompatActivity{
 
         recyclerView.setLayoutManager(manager);
 
-        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-
         File file = new File(Environment.getExternalStorageDirectory(), "ocrCamera");
         parentPath = file.getAbsolutePath();
-
+        imaList = new ArrayList<>();
         setData(number);
         /**
          * 异步线程
@@ -88,56 +87,28 @@ public class UploadRecordImage extends AppCompatActivity{
         }
         if (imaInfo != null) {
             imaList = imaInfo.getData().getList();
+            hasNextPage = imaInfo.getData().isHasNextPage();
         } else {
             Toast.makeText(this, "获取出错，请稍后再试！", Toast.LENGTH_SHORT).show();
             finish();
         }
 
-        /**
-         * 异步线程
-         */
-        try {
-            Thread.sleep(2000);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (imaInfo != null) {
-            imaList = imaInfo.getData().getList();
-        } else {
-            Toast.makeText(this, "获取出错，请稍后再试！", Toast.LENGTH_SHORT).show();
-            finish();
-        }
+
 
         mAdapter = new CustomAdapter(imaList);
         recyclerView.setAdapter(mAdapter);
-
         doUpdate();//遍历list判断文件是否下载，是否要更新视图
 
-        recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-
                 if (manager.findLastVisibleItemPosition() + 1 == manager.getItemCount()) {
-                    hasNextPage = imaInfo.getData().isHasNextPage();
                     Log.e("###", "" + hasNextPage);
                     if (hasNextPage) {
-                        progressBar.setVisibility(View.VISIBLE);
+                        hasNextPage = false;
                         number++;
                         setData(number);
-                        try {
-                            Thread.sleep(500);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                mAdapter.notifyDataSetChanged();
-                                progressBar.setVisibility(View.GONE);
-                            }
-                        }, 2000);
-
                     }
                 }
             }
@@ -157,7 +128,7 @@ public class UploadRecordImage extends AppCompatActivity{
 
     public void setData(int number){
         final Request request = new Request.Builder()
-                .url("http://119.29.193.41:80/api/user/"+ UserInfoLab.getUserInfo().getUserId() +"/picture/7/"+ number)
+                .url("http://119.29.193.41:80/api/user/"+ UserInfoLab.getUserInfo().getUserId() +"/picture/7/" + number)
                 .addHeader("token",getToken())
                 .build();
         client.newCall(request).enqueue(new Callback() {
@@ -173,8 +144,11 @@ public class UploadRecordImage extends AppCompatActivity{
                     try {
                         str = response.body().string();
                         imaInfo = JSONObject.parseObject(str,ImaInfo.class);
+                        hasNextPage = imaInfo.getData().isHasNextPage();
                         imaList.addAll(imaInfo.getData().getList());
-                        Log.e("******结果******",str);
+                        Log.e("******结果******", str);
+                        Log.e("------结果------",hasNextPage+"" );
+                        notifyUpdateDone();
                     }catch (Exception e){
                         e.printStackTrace();
                     }
@@ -183,6 +157,11 @@ public class UploadRecordImage extends AppCompatActivity{
         });
 
     }
+
+    public void notifyUpdateDone(){
+        runOnUiThread(() ->  mAdapter.notifyDataSetChanged());
+    }
+
 
     private class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
         List<ImaInfo.DataBean.ListBean> listofIma;
@@ -347,14 +326,11 @@ public class UploadRecordImage extends AppCompatActivity{
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                if (response.code() == 200) {
                     if (response.isSuccessful()) {
                         if (response.code() == 200) {
                             writeToDisk(response.body().byteStream(), position);
                         }
                     }
-                }
-
             }
         });
         return isSuccess;

@@ -56,7 +56,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import jp.co.cyberagent.android.gpuimage.GPUImage;
+import jp.co.cyberagent.android.gpuimage.GPUImageLookupFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageSharpenFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSketchFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageView;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -191,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if( grantResults[i] == PackageManager.PERMISSION_DENIED){
                     /**  if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
                      *   shouldShowRequestPermissionRationale(permissions[i])};
-                     *   该方法第一次返回false,用户拒绝过返回true，用户拒绝过并点了不再提醒返回false
+                     *   该方法第一次返回false,用户第一次拒绝返回true，用户拒绝过并点了不再提醒返回false
                     **/
                         Log.w("回调","我是权限拒绝回调!");
                         showPermissionDialog();
@@ -733,7 +735,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.e(getClass().getSimpleName(), "unable to set icons for overflow menu", e);
                 }
             }
-        } return super.onPrepareOptionsPanel(view, menu);
+        } return true;
     }
 
 

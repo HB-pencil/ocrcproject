@@ -44,12 +44,4 @@
     <include
         layout="@layout/upload_record_main" />
 
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:layout_gravity="bottom|center"
-        android:layout_marginBottom="10dp"
-        android:visibility="invisible"/>
-
 </android.support.design.widget.CoordinatorLayout>

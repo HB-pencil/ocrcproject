@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -30,13 +29,21 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import android.support.v7.widget.Toolbar;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Created by Shinelon on 2017/9/18.
@@ -45,11 +52,9 @@ import okhttp3.Response;
 public class UploadRecordActivity extends AppCompatActivity {
 
     RecyclerView recyclerView;
-    ProgressBar progressBar;
     TxtInfo txtInfo;
     OkHttpClient client;
     Toolbar toolbar;
-    CollapsingToolbarLayout collapsingToolbarLayout;
     static final int TYPE_NORMAL = 0;
     static final int TYPE_EMPTY = 1;
     List<TxtInfo.DataBean.ListBean> txtList;
@@ -69,16 +74,15 @@ public class UploadRecordActivity extends AppCompatActivity {
 
         client = new OkHttpClient();
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+
         manager = new LinearLayoutManager(this);
 
         recyclerView.setLayoutManager(manager);
 
         File file = new File(Environment.getExternalStorageDirectory(),"ocrCamera");
         parentPath = file.getAbsolutePath();
-
+        txtList = new ArrayList<>();
         setData(number);
-
         /**
          * 异步线程
          */
@@ -89,41 +93,26 @@ public class UploadRecordActivity extends AppCompatActivity {
         }
         if (txtInfo != null) {
             txtList = txtInfo.getData().getList();
+            hasNextPage = txtInfo.getData().isHasNextPage();
         } else {
             Toast.makeText(this, "获取出错，请稍后再试！", Toast.LENGTH_SHORT).show();
             finish();
         }
+
         mAdapter = new CustomAdapter(txtList);
         recyclerView.setAdapter(mAdapter);
-
         doUpdate();//遍历list判断文件是否下载，是否要更新视图
 
-
-        recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-
                 if (manager.findLastVisibleItemPosition() + 1 == manager.getItemCount()) {
-                    hasNextPage = txtInfo.getData().isHasNextPage();
                     Log.e("###", "" + hasNextPage);
                     if (hasNextPage) {
-                        progressBar.setVisibility(View.VISIBLE);
+                        hasNextPage = false;
                         number++;
                         setData(number);
-                        try{
-                            Thread.sleep(500);
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                mAdapter.notifyDataSetChanged();
-                                progressBar.setVisibility(View.GONE);
-                            }
-                        },2000);
-
                     }
                 }
             }
@@ -149,33 +138,40 @@ public class UploadRecordActivity extends AppCompatActivity {
     public void serData(int number){
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://119.29.193.41/api/user/")
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
                 .build();
-        RetorfitRequest server = retrofit.create(RetorfitRequest.class);
-        server.getResult(getToken(),UserInfoLab.getUserInfo().getUserId(),"txt",number)
+        RetorfitRequest service = retrofit.create(RetorfitRequest.class);
+        service.getResult(getToken(),UserInfoLab.getUserInfo().getUserId(),"txt",number)
                 .subscribeOn(Schedulers.io())
-                .observerOn(Schedulers.io())
-                .subscribe(new Subscriber<TxtInfo>(){
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<TxtInfo>() {
                     @Override
-                    public void onNext(TxtInfo info) {
-                        txtList.addAll(info.getData().getList());
+                    public void onSubscribe(Disposable d) {
+                        Log.d("RXRETROFIT","第一");
+                    }
+                    @Override
+                    public void onNext(TxtInfo txtInfo) {
+                        txtList.addAll(txtInfo.getData().getList());
+                        mAdapter.notifyDataSetChanged();
+                        progressBar.setVisibility(View.GONE);
+                        Log.d("RXRETROFIT",(txtList==null)+"");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        e.printStackTrace();
                     }
 
                     @Override
                     public void onComplete() {
-
-                    }
-
-                    @Override
-                    public void onError(Throwable t) {
-
+                        Log.d("RXRETROFIT","SUCCESS");
                     }
                 });
-
-
+        Log.d("serData","调用");
     }
 
-*/
+**/
 
 
     public void setData(int number) {
@@ -196,8 +192,11 @@ public class UploadRecordActivity extends AppCompatActivity {
                     try {
                         str = response.body().string();
                         txtInfo = JSONObject.parseObject(str, TxtInfo.class);
+                        hasNextPage = txtInfo.getData().isHasNextPage();
                         txtList.addAll(txtInfo.getData().getList());//数据集必须及时更新，notify可以延迟
                         Log.e("******结果******", str);
+                        Log.e("------结果------",hasNextPage+"" );
+                        notifyUpdateDone();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -205,6 +204,13 @@ public class UploadRecordActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    /**
+     * 观察者模式回调主线程更新
+     */
+    public void notifyUpdateDone(){
+        runOnUiThread(() ->  mAdapter.notifyDataSetChanged());
     }
 
     private class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -228,6 +234,7 @@ public class UploadRecordActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+
             if (getItemViewType(position) == TYPE_NORMAL) {
                 Log.e("TYPE",getItemViewType(position)+"");
 
@@ -350,9 +357,10 @@ public class UploadRecordActivity extends AppCompatActivity {
 
 
         private class EmptyViewHolder extends RecyclerView.ViewHolder {
-            EmptyViewHolder(View view) {
-                super(view);
+             EmptyViewHolder(View view) {
+                 super(view);
             }
+
         }
 
         public String getToken() {
