@@ -10,8 +10,9 @@
     <string name="using_tips_2">②拍照后要对图片进行裁剪，确保与目标文字无关的内容文字不在图片内，并且文字截取必须尽可能完整</string>
     <string name="using_tips_3">③建议拍照距离在15ccm到30cm（以肉眼具体大概可见图片中文字为准）</string>
     <string name="using_tips_4">④相机对准目标内容使用自动聚焦功能</string>
-    <string name="using_tips_5">⑤建议使用强冷色调滤镜</string>
+    <string name="using_tips_5">⑤建议使用强冷色调滤镜,保持图片不翻转</string>
     <string name="result_tip">请改正识别错误的文本并确认</string>
+    <string name="result_tip1">注意红色部分可能存在部分错误</string>
     <string name="version_info">版本号：%1$s</string>
     <string name="open">Open</string>
     <string name="close">Close</string>

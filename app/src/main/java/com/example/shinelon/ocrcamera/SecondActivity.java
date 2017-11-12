@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -266,7 +267,9 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
         switch (item.getItemId()){
             case R.id.edit:
                 mEditText.setEnabled(true);
-                break;
+                    break;
+                default:
+                    break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -294,24 +297,21 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
                 }catch (Exception e){
                     e.printStackTrace();
                 }
-                if(text.length()<=1){
-                    Toast.makeText(this,"识别失败，请检查网络",Toast.LENGTH_SHORT).show();
-                }
                 System.out.println("结果"+text);
                 Log.d("结果：",text);
             }
 
             class MessagePoster implements Runnable {
                 public MessagePoster(String message) {
-                    _message = message;
+                    mMessage = message;
                 }
 
                 @Override
                 public void run() {
-                    mEditText.setText(_message);
+                    mEditText.setText(Html.fromHtml(mMessage));
                 }
 
-                private final String _message;
+                private final String mMessage;
             }
 
   }

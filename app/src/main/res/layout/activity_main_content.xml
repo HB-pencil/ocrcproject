@@ -13,12 +13,17 @@
         android:theme="@style/AppTheme.AppBarOverlay"
         app:popupTheme="@style/AppTheme.PopupOverlay" />
 
-    <jp.co.cyberagent.android.gpuimage.GPUImageView
-        android:id="@+id/image_photo"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="8"
-        android:layout_margin="40dp"/>
+        android:layout_weight="8">
+
+        <jp.co.cyberagent.android.gpuimage.GPUImageView
+            android:id="@+id/image_photo"
+            android:layout_width="300dp"
+            android:layout_height="340dp"
+            android:layout_centerInParent="true" />
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
