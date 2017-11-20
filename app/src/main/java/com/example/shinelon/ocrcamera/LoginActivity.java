@@ -50,7 +50,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextView mForgetButton;
     private final static String USERNAME = "username";
     private final static String PASSWORD = "password";
-    private final static String PHONE = "phone";
+    private final static String PHONE = "userPhone";
     private JavaBean javaBean;
     private CheckBox mSavedA;
     private CheckBox mSavedP;
@@ -99,13 +99,10 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        mRegisterButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        mRegisterButton.setOnClickListener((view)-> {
                 Intent intent = new Intent(LoginActivity.this,RegisterActivity.class);
                 startActivity(intent);
                 overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
-            }
         });
 
         mForgetButton.setOnClickListener(new View.OnClickListener() {
@@ -291,15 +288,18 @@ public class LoginActivity extends AppCompatActivity {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sp.edit();
         editor.putString("token",javaBean.getToken());
+        Log.w("javaBean",""+javaBean.getData());
+        editor.putString("userId",javaBean.getData().getUserId());
         editor.apply();
 
-        UserInfoLab.getUserInfo().setName(javaBean.getUser().getUsername());
-        UserInfoLab.getUserInfo().setPhone(javaBean.getUser().getPhone());
-        UserInfoLab.getUserInfo().setUserId(javaBean.getUser().getUserId());
+        UserInfoLab.getUserInfo().setName(javaBean.getData().getUsername());
+        UserInfoLab.getUserInfo().setPhone(javaBean.getData().getUserPhone());
+        UserInfoLab.getUserInfo().setUserId(javaBean.getData().getUserId());
+        UserInfoLab.getUserInfo().setEmail(javaBean.getData().getUserEmail());
 
-        Log.d("JavaBean",javaBean.getUser().getUsername());
+        Log.d("JavaBean",javaBean.getData().getUsername());
         Log.d("Javabean",javaBean.getToken());
-        Log.d("UserInfo",UserInfoLab.getUserInfo().getName());
+        Log.d("UserInfo-Email",UserInfoLab.getUserInfo().getEmail());
     }
 
 

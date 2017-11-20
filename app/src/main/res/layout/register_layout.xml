@@ -62,6 +62,27 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
                 android:layout_marginRight="5dp"
+                android:text="姓名:"/>
+            <EditText
+                android:id="@+id/email"
+                android:layout_width="250dp"
+                android:layout_height="45dp"
+                android:textColor="@color/white"
+                android:textColorHint="@color/white"
+                android:textSize="15sp"
+                android:inputType="text"
+                android:hint="请输入您的邮箱！"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:layout_marginBottom="4dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:layout_marginRight="5dp"
                 android:text="密码:"/>
             <EditText
                 android:id="@+id/password_1"

@@ -10,14 +10,14 @@ public class JavaBean {
      * code : 200
      * success : true
      * message : 登录成功
-     * user : {"userId":"1b8f1ce2-0d67-4b0f-a16f-be1d31f1832c","username":"carway","phone":"15692011935"}
+     * data : {"userId":"1b8f1ce2-0d67-4b0f-a16f-be1d31f1832c","username":"carway","phone":"15692011935"}
      * token : eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxYjhmMWNlMi0wZDY3LTRiMGYtYTE2Zi1iZTFkMzFmMTgzMmMiLCJleHAiOjE0OTkyMjYxMjksImlhdCI6MTQ5OTIxNTMyOX0.cEGsDFoM8HSGl5jeGC7fyU-mjfIqdxpQw3pqrCxHlQA
      */
 
     private int code;
     private boolean success;
     private String message;
-    private UserBean user;
+    private DataBean data;
     private String token;
 
     public int getCode() {
@@ -44,12 +44,12 @@ public class JavaBean {
         this.message = message;
     }
 
-    public UserBean getUser() {
-        return user;
+    public DataBean getData() {
+        return data;
     }
 
-    public void setUser(UserBean user) {
-        this.user = user;
+    public void setData(DataBean data) {
+        this.data = data;
     }
 
     public String getToken() {
@@ -60,16 +60,26 @@ public class JavaBean {
         this.token = token;
     }
 
-    public static class UserBean {
+    public static class DataBean {
         /**
          * userId : 1b8f1ce2-0d67-4b0f-a16f-be1d31f1832c
          * username : carway
-         * phone : 15692011935
-         */
-
+         * userPhone : 15692011935
+         * userEmail:hardblack@aliyun.com
+         **/
         private String userId;
         private String username;
-        private String phone;
+        private String userPhone;
+        private String userEmail;
+
+        public String getUserEmail() {
+            return userEmail;
+        }
+
+        public void setUserEmail(String userEmail) {
+
+            this.userEmail = userEmail;
+        }
 
         public String getUserId() {
             return userId;
@@ -87,12 +97,12 @@ public class JavaBean {
             this.username = username;
         }
 
-        public String getPhone() {
-            return phone;
+        public String getUserPhone() {
+            return userPhone;
         }
 
-        public void setPhone(String phone) {
-            this.phone = phone;
+        public void setUserPhone(String userPhone) {
+            this.userPhone = userPhone;
         }
     }
 }

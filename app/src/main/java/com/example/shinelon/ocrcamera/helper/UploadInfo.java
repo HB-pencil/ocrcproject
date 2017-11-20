@@ -6,11 +6,23 @@ import java.util.List;
  * Created by Shinelon on 2017/9/18.
  */
 
-public class ImaInfo {
+public class UploadInfo {
 
     /**
      * code : 200
-     * data : {"endRow":2,"firstPage":1,"hasNextPage":false,"hasPreviousPage":false,"isFirstPage":true,"isLastPage":true,"lastPage":1,"list":[{"fileId":1,"fileName":"1499217146958.jpg","fileSize":"85KB","fileType":"jpg","fileClass":0,"userId":"1b8f1ce2-0d67-4b0f-a16f-be1d31f1832c","createTime":"2017-07-05 09:12:26"},{"fileId":2,"fileName":"1499217462839.jpg","fileSize":"85KB","fileType":"jpg","fileClass":0,"userId":"1b8f1ce2-0d67-4b0f-a16f-be1d31f1832c","createTime":"2017-07-05 09:17:42"}],"navigatePages":8,"navigatepageNums":[1],"nextPage":0,"pageNum":1,"pageSize":5,"pages":1,"prePage":0,"size":2,"startRow":1,"total":2}
+     * data : {"endRow":2,"firstPage":1,"hasNextPage":false,"hasPreviousPage":false,"isFirstPage":true,"isLastPage":true,"lastPage":1,"list":[ {
+     "createTime": "2017-11-18 14:58:59",
+     "dpStatus": 0,
+     "fileClass": 2,
+     "fileId": 4,
+     "fileSize": "69KB",
+     "fileType": "png",
+     "originalFileName": "附件上传.png",
+     "ocrFileName": "ocr文件名1.txt",
+     "updateTime": "2017-11-18 14:58:59",
+     "userId": "de6a569614654a0a9e3bd4b54edb1104"
+     }
+     ]}
      * success : true
      * message : 分页获取上传的图片记录成功
      */
@@ -61,7 +73,7 @@ public class ImaInfo {
          * isFirstPage : true
          * isLastPage : true
          * lastPage : 1
-         * list : [{"fileId":1,"fileName":"1499217146958.jpg","fileSize":"85KB","fileType":"jpg","fileClass":0,"userId":"1b8f1ce2-0d67-4b0f-a16f-be1d31f1832c","createTime":"2017-07-05 09:12:26"},{"fileId":2,"fileName":"1499217462839.jpg","fileSize":"85KB","fileType":"jpg","fileClass":0,"userId":"1b8f1ce2-0d67-4b0f-a16f-be1d31f1832c","createTime":"2017-07-05 09:17:42"}]
+         * list :[{}]
          * navigatePages : 8
          * navigatepageNums : [1]
          * nextPage : 0
@@ -238,23 +250,17 @@ public class ImaInfo {
         }
 
         public static class ListBean {
-            /**
-             * fileId : 1
-             * fileName : 1499217146958.jpg
-             * fileSize : 85KB
-             * fileType : jpg
-             * fileClass : 0
-             * userId : 1b8f1ce2-0d67-4b0f-a16f-be1d31f1832c
-             * createTime : 2017-07-05 09:12:26
-             */
 
             private int fileId;
-            private String fileName;
+            private int dpStatus;
             private String fileSize;
             private String fileType;
             private int fileClass;
             private String userId;
             private String createTime;
+            private String updateTime;
+            private String originalFileName;
+            private String ocrFileName;
 
             public int getFileId() {
                 return fileId;
@@ -264,12 +270,43 @@ public class ImaInfo {
                 this.fileId = fileId;
             }
 
-            public String getFileName() {
-                return fileName;
+            public String getOcrFileName() {
+                return ocrFileName;
             }
 
-            public void setFileName(String fileName) {
-                this.fileName = fileName;
+            public String getOriginalFileName() {
+
+                return originalFileName;
+            }
+
+            public String getUpdateTime() {
+
+                return updateTime;
+            }
+
+            public int getDpStatus() {
+
+                return dpStatus;
+            }
+
+            public void setOcrFileName(String ocrFileName) {
+
+                this.ocrFileName = ocrFileName;
+            }
+
+            public void setOriginalFileName(String originalFileName) {
+
+                this.originalFileName = originalFileName;
+            }
+
+            public void setUpdateTime(String updateTime) {
+
+                this.updateTime = updateTime;
+            }
+
+            public void setDpStatus(int dpStatus) {
+
+                this.dpStatus = dpStatus;
             }
 
             public String getFileSize() {

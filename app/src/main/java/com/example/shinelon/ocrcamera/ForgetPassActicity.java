@@ -221,6 +221,7 @@ public class ForgetPassActicity extends AppCompatActivity implements View.OnClic
                     dialog.show(getSupportFragmentManager(),null);
                 }
                 break;
+                default:break;
         }
     }
 }

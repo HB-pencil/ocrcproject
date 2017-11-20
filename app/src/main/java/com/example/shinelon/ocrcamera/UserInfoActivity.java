@@ -1,13 +1,30 @@
 package com.example.shinelon.ocrcamera;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import com.alibaba.fastjson.JSON;
+import com.example.shinelon.ocrcamera.helper.JavaBean;
 import com.example.shinelon.ocrcamera.helper.UserInfoLab;
+
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Created by Shinelon on 2017/7/7.
@@ -17,28 +34,30 @@ public class UserInfoActivity extends AppCompatActivity implements View.OnClickL
 
     private EditText phoneInfo;
     private EditText nameInfo;
-    private Button revisePhoneBt;
+    private EditText userEmail;
+    private Button reviseInfoBt;
     private Button reviseKeyBt;
+    private OkHttpClient client;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_info);
         phoneInfo = (EditText) findViewById(R.id.phone_info);
         nameInfo = (EditText) findViewById(R.id.user_info);
-        revisePhoneBt = (Button) findViewById(R.id.revise_phone);
+        userEmail = (EditText) findViewById(R.id.user_email);
+        reviseInfoBt = (Button) findViewById(R.id.revise_phone);
         reviseKeyBt = (Button) findViewById(R.id.revise_key);
-        revisePhoneBt.setOnClickListener(this);
+        client = new OkHttpClient();
+        reviseInfoBt.setOnClickListener(this);
         reviseKeyBt.setOnClickListener(this);
 
-        phoneInfo.setText(UserInfoLab.getUserInfo().getPhone());
-        nameInfo.setText(UserInfoLab.getUserInfo().getName());
     }
     @Override
     public void onClick(View view){
         switch (view.getId()){
             case R.id.revise_phone:
                 Intent i = new Intent(this,ReviseActivity.class);
-                i.putExtra("mark",revisePhoneBt.getText().toString());
+                i.putExtra("mark",reviseInfoBt.getText().toString());
                 startActivity(i);
                 overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
@@ -48,6 +67,15 @@ public class UserInfoActivity extends AppCompatActivity implements View.OnClickL
                 startActivity(o);
                 overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
+                default:break;
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        phoneInfo.setText(UserInfoLab.getUserInfo().getPhone());
+        nameInfo.setText(UserInfoLab.getUserInfo().getName());
+        userEmail.setText(UserInfoLab.getUserInfo().getEmail());
     }
 }

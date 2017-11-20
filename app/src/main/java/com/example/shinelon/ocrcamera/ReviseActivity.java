@@ -19,13 +19,15 @@ public class ReviseActivity extends AppCompatActivity {
         FragmentManager fm = getSupportFragmentManager();
         fragment = fm.findFragmentById(R.id.fragment_container);
         if (fragment == null) {
-            if(getIntent().getStringExtra("mark").equals("修改手机")){
-                fragment = new revisePhoneFragment();
-            }else{
+            if(getIntent().getStringExtra("mark").equals("修改密码")){
                 fragment = new reviseKeyFragment();
+            }else {
+                fragment = new reviseInfoFragment();
             }
-            fm.beginTransaction().add(R.id.fragment_container,fragment)
-                    .commit();
         }
+        fm.beginTransaction()
+                .add(R.id.fragment_container,fragment)
+                .commit();
     }
+
 }

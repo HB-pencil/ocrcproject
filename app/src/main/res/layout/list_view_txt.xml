@@ -123,15 +123,6 @@
                 android:visibility="invisible"
                 android:textColor="@color/red"
                 android:text="点击打开"/>
-            <TextView
-                android:id="@+id/total_size_txt"
-                android:layout_below="@+id/tips_txt_1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:gravity="center"
-                android:textSize="12sp"
-                tools:text="500KB"/>
 
         </RelativeLayout>
     </RelativeLayout>

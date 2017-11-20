@@ -54,11 +54,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import jp.co.cyberagent.android.gpuimage.GPUImage;
-import jp.co.cyberagent.android.gpuimage.GPUImageLookupFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageSharpenFilter;
-import jp.co.cyberagent.android.gpuimage.GPUImageSketchFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageView;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -298,6 +298,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if(resultCode == RESULT_OK){
                     //启动裁剪功能，裁剪结束后覆盖原来图片
                     if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.N){
+                        //7.0转化为media uri
                         mUri = getImageContentUri(this,mFile);
                     }
                     crop(mUri);
@@ -345,19 +346,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(uri,"image/*");
         Log.e("调用裁剪方法的Uri",uri.toString());
-        //PICK原来6.0就失效了
+        //PICK原来6.0就失效了,putExtra裁剪完再存进去
         if (Build.VERSION.SDK_INT>= Build.VERSION_CODES.M){
-            if(uri.getAuthority().equals("media")){
+            /**
+             * 来自7.0以后拍照生成的fileprovider改变为content://格式，7.0以前存储有
+             * content://media 和 fileuri ，7.0以后只能用fileuri(Uri.fromfile)存进去
+             * */
+             if(uri.getAuthority().equals("media")){
                 intent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(mFile));
-            }else{
+            }
+            //来自6.0以后选择图库将provider转化为fileuri或者media类型
+            else{
                 intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
-                File file = new File(changeToUrl(uri));
+                File file = new File(changeToPath(uri));
                 intent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(file));
             }
+            //6.0选择图库以下使用传统的conten://media...
         }else{
             intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
         }
-
         startActivityForResult(intent,CAMERA_CROP);
         overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
         mCropButton.setEnabled(true);
@@ -365,7 +372,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     *7.0拍照后裁剪Uri
+     *7.0拍照后裁剪Uri，返回meida 类型uri
      */
     public Uri getImageContentUri(Context context, File imageFile) {
         String filePath = imageFile.getAbsolutePath();
@@ -403,13 +410,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //Bitmap bitmap = compressPhoto(uri);
             //mImageView.setImageBitmap(bitmap);
 
-            mGPUImageView.saveToPictures("ocrCamera", "capturedImage" + String.valueOf(System.currentTimeMillis()) + "未识别.jpg", new GPUImageView.OnPictureSavedListener() {
+            SimpleDateFormat sf = new SimpleDateFormat("yy-MM-dd HH:mm:ss");
+            Calendar time = Calendar.getInstance();
+            String fileName = UserInfoLab.getUserInfo().getPhone() + "-"+ sf.format(time.getTime())+".jpg";
+            mGPUImageView.saveToPictures("ocrCamera",fileName , new GPUImageView.OnPictureSavedListener() {
                 @Override
                 public void onPictureSaved(Uri mUri) {
                     if(mUri != null){
                         Toast.makeText(MainActivity.this, "图片已保存", Toast.LENGTH_SHORT).show();
-                        Log.d("自动图片路径为", changeToUrl(mUri));
-                        imagePath = changeToUrl(mUri);
+                        Log.d("自动图片路径为", changeToPath(mUri));
+                        imagePath = changeToPath(mUri);
                         System.out.println("转换前uri、uri.getpath()和转换后   "+ mUri.toString()+ "   " + mUri.getPath()+ "     "+ imagePath);
                         Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,userName);
                         try{
@@ -429,12 +439,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * 注意，此方法用于将Uri转化为绝对路径，因为图库选择的uri和savedToPictures()返回的为媒体库的路径，如
-     * /external/images/media/7861。对于content://media/有效，对于ACYION_PICK的7.0以后返回的provider
+     * /external/images/media/7861。对于content://media/有效，对于ACYION_PICK的6.0以后返回的provider
      * 也有效，对于4.4以后的GET_CONTENT返回的document-provider则无效。
      * @param uri
      * @return
      */
-    public String changeToUrl(Uri uri){
+    public String changeToPath(Uri uri){
         String[] proj = { MediaStore.Images.Media.DATA };
         //sdk<=11，cursor = manageQuery(uri,proj,null,null,null)
         CursorLoader loader = new CursorLoader(this,uri,proj,null,null,null);
@@ -547,6 +557,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(this,"当前版本已经是最新！",Toast.LENGTH_SHORT).show();
                 }
                 break;
+            case R.id.log_out:
+                Intent intent = new Intent(this,LoginActivity.class);
+                startActivity(intent);
+                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
+                finish();
             case R.id.exit_item:
                 System.exit(0);
                 break;
@@ -595,19 +610,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(intent);
                 overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
-            case R.id.upload_record:
-                mProgressDialog.setMessage("正在努力加载,请稍后");
-                mProgressDialog.setCancelable(false);
-                mProgressDialog.show();
-                Intent intent2 = new Intent(this,UploadRecordActivity.class);
-                startActivity(intent2);
-                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
-                break;
             case R.id.upload_image:
                 mProgressDialog.setMessage("正在努力加载,请稍后");
                 mProgressDialog.setCancelable(false);
                 mProgressDialog.show();
-                Intent intent3 = new Intent(this,UploadRecordImage.class);
+                Intent intent3 = new Intent(this,DowanloadRecordActivity.class);
                 startActivity(intent3);
                 overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;

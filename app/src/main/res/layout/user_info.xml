@@ -5,7 +5,7 @@
               android:layout_height="match_parent"
               android:fitsSystemWindows="true">
     <Button
-        android:text="修改手机"
+        android:text="修改信息"
         style="@style/loginButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -42,7 +42,7 @@
            android:layout_height="wrap_content">
            <TextView
                android:layout_width="0dp"
-               android:layout_weight="3"
+               android:layout_weight="2"
                android:textColor="@color/white"
                android:text="账号:"
                android:layout_height="45dp"
@@ -68,7 +68,7 @@
            android:layout_height="wrap_content">
            <TextView
                android:layout_width="0dp"
-               android:layout_weight="3"
+               android:layout_weight="2"
                android:textColor="@color/white"
                android:text="用户名:"
                android:layout_height="45dp"
@@ -77,6 +77,32 @@
                android:inputType="text"
                android:enabled="false"
                android:id="@+id/user_info"
+               android:textColor="@color/white"
+               android:layout_width="0dp"
+               android:layout_height="45dp"
+               android:layout_weight="6"
+               android:background="@null"/>
+       </LinearLayout>
+       <View
+           android:layout_height="1dp"
+           android:background="@color/white"
+           android:layout_width="match_parent"/>
+       <LinearLayout
+           android:layout_width="match_parent"
+           android:layout_marginLeft="40dp"
+           android:layout_marginRight="40dp"
+           android:layout_height="wrap_content">
+           <TextView
+               android:layout_width="0dp"
+               android:layout_weight="2"
+               android:textColor="@color/white"
+               android:text="邮箱:"
+               android:layout_height="45dp"
+               />
+           <EditText
+               android:inputType="textEmailAddress"
+               android:enabled="false"
+               android:id="@+id/user_email"
                android:textColor="@color/white"
                android:layout_width="0dp"
                android:layout_height="45dp"

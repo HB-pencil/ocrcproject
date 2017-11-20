@@ -18,6 +18,9 @@ import com.example.shinelon.ocrcamera.helper.messageDialog;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -38,6 +41,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     private EditText mEditTextPass1;
     private EditText mEditTextPass2;
     private EditText mEditTextCode;
+    private EditText mEditTextEmail;
 
     private Button mButtonCode;
     private Button mButtonDone;
@@ -46,6 +50,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     private final static String PASSWORD = "password";
     private final static String PHONE = "phone";
     private final static String CODE = "captcha";
+    private final static String EMAIL = "userEmail";
 
     @Override
     public void onCreate(Bundle bundle) {
@@ -57,6 +62,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         mEditTextPass2 = (EditText) findViewById(R.id.password_2);
         mEditTextName = (EditText) findViewById(R.id.name);
         mEditTextCode = (EditText) findViewById(R.id.check_code);
+        mEditTextEmail = (EditText) findViewById(R.id.email);
 
         mButtonCode = (Button) findViewById(R.id.get_code);
         mButtonDone = (Button) findViewById(R.id.register_done);
@@ -92,21 +98,20 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                             @Override
                             public void onResponse(Call call, Response response) throws IOException {
                                 if(response.isSuccessful()){
-                                    new Thread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            for (int i = 60; i > 0; i--) {
-                                                try {
-                                                    Thread.sleep(1000);
-                                                } catch (Exception e) {
-                                                    e.printStackTrace();
-                                                }
-                                                String str = i + "秒";
-                                                mButtonCode.post(new ButtonPoster(str,mButtonCode,false));
+                                    ExecutorService executorService = Executors.newSingleThreadExecutor();
+                                    executorService.submit(()->{
+                                        for (int i = 60; i > 0; i--) {
+                                            try {
+                                                Thread.sleep(1000);
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                             }
-                                            mButtonCode.post(new ButtonPoster("获取验证码",mButtonCode,true));
+                                            String str = i + "秒";
+                                            mButtonCode.post(new ButtonPoster(str,mButtonCode,false));
                                         }
-                                    }).start();
+                                        mButtonCode.post(new ButtonPoster("获取验证码",mButtonCode,true));
+                                    });
+                                    executorService.shutdown();
                                     String str = response.body().string();
                                     String result="";
                                     try{
@@ -165,17 +170,18 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 String name = mEditTextName.getText().toString();
                 String pass1 = mEditTextPass1.getText().toString();
                 String pass2 = mEditTextPass2.getText().toString();
-                final String code = mEditTextCode.getText().toString();
+                String code = mEditTextCode.getText().toString();
+                String email = mEditTextEmail.getText().toString();
 
                 Log.d("注册测试",account+name+pass1+code);
 
-                if (!account.equals("") &&!name.equals("") && !pass1.equals("") && !pass2.equals("") && !code.equals("")) {
+                if (!account.equals("") &&!name.equals("") && !pass1.equals("") && !pass2.equals("") && !code.equals("")&& !email.equals("")) {
                     Log.d("成功判别","Success!");
                     if (!pass1.equals(pass2)) {
                         Toast.makeText(this, "前后两次输入密码不一致！", Toast.LENGTH_SHORT);
                     }
                     String json ="{\"" + USERNAME + "\":\"" + name +"\",\""+PHONE +"\":\"" + account +"\",\"" + CODE
-                            + "\":\"" + code + "\",\"" + PASSWORD + "\":\"" + pass1 + "\"}" ;
+                            + "\":\"" + code + "\",\"" + PASSWORD + "\":\"" + pass1 + "\",\""+EMAIL+ "\":\"" + email +"\" }" ;
                     RequestBody body = RequestBody.create(MediaType.parse("application/json;charset=utf-8"),json);
                     final Request request = new Request.Builder()
                             .url(" http://119.29.193.41/api/user/register")
@@ -260,6 +266,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                     dialog.show(getSupportFragmentManager(), null);
                 }
                 break;
+                default:break;
         }
     }
 }
