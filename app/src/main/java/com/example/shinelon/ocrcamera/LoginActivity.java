@@ -74,7 +74,6 @@ public class LoginActivity extends AppCompatActivity {
         mSavedP.setChecked(getCheckedP());
 
         Log.d("我是onCreate()","调用");
-
         mPassEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
@@ -303,6 +302,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
+
     /**
      * 记住密码处理逻辑
      */
@@ -323,6 +323,7 @@ public class LoginActivity extends AppCompatActivity {
             }else {
                 mPreferences.edit().putBoolean("isReP",true).apply();
             }
+
         }catch (Exception e){
             e.printStackTrace();
         }
