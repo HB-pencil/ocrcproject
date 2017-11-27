@@ -154,8 +154,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         OCR.getInstance().initAccessTokenWithAkSk(new OnResultListener<AccessToken>() {
             @Override
             public void onResult(AccessToken result) {
-
                 String token = result.getAccessToken();
+                Log.d( "onResult ",token);
             }
             @Override
             public void onError(OCRError error) {
