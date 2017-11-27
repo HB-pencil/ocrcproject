@@ -156,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onResult(AccessToken result) {
 
                 String token = result.getAccessToken();
+                Log.e("百度token",token);
             }
             @Override
             public void onError(OCRError error) {
