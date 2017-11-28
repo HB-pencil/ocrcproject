@@ -7,6 +7,7 @@ import com.baidu.ocr.sdk.OCR;
 import com.baidu.ocr.sdk.OnResultListener;
 import com.baidu.ocr.sdk.exception.OCRError;
 import com.baidu.ocr.sdk.model.GeneralBasicParams;
+import com.baidu.ocr.sdk.model.GeneralParams;
 import com.baidu.ocr.sdk.model.GeneralResult;
 import com.baidu.ocr.sdk.model.Word;
 import com.baidu.ocr.sdk.model.WordSimple;
@@ -30,12 +31,20 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class AsycProcessTask extends AsyncTask<String,String,String> {
 
-    private List<DataString> daList;
-    private List<List<DataString>> listOfList;
+    private List<DataString> daTengxuduList;
+
+    private List<DataString> daBaiduList;
+
     private List<String> baiduRs;
     private List<String> tengxuRs;
+
     private ProgressDialog mProgressDialog;
-    private final SecondActivity mSecondActivity;
+
+    private SecondActivity mSecondActivity;
+
+    private final int BAIDU = 0;
+    private final int TENGXU =1;
+
     /**
      * str
      * 不能为null，不然会报错，因为子线程返回值必须为String
@@ -56,8 +65,8 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
         mProgressDialog.setCanceledOnTouchOutside(false);
         mProgressDialog.show();
         setResult("");
-        daList = new ArrayList<>();
-        listOfList = new ArrayList<>();
+        daTengxuduList = new ArrayList<>();
+        daBaiduList = new ArrayList<>();
         baiduRs = new ArrayList<>();
         tengxuRs = new ArrayList<>();
         retrofit = new Retrofit.Builder()
@@ -72,7 +81,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
         StringBuffer sb = new StringBuffer();
         String inputFile = args[0];
         // 通用文字识别参数设置
-        GeneralBasicParams param = new GeneralBasicParams();
+        GeneralParams param = new GeneralParams();
         param.setDetectDirection(true);
         File file = new File(inputFile);
         param.setImageFile(file);
@@ -83,16 +92,31 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
          * 此方法又开启了一个异步线程！并且是耗时的！！！
          */
     // 调用通用文字识别服务
-    OCR.getInstance().recognizeGeneralBasic(param, new OnResultListener<GeneralResult>() {
+    OCR.getInstance().recognizeGeneral(param, new OnResultListener<GeneralResult>() {
         @Override
         public void onResult(GeneralResult result) {
             // 调用成功，返回GeneralResult对象
             for (WordSimple wordSimple : result.getWordList()) {
                 // wordSimple不包含位置信息
-                String itemString = wordSimple.getWords().replaceAll("\\s*","").trim();
-                baiduRs.add(itemString);
+                Word word = (Word) wordSimple;
+                String itemString = word.getWords().replaceAll("\\s*","").trim();
+                //百度只需要分行
+                int x = word.getLocation().getLeft();
+                int y = word.getLocation().getTop();
+
+                DataString dataString = new DataString();
+                dataString.setItemString(itemString);
+                dataString.setX(x);
+                dataString.setY(y);
+                dataString.setFlag(false);
+                daBaiduList.add(dataString);
+                Log.e("百度xy", x+"  "+y);
                 Log.e("每个字段和字符数",itemString+"  "+itemString.length());
             }
+
+            List<List<DataString>> listOflist = handleDataList(daBaiduList);
+            sortData(listOflist,BAIDU);
+
             publishProgress("正在识别");
              if(baiduRs.size()>=1){
                  publishProgress("正在识别");
@@ -140,14 +164,14 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                                 da.setX(itemsBean.getItemcoord().getX());
                                 da.setY(itemsBean.getItemcoord().getY());
                                 da.setFlag(false);
-                                daList.add(da);
+                                daTengxuduList.add(da);
                                 Log.e("腾讯坐标xy",itemsBean.getItemcoord().getX()+"  "+itemsBean.getItemcoord().getY());
                                 Log.w("腾讯每个字段及其字符数",itemString+"  "+itemString.length());
                             }
                             //对于dataList里面的Data字符串数据进行分类，同一行y坐标相差10以内的归类在一起
-                            listOfList = handleDataList(daList);
+                            List<List<DataString>> listOfList = handleDataList( daTengxuduList);
                             //归类以后在进行排序
-                            sortData(listOfList);
+                            sortData(listOfList,TENGXU);
                         }
 
                         @Override
@@ -182,7 +206,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
             Iterator<String> iterator = baiduRs.iterator();
             StringBuffer stringBuffer = new StringBuffer();
             while(iterator.hasNext()){
-                stringBuffer.append(iterator.next()+"<br>");
+                stringBuffer.append(iterator.next()+"<br/>");
             }
             String string = stringBuffer.toString();
             Log.e("stringbuffer",string);
@@ -222,18 +246,40 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
     }
 
     public void compareListString(List<String> baiduRs,List<String> tengxuRs){
-        for(int i=0;i<baiduRs.size()&&baiduRs.size()==tengxuRs.size();i++){
+        int n = baiduRs.size()-tengxuRs.size();
+        //判断谁的行数多
+        if(n<0){
+            //腾讯识别行数多时，百度全部校验，否则百度校验少n个
+            n = 0;
+        }
+        for(int i=0;i<baiduRs.size()-n;i++){
             String a =baiduRs.get(i);
             String b =tengxuRs.get(i);
             Log.e("长度",a.length()+"   "+b.length());
-            String tempA = a.replaceAll("[\\p{Punct}\\p{Space}]+","");
+            //“<br/>的/被前面替换没有了”
+            String tempA = (a.replaceAll("[\\p{Punct}\\p{Space}]+","")).replaceAll("<br>","");
             String tempB = b.replaceAll("[\\p{Punct}\\p{Space}]+","");
+            Log.w("temA temB ",tempA+"\n"+tempB );
             if(tempA.equalsIgnoreCase(tempB)){
                 Log.e("比较","相等");
-            }else {
-                Log.e("a与b",a+" 不等 "+b);
-                baiduRs.set(i,"<font color=\"#ff0000\">" + a + "</font>");
+            }else if(tempA.length()==tempB.length())
+            {
+                for(int k=0;k<tempA.length();k++){
+                    if(tempA.charAt(k)!=tempB.charAt(k)){
+                        a.replaceAll(tempA.substring(k,k+1),"<font color=\"#ff0000\">" + tempA.charAt(k) + "</font>");
+                    }
+                }
+                Log.e("a与b",a+"  长度相同内容不等  "+b);
+            } else {
+                for(int j=0;j<Math.min(tempA.length(),tempB.length());j++){
+                    if(tempA.charAt(j)!=tempB.charAt(j)){
+                        a = a.substring(0,j) + "<font color=\"#ff0000\">" + a.substring(j,a.length()) + "</font>";
+                        break;
+                    }
+                }
+                Log.e("a与b",a+"  长度不等  "+b);
             }
+            baiduRs.set(i,a);
         }
     }
 
@@ -256,16 +302,16 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                //判断是否到达最后一个数据，不然会集合溢出
                if(i!=list.size()-1){
                    //每次分类的具体行为
-                   for(int j=i;j<list.size()-1;j++){
-                       if(list.get(j+1).getFlag()){
+                   for(int j=i+1;j<list.size();j++){
+                       if(list.get(j).getFlag()){
                            //已经分类不用再去比较
                            Log.w( "handleDataList(第二轮) ","已经分类 ");
-                           break;
+                           continue;
                        }
-                       int v = Math.abs(list.get(i).getY() - list.get(j+1).getY());
+                       int v = Math.abs(list.get(i).getY() - list.get(j).getY());
                        if(v<=10){
-                           list.get(j+1).setFlag(true);
-                           dataStrings.add(list.get(j+1));
+                           list.get(j).setFlag(true);
+                           dataStrings.add(list.get(j));
                        }
                    }
                }
@@ -280,34 +326,45 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
     /**
      * 对归类也就是分行后的数据进行排序
      */
-    public void sortData(List<List<DataString>> lists){
+    public void sortData(List<List<DataString>> lists,int flag){
         for (int i=0;i<lists.size();i++){
             List<DataString> stringList = lists.get(i);
-            //直接选择排序
-            for(int j=0;j<stringList.size()-1;j++){
-                int index = j;
-                for(int k=j+1; k<stringList.size();k++){
-                    int x1 =stringList.get(j).getX();
-                    int x2 =stringList.get(k).getX();
-                    if(x1 > x2){
-                        index=k;
-                    }
-                    if(index!=j){
-                        //交换两个数
-                         DataString t = stringList.get(j);
-                         DataString d = stringList.get(index);
-                         stringList.set(j,d);
-                         stringList.set(index,t);
+            if(flag==TENGXU){
+                //直接选择排序
+                for(int j=0;j<stringList.size()-1;j++){
+                    int index = j;
+                    for(int k=j+1; k<stringList.size();k++){
+                        int x1 =stringList.get(j).getX();
+                        int x2 =stringList.get(k).getX();
+                        if(x1 > x2){
+                            index=k;
+                        }
+                        if(index!=j){
+                            //交换两个数
+                            DataString t = stringList.get(j);
+                            DataString d = stringList.get(index);
+                            stringList.set(j,d);
+                            stringList.set(index,t);
+                        }
                     }
                 }
             }
             StringBuffer stringBuffer = new StringBuffer();
             for(int m=0;m<stringList.size();m++){
-                stringBuffer.append(stringList.get(m).getItemString());
+                if(flag==BAIDU){
+                    stringBuffer.append(stringList.get(m).getItemString()+"<br/>");
+                }else {
+                    stringBuffer.append(stringList.get(m).getItemString());
+                }
             }
             String rs = stringBuffer.toString();
             Log.e( "sortData",rs );
-            tengxuRs.add(rs);
+            if(flag==TENGXU){
+                tengxuRs.add(rs);
+            }else if(flag==BAIDU){
+                baiduRs.add(rs);
+            }
+
         }
     }
 
