@@ -34,7 +34,8 @@
         <activity android:name=".ReviseActivity" android:parentActivityName=".UserInfoActivity"/>
         <activity android:name=".SettingActivity" android:parentActivityName=".MainActivity"
             android:label=""/>
-        <activity android:name=".DowanloadRecordActivity" android:label="上传记录" android:parentActivityName=".MainActivity"
+        <activity android:name=".DowanloadRecordActivity" android:label="上传记录"
+            android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <provider
             android:authorities="com.example.shinelon.ocrcamera.ocrProvider"

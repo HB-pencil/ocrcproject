@@ -12,4 +12,28 @@
         <item name="android:windowTranslucentStatus">true</item>
         <item name="actionOverflowButtonStyle">@style/overflowButton</item>
     </style>
+
+    <style name="ConfirmButton" >
+        <item name="android:background">@drawable/confirm_bt</item>
+    </style>
+    <style name="loginButton">
+        <item name="android:background">@drawable/button_select</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+    <style name="customTextView">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="overflowButton" parent="@android:style/Widget.ActionButton.Overflow">
+        <item name="android:src">@drawable/learnmore</item>
+        <item name="android:scaleX">0.5</item>
+        <item name="android:scaleY">0.5</item>
+    </style>
+    <declare-styleable name="myImageView">
+        <attr name="borderColor" format="color"/>
+        <attr name="borderWith" format="dimension"/>
+    </declare-styleable>
+    <declare-styleable name="CircleImageView">
+    </declare-styleable>
 </resources>

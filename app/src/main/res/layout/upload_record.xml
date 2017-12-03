@@ -30,6 +30,7 @@
                 android:scaleType="center"/>
             <android.support.v7.widget.Toolbar
                 android:id="@+id/upload_bar"
+                android:paddingTop="20dp"
                 android:layout_width="match_parent"
                 android:layout_height="?android:attr/actionBarSize"
                 android:fitsSystemWindows="true"

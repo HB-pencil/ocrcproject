@@ -65,6 +65,7 @@ public class DowanloadRecordActivity extends AppCompatActivity{
 
         toolbar = (Toolbar) findViewById(R.id.upload_bar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         client = new OkHttpClient();
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
