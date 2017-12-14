@@ -143,36 +143,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         //overflow menu
         setOverflowShowingAlways();
-        //授权方式
-        initAccessTokenWithAkSk();
+
 
         Log.d("ACTIVITY创建","activity创建");
     }
 
-    private void initAccessTokenWithAkSk() {
-
-        OCR.getInstance().initAccessTokenWithAkSk(new OnResultListener<AccessToken>() {
-            @Override
-            public void onResult(AccessToken result) {
-
-                String token = result.getAccessToken();
-                Log.e("百度token",token);
-            }
-            @Override
-            public void onError(OCRError error) {
-                error.printStackTrace();
-                final String message = error.getMessage();
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(MainActivity.this,"AK，SK方式获取token失败 " + message,Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-
-        }, getApplicationContext(), "qsv0ZAOxsT7cy5eIE5t92IUN", "Kl3cv5v2FaHSaS8gUZu1a16Ny9LzTMXo");
-
-    }
 
     /**
      * 6.0以上动态权限检测
