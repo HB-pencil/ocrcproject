@@ -296,6 +296,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if(resultCode == RESULT_OK && data!=null){
                     Uri uri = data.getData();
                     Log.d("图库URI",uri.toString()+ "   "+uri.getPath());
+                    imagePath = changeToPath(uri);
                     setUri(uri);
                     crop(uri);
                 }
@@ -318,21 +319,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //PICK原来6.0就失效了,putExtra裁剪完再存进去
         if (Build.VERSION.SDK_INT>= Build.VERSION_CODES.M){
             /**
-             * 来自7.0以后拍照生成的fileprovider改变为content://格式，7.0以前存储有
+             * 来自7.0以后拍照生成的fileprovider改变为content://media格式，7.0以前存储有
              * content://media 和 fileuri ，7.0以后只能用fileuri(Uri.fromfile)存进去
              * */
              if(uri.getAuthority().equals("media")){
-                intent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(mFile));
+                 //media，因为由file变，是拍照
+                 intent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(mFile));
             }
             //来自6.0以后选择图库将provider转化为fileuri或者media类型
             else{
-                intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
-                File file = new File(changeToPath(uri));
-                intent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(file));
+                 intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
+                 File file = new File(changeToPath(uri));
+                 //系统provider
+                 intent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(file));
             }
             //6.0选择图库以下使用传统的conten://media...
         }else{
             intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
+            //media
         }
         startActivityForResult(intent,CAMERA_CROP);
         overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
@@ -341,7 +345,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     *7.0拍照后裁剪Uri，返回meida 类型uri
+     *7.0拍照后裁剪为fileprvider,不能读，需要file转为media，返回meida 类型uri
      */
     public Uri getImageContentUri(Context context, File imageFile) {
         String filePath = imageFile.getAbsolutePath();
@@ -376,6 +380,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try{
             Bitmap bitmap = compressPhoto(uri);
             mCusImageView.setImageBitmap(bitmap);
+            Intent intent = SecondActivity.newInstance(this,imagePath,userName);
+            intent.putExtra("IMAGE_PATH",imagePath);
+            startActivity(intent);
+            overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
         }catch(Exception e){
             e.printStackTrace();
         }

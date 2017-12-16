@@ -84,6 +84,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             e.printStackTrace();
         }
         setResult(0);
+        finish();
     }
 
     @Override
