@@ -32,6 +32,7 @@
         <activity android:name=".RegisterActivity" android:parentActivityName=".LoginActivity"/>
         <activity android:name=".UserInfoActivity" android:parentActivityName=".MainActivity"/>
         <activity android:name=".ReviseActivity" android:parentActivityName=".UserInfoActivity"/>
+        <activity android:name=".CameraActivity" android:parentActivityName=".MainActivity"/>
         <activity android:name=".SettingActivity" android:parentActivityName=".MainActivity"
             android:label=""/>
         <activity android:name=".DowanloadRecordActivity" android:label="上传记录"

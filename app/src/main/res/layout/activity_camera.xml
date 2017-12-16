@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <FrameLayout
+        android:id="@+id/camera_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </FrameLayout>
+    <com.example.shinelon.ocrcamera.helper.HelperView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+    <ImageView
+        android:id="@+id/take"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/camera_container"
+        android:layout_alignStart="@+id/camera_container"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="40dp"
+        android:clickable="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/lightoff" />
+    <ImageView
+        android:id="@+id/light"
+        android:clickable="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_alignBottom="@+id/camera_container"
+        android:layout_marginBottom="40dp"
+        android:layout_marginStart="30dp"
+        android:src="@drawable/takepicture"
+        android:scaleType="fitCenter" />
+    <TextView
+        android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        android:textSize="20sp"
+        android:layout_marginBottom="10dp"
+        android:textColor="@color/black"
+        android:text="请让字体边界与方框平行"/>
+</RelativeLayout>

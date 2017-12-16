@@ -18,10 +18,11 @@
         android:layout_height="0dp"
         android:layout_weight="8">
 
-        <jp.co.cyberagent.android.gpuimage.GPUImageView
+        <com.example.shinelon.ocrcamera.helper.CusImageView
             android:id="@+id/image_photo"
-            android:layout_width="300dp"
-            android:layout_height="340dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="40dp"
             android:layout_centerInParent="true" />
     </RelativeLayout>
 

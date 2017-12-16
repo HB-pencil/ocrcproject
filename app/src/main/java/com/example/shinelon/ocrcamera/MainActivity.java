@@ -38,11 +38,8 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.alibaba.fastjson.JSON;
-import com.baidu.ocr.sdk.OCR;
-import com.baidu.ocr.sdk.OnResultListener;
-import com.baidu.ocr.sdk.exception.OCRError;
-import com.baidu.ocr.sdk.model.AccessToken;
 import com.example.shinelon.ocrcamera.helper.CheckHelper;
+import com.example.shinelon.ocrcamera.helper.CusImageView;
 import com.example.shinelon.ocrcamera.helper.PermissionChecker;
 import com.example.shinelon.ocrcamera.helper.UpdateInfo;
 import com.example.shinelon.ocrcamera.helper.UserInfoLab;
@@ -59,10 +56,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-
-import jp.co.cyberagent.android.gpuimage.GPUImage;
-import jp.co.cyberagent.android.gpuimage.GPUImageSharpenFilter;
-import jp.co.cyberagent.android.gpuimage.GPUImageView;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -83,7 +76,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int REQUEST_CAMERA = 0;
     private static final int CAMERA_CROP = 1;
     private static final int SELECT = 2;
-    private GPUImageView mGPUImageView;
     private PermissionChecker mChecker;
     private AlertDialog mDialog;
     private Handler handler;
@@ -95,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ProgressDialog mProgressDialog;
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
-
+    private CusImageView mCusImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,10 +106,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mProgressDialog = new ProgressDialog(this);
 
         handler = new Handler();
-        mGPUImageView  = (GPUImageView) findViewById(R.id.image_photo);
+        mCusImageView  = (CusImageView) findViewById(R.id.image_photo);
         mCropButton.setEnabled(false);
         mRecognizeButton.setEnabled(false);
-        mGPUImageView.setScaleType(GPUImage.ScaleType.CENTER_INSIDE);
         mGalleryButton.setOnClickListener(this);
         mCameraButton.setOnClickListener(this);
         mCropButton.setOnClickListener(this);
@@ -245,8 +236,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }else{
                      mUri = Uri.fromFile(mFile);
                 }
-                Intent intent3 = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                intent3.putExtra(MediaStore.EXTRA_OUTPUT,mUri);
+                Intent intent3 = new Intent(this,CameraActivity.class);
+                intent3.putExtra("filePath",mFile);
                 startActivityForResult(intent3,REQUEST_CAMERA);
                 overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
@@ -280,6 +271,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                     crop(mUri);
                     setUri(mUri);
+                    imagePath = mFile.getAbsolutePath();
                     /**
                      * 原来我们在保存成功后，还要发一个系统广播通知手机有图片更新，发生广播给系统更新图库
                      */
@@ -382,33 +374,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     public void setImage(Uri uri){
         try{
-            mGPUImageView.setImage(uri);
-            mGPUImageView.setFilter(new GPUImageSharpenFilter());
-            //Bitmap bitmap = compressPhoto(uri);
-            //mImageView.setImageBitmap(bitmap);
-
-            SimpleDateFormat sf = new SimpleDateFormat("yy-MM-dd HH:mm:ss");
-            Calendar time = Calendar.getInstance();
-            String fileName = UserInfoLab.getUserInfo().getPhone() + "-"+ sf.format(time.getTime())+".jpg";
-            mGPUImageView.saveToPictures("ocrCamera",fileName , new GPUImageView.OnPictureSavedListener() {
-                @Override
-                public void onPictureSaved(Uri mUri) {
-                    if(mUri != null){
-                        Toast.makeText(MainActivity.this, "图片已保存", Toast.LENGTH_SHORT).show();
-                        Log.d("自动图片路径为", changeToPath(mUri));
-                        imagePath = changeToPath(mUri);
-                        System.out.println("转换前uri、uri.getpath()和转换后   "+ mUri.toString()+ "   " + mUri.getPath()+ "     "+ imagePath);
-                        Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,userName);
-                        try{
-                            Thread.sleep(500);
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
-                        startActivity(intent);
-                        overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
-                    }
-                }
-            });
+            Bitmap bitmap = compressPhoto(uri);
+            mCusImageView.setImageBitmap(bitmap);
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -460,8 +427,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         float srcWith = options.outWidth;
         float srcHeight = options.outHeight;
-        float tagHeight = 800;
-        float tagWith = 400;
+        float tagHeight = 1920;
+        float tagWith = 1080;
         //默认压缩比
         int inSampliSize =1;
         if(srcWith/tagWith>srcHeight/tagHeight && srcWith>tagWith){

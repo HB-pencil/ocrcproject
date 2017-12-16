@@ -22,6 +22,9 @@ android {
         versionCode 7
         versionName "1.1.5"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        ndk{
+            abiFilters "armeabi","armeabi-v7a","x86","mips"
+        }
     }
     buildTypes {
         release {
@@ -38,6 +41,10 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    sourceSets.main{
+        jniLibs.srcDirs = ['src/main/jniLibs']
     }
 }
 repositories{
@@ -57,7 +64,6 @@ dependencies {
     androidTestCompile 'junit:junit:4.12'
     testCompile 'junit:junit:4.12'
     implementation 'jp.co.cyberagent.android.gpuimage:gpuimage-library:1.4.1'
-    implementation files('libs/ocr-sdk.jar')
     implementation 'com.squareup.okhttp3:okhttp:3.8.1'
     implementation 'com.alibaba:fastjson:1.2.34'
     implementation 'com.android.support:recyclerview-v7:25.3.0'
@@ -67,4 +73,5 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
+    implementation files('src/libs/MobileOcrEngine.jar')
 }
