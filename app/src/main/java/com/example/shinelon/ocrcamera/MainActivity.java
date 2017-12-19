@@ -35,6 +35,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.alibaba.fastjson.JSON;
@@ -87,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ProgressDialog mProgressDialog;
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
-    private CusImageView mCusImageView;
+    private ImageView mCusImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mProgressDialog = new ProgressDialog(this);
 
         handler = new Handler();
-        mCusImageView  = (CusImageView) findViewById(R.id.image_photo);
+        mCusImageView  = (ImageView) findViewById(R.id.image_photo);
         mCropButton.setEnabled(false);
         mRecognizeButton.setEnabled(false);
         mGalleryButton.setOnClickListener(this);

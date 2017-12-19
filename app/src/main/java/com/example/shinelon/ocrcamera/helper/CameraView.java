@@ -7,6 +7,7 @@ import android.graphics.PixelFormat;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.Size;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -22,6 +23,7 @@ import java.util.List;
 public class CameraView extends SurfaceView implements SurfaceHolder.Callback{
     private Camera camera;
     private SurfaceHolder holder;
+    Camera.Parameters parameters;
 
     public CameraView(Context context,Camera c){
         super(context);
@@ -35,7 +37,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback{
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        Camera.Parameters parameters = camera.getParameters();
+        parameters = camera.getParameters();
         List<Camera.Size> preList = parameters.getSupportedPreviewSizes();
         List<Camera.Size> picList = parameters.getSupportedPictureSizes();
         parameters.setPreviewSize(preList.get(preList.size()-1).width,preList.get(preList.size()-1).height);
@@ -52,16 +54,24 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback{
         }catch (Exception e){
             e.getMessage();
         }
-
+        Log.w("created","success");
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
+        Log.w("changed","success");
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        Log.w("destroy","success");
+    }
 
+    public void setFlashOn(){
+        parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+    }
+
+    public  void setFlashOff(){
+        parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
     }
 }

@@ -5,18 +5,23 @@ import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.example.shinelon.ocrcamera.helper.CameraView;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.lang.ref.WeakReference;
 import java.security.Policy;
 
 /**
@@ -28,13 +33,14 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     ImageView takePhoto;
     ImageView turnLight;
     boolean flashState = false;
+    CameraView cameraView;
+
     @Override
     public void onCreate( Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         camera = Camera.open(0);
-        CameraView cameraView = new CameraView(this,camera);
-
+        cameraView = new CameraView(this,camera);
         FrameLayout layout = (FrameLayout) findViewById(R.id.camera_container);
         takePhoto = (ImageView) findViewById(R.id.take);
         turnLight = (ImageView) findViewById(R.id.light);
@@ -59,13 +65,14 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
                 camera.takePicture(null,null,this);
                 break;
             case R.id.light:
-                Camera.Parameters parameters = camera.getParameters();
                 if(!flashState){
-                    parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
-                    camera.setParameters(parameters);
+                    flashState = true;
+                    cameraView.setFlashOn();
+                    turnLight.setImageResource(R.drawable.lighton);
                 }else {
-                    parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-                    camera.setParameters(parameters);
+                    flashState = false;
+                    cameraView.setFlashOff();
+                    turnLight.setImageResource(R.drawable.lightoff);
                 }
                 break;
             default:
@@ -75,7 +82,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onPictureTaken(byte[] data, Camera camera){
-        File file =  getIntent().getParcelableExtra("filePath");
+        File file =  (File)getIntent().getSerializableExtra("filePath");
+        Log.w("File and Data",(file==null) + "    " + data.length);
         try {
             FileOutputStream outputStream = new FileOutputStream(file);
             outputStream.write(data);
@@ -84,8 +92,15 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             e.printStackTrace();
         }
         setResult(0);
-        finish();
+        MessageHandler messageHandler = new MessageHandler();
+        messageHandler.postDelayed(()-> {
+            Toast.makeText(this,"已拍照",Toast.LENGTH_SHORT).show();
+            finish();
+        },1000);
     }
+
+    private static class MessageHandler extends Handler{}
+
 
     @Override
     protected void onStart() {
