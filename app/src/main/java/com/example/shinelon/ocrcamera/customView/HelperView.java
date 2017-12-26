@@ -1,4 +1,4 @@
-package com.example.shinelon.ocrcamera.helper;
+package com.example.shinelon.ocrcamera.customView;
 
 import android.content.Context;
 import android.graphics.Canvas;

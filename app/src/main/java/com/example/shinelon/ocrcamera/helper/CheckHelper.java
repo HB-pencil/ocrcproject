@@ -1,15 +1,19 @@
 package com.example.shinelon.ocrcamera.helper;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Handler;
+import android.preference.PreferenceActivity;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
 import com.example.shinelon.ocrcamera.MainActivity;
+import com.example.shinelon.ocrcamera.dataModel.UpdateInfo;
+import com.example.shinelon.ocrcamera.task.AsyncDownload;
 
 /**
  * Created by Shinelon on 2017/9/16.检查更新的辅助类，依据返回结果判断版本号
@@ -17,7 +21,7 @@ import com.example.shinelon.ocrcamera.MainActivity;
 
 public class CheckHelper {
 
-    private Context mActivity;
+    private Activity mActivity;
     private UpdateInfo mInfo;
     private String mUpdateMessage;
 
@@ -36,7 +40,7 @@ public class CheckHelper {
 
     public CheckHelper(){}
 
-    public CheckHelper(Context activity,UpdateInfo info){
+    public CheckHelper(Activity activity, UpdateInfo info){
         this.mActivity = activity;
         this.mInfo = info;
     }
@@ -68,7 +72,7 @@ public class CheckHelper {
     /**
      *如果 有新版本弹出对话框
      */
-    public void showDialog(final FragmentActivity activity){
+    public void showDialog(final Activity activity){
         AlertDialog.Builder builder = new AlertDialog.Builder(activity)
                 .setCancelable(false)
                 .setTitle("检测到新版本，要更新吗？")

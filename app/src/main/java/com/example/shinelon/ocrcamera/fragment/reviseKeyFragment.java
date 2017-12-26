@@ -1,4 +1,4 @@
-package com.example.shinelon.ocrcamera;
+package com.example.shinelon.ocrcamera.fragment;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -13,7 +13,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.shinelon.ocrcamera.helper.UserInfoLab;
+import com.example.shinelon.ocrcamera.R;
+import com.example.shinelon.ocrcamera.dataModel.UserInfoLab;
 import com.example.shinelon.ocrcamera.helper.messageDialog;
 
 import org.json.JSONObject;

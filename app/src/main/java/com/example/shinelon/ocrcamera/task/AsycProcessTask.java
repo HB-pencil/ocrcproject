@@ -1,4 +1,4 @@
-package com.example.shinelon.ocrcamera.helper;
+package com.example.shinelon.ocrcamera.task;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
@@ -8,8 +8,12 @@ import com.abbyy.mobile.ocr4.RecognitionManager;
 import com.abbyy.mobile.ocr4.layout.MocrLayout;
 import com.abbyy.mobile.ocr4.layout.MocrPrebuiltLayoutInfo;
 import com.example.shinelon.ocrcamera.SecondActivity;
+import com.example.shinelon.ocrcamera.helper.CheckApplication;
+
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -75,7 +79,11 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
 
                 }
             });
-            setResult(mocrLayout.getText());
+            String result = mocrLayout.getText();
+            String regex = "[`~!@#$%^&*()\\-+={}':;,\\[\\].<>/?￥%…（）_+|【】‘；：”“’。，、？\\s]";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(result);
+            setResult(matcher.replaceAll("").trim());
         }catch (Exception e){
             e.printStackTrace();
         }

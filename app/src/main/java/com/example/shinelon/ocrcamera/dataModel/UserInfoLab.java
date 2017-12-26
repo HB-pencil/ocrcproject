@@ -1,4 +1,4 @@
-package com.example.shinelon.ocrcamera.helper;
+package com.example.shinelon.ocrcamera.dataModel;
 
 /**
  * Created by Shinelon on 2017/7/7.

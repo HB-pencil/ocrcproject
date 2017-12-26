@@ -1,4 +1,4 @@
-package com.example.shinelon.ocrcamera.helper;
+package com.example.shinelon.ocrcamera.dataModel;
 
 import java.util.List;
 

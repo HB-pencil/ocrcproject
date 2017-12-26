@@ -9,13 +9,22 @@
     <string name="using_tips_1">①拍照时要正对着屏幕的目标内容，建议手机相对屏幕的倾斜度小于等于15°</string>
     <string name="using_tips_2">②拍照后要对图片进行裁剪，确保与目标文字无关的内容文字不在图片内，并且文字截取必须尽可能完整</string>
     <string name="using_tips_3">③建议拍照距离在15ccm到30cm（以肉眼具体大概可见图片中文字为准）</string>
-    <string name="using_tips_4">④相机对准目标内容使用自动聚焦功能</string>
-    <string name="using_tips_5">⑤建议使用强冷色调滤镜,保持图片不翻转</string>
+    <string name="using_tips_4">④相机对准目标内容,待内容清晰再拍照</string>
     <string name="result_tip">请改正识别错误的文本并确认</string>
     <string name="result_tip1">注意红色部分可能存在部分错误</string>
     <string name="version_info">版本号：%1$s</string>
     <string name="open">Open</string>
     <string name="close">Close</string>
     <string name="more">糟糕，没有更多内容了！</string>
-    <string name="tips">请选择图片或拍照</string>
+    <string name="tips1">请选择图片或拍照,默认使用本地引擎识别</string>
+    <string name="tips2">如果要提高识别效率和准确度</string>
+    <string name="tips3">请在设置中开启联网识别</string>
+    <string name="setting">系统设置</string>
+    <string name="check">检查更新</string>
+    <string name="check_your_update">检查可用的新版本</string>
+    <string name="log_out">退出账号</string>
+    <string name="logout_your_account">退出您的账号</string>
+    <string name="about">关于本软件</string>
+    <string name="deleteAll">清除您所下载的所有图片文本</string>
+    <string name="connect">开启后，您的文本识别将使用联网识别，获得更准确结果</string>
 </resources>

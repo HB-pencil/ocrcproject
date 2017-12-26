@@ -1,4 +1,4 @@
-package com.example.shinelon.ocrcamera.helper;
+package com.example.shinelon.ocrcamera.customView;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
@@ -11,6 +11,8 @@ import android.util.Log;
 import android.util.Size;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import com.example.shinelon.ocrcamera.CameraActivity;
 
 import java.security.Policy;
 import java.util.List;
@@ -37,17 +39,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback{
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        parameters = camera.getParameters();
-        List<Camera.Size> preList = parameters.getSupportedPreviewSizes();
-        List<Camera.Size> picList = parameters.getSupportedPictureSizes();
-        parameters.setPreviewSize(preList.get(preList.size()-1).width,preList.get(preList.size()-1).height);
-        parameters.setPictureSize(picList.get(picList.size()-2).width,picList.get(picList.size()-2).height);
-        parameters.setPreviewFormat(ImageFormat.JPEG);
-        parameters.setPictureFormat(ImageFormat.JPEG);
-        List<String> focusList = parameters.getSupportedFocusModes();
-        if(focusList.contains(Camera.Parameters.FOCUS_MODE_AUTO)){
-            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-        }
+        initCamera(false);
         try {
             camera.setPreviewDisplay(holder);
             camera.startPreview();
@@ -67,11 +59,30 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback{
         Log.w("destroy","success");
     }
 
-    public void setFlashOn(){
-        parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+    public void initCamera(Boolean state){
+        parameters = camera.getParameters();
+        List<Camera.Size> preList = parameters.getSupportedPreviewSizes();
+        List<Camera.Size> picList = parameters.getSupportedPictureSizes();
+        if(CameraActivity.isVertical){
+            parameters.setRotation(90);
+        }else if(!CameraActivity.isVertical) {
+            parameters.setRotation(0);
+        }
+        parameters.setPreviewSize(preList.get(preList.size()-1).width,preList.get(preList.size()-1).height);
+        parameters.setPictureSize( picList.get((int)( picList.size()*0.8)).width,picList.get((int)(picList.size()*0.8)).height);
+        parameters.setPreviewFormat(ImageFormat.JPEG);
+        parameters.setPictureFormat(ImageFormat.JPEG);
+        if(state){
+            parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+        }else {
+            parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+        }
+        List<String> focusList = parameters.getSupportedFocusModes();
+        if(focusList.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)){
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        }
+        camera.cancelAutoFocus();
+        camera.setParameters(parameters);
     }
 
-    public  void setFlashOff(){
-        parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-    }
 }

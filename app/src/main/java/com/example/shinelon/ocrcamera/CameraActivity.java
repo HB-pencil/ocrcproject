@@ -2,27 +2,24 @@ package com.example.shinelon.ocrcamera;
 
 import android.content.Intent;
 import android.hardware.Camera;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.example.shinelon.ocrcamera.helper.CameraView;
+import com.example.shinelon.ocrcamera.customView.CameraView;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.lang.ref.WeakReference;
-import java.security.Policy;
+
+import retrofit2.http.Header;
 
 /**
  * Created by Shinelon on 2017/12/15.
@@ -34,28 +31,25 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     ImageView turnLight;
     boolean flashState = false;
     CameraView cameraView;
+    public static boolean isVertical = true;
+    Button orientation;
+    private FrameLayout layout;
 
     @Override
     public void onCreate( Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
-        camera = Camera.open(0);
-        cameraView = new CameraView(this,camera);
-        FrameLayout layout = (FrameLayout) findViewById(R.id.camera_container);
+        isVertical = true;
+        layout = (FrameLayout) findViewById(R.id.camera_container);
         takePhoto = (ImageView) findViewById(R.id.take);
         turnLight = (ImageView) findViewById(R.id.light);
+        orientation = (Button) findViewById(R.id.changeOri);
+
+        initCamera();
+        orientation.setOnClickListener(this);
         takePhoto.setOnClickListener(this);
         turnLight.setOnClickListener(this);
-        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)layout.getLayoutParams();
-        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-        int w = displayMetrics.widthPixels;
-        int h = displayMetrics.heightPixels;
-        layoutParams.width = (int) (w * 0.85);
-        layoutParams.height =(int) (h * 0.7);
-        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
-        layout.setLayoutParams(layoutParams);
 
-        layout.addView(cameraView);
     }
 
     @Override
@@ -67,14 +61,26 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             case R.id.light:
                 if(!flashState){
                     flashState = true;
-                    cameraView.setFlashOn();
+                    cameraView.initCamera(flashState);
                     turnLight.setImageResource(R.drawable.lighton);
                 }else {
                     flashState = false;
-                    cameraView.setFlashOff();
+                    cameraView.initCamera(flashState);
                     turnLight.setImageResource(R.drawable.lightoff);
                 }
                 break;
+            case R.id.changeOri:
+                stopCamera();
+                if(isVertical){
+                    isVertical = false;
+                    takePhoto.setRotation(90);
+                    turnLight.setRotation(90);
+                }else{
+                    isVertical = true;
+                    takePhoto.setRotation(0);
+                    turnLight.setRotation(0);
+                }
+                initCamera();
             default:
                 break;
         }
@@ -85,36 +91,79 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         File file =  (File)getIntent().getSerializableExtra("filePath");
         Log.w("File and Data",(file==null) + "    " + data.length);
         try {
-            FileOutputStream outputStream = new FileOutputStream(file);
-            outputStream.write(data);
-            outputStream.close();
+            FileOutputStream out = new FileOutputStream(file);
+            out.write(data);
+            out.close();
         }catch (Exception e){
             e.printStackTrace();
         }
-        setResult(0);
+        setResult(RESULT_OK);
         MessageHandler messageHandler = new MessageHandler();
         messageHandler.postDelayed(()-> {
             Toast.makeText(this,"已拍照",Toast.LENGTH_SHORT).show();
             finish();
-        },1000);
+        },200);
     }
 
     private static class MessageHandler extends Handler{}
 
-
     @Override
-    protected void onStart() {
-        super.onStart();
-        if(camera==null){
-            camera = Camera.open(0);
+    protected void onResume(){
+        super.onResume();
+        if (camera==null){
+            initCamera();
         }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (camera!=null){
-            camera.release();
+        stopCamera();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.e("destroy","true"+ "  "+ isVertical);
+    }
+
+    public Camera getCamera(){
+        if (camera == null){
+            camera = Camera.open(0);
         }
+        return camera;
+    }
+
+    public void initCamera(){
+        camera = getCamera();
+        cameraView = new CameraView(this,camera);
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)layout.getLayoutParams();
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        int w = displayMetrics.widthPixels;
+        int h = displayMetrics.heightPixels;
+        layoutParams.width = (int) (w * 0.85);
+        layoutParams.height =(int) (h * 0.7);
+        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+
+        layout.setLayoutParams(layoutParams);
+        layout.addView(cameraView);
+    }
+
+    public void stopCamera(){
+        camera.setPreviewCallback(null);
+        camera.stopPreview();
+        layout.removeView(cameraView);
+        cameraView = null;
+        camera.release();
+        camera = null;
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(this,MainActivity.class);
+        startActivity(intent);
+        overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
+        finish();
     }
 }

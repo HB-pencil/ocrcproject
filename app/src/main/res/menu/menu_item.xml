@@ -7,20 +7,12 @@
          android:title="使用帮助"
          app:showAsAction="ifRoom"/>
 
-
      <item
-         android:id="@+id/check_update"
-         android:icon="@drawable/update"
-         android:title="检查更新"
-         app:showAsAction="never"/>
-     <item
-         android:id="@+id/log_out"
-         android:icon="@drawable/log_out"
-         android:title="退出账号"
-         app:showAsAction="never"/>
+          android:id="@+id/setting_item"
+          android:title="设置"
+          app:showAsAction="never"/>
      <item
          android:id="@+id/exit_item"
-         android:icon="@drawable/exit"
          android:title="点击退出"
          app:showAsAction="never"/>
 </menu>

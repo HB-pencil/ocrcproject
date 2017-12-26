@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+   <PreferenceCategory
+       android:key="user_setting"
+       android:title="@string/setting">
+       <Preference
+           android:title="@string/check"
+           android:summary="@string/check_your_update"
+           android:key="check"/>
+       <Preference
+           android:title="@string/log_out"
+           android:summary="@string/logout_your_account"
+           android:key="logout"/>
+       <Preference
+           android:title="关于"
+           android:key="about"
+           android:summary="@string/about"/>
+       <Preference
+           android:title="清除下载数据"
+           android:key="deleteAll"
+           android:summary="@string/deleteAll"/>
+       <SwitchPreference
+           android:title="联网识别"
+           android:summary="@string/connect"
+           android:key="connect"
+           android:defaultValue="false"/>
+   </PreferenceCategory>
+</PreferenceScreen>

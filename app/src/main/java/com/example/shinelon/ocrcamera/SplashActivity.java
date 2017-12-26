@@ -9,13 +9,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.WindowManager;
 
-import com.example.shinelon.ocrcamera.helper.JavaBean;
-import com.example.shinelon.ocrcamera.helper.UserInfoLab;
+import com.example.shinelon.ocrcamera.dataModel.JavaBean;
+import com.example.shinelon.ocrcamera.dataModel.UserInfoLab;
 
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.concurrent.Executor;
 
 import okhttp3.Call;
 import okhttp3.Callback;

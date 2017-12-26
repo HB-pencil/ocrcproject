@@ -6,20 +6,20 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.CursorLoader;
@@ -29,6 +29,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,31 +38,30 @@ import android.view.ViewConfiguration;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-import com.alibaba.fastjson.JSON;
-import com.example.shinelon.ocrcamera.helper.CheckHelper;
-import com.example.shinelon.ocrcamera.helper.CusImageView;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.Target;
 import com.example.shinelon.ocrcamera.helper.PermissionChecker;
-import com.example.shinelon.ocrcamera.helper.UpdateInfo;
-import com.example.shinelon.ocrcamera.helper.UserInfoLab;
+import com.example.shinelon.ocrcamera.dataModel.UpdateInfo;
+import com.example.shinelon.ocrcamera.dataModel.UserInfoLab;
 import com.example.shinelon.ocrcamera.helper.helperDialogFragment;
+import com.example.shinelon.ocrcamera.task.DowanloadRecordActivity;
 
-import org.json.JSONObject;
-
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import okhttp3.Call;
-import okhttp3.Callback;
+import jp.wasabeef.glide.transformations.GrayscaleTransformation;
+import jp.wasabeef.glide.transformations.gpu.ContrastFilterTransformation;
+import jp.wasabeef.glide.transformations.gpu.SepiaFilterTransformation;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import android.support.v7.widget.Toolbar;
 
 
@@ -79,16 +79,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int SELECT = 2;
     private PermissionChecker mChecker;
     private AlertDialog mDialog;
-    private Handler handler;
     private String userName;
-    private OkHttpClient mOkHttpClient;
-    private UpdateInfo info;
-    private Boolean isNewVersion = true;
+    private TextView textView;
     public static String downloadUrl = "";
     private ProgressDialog mProgressDialog;
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
     private ImageView mCusImageView;
+    private Handler mHandler;
+    private File pFile;
+    private File cropFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,12 +101,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCropButton = (ImageButton) findViewById(R.id.corp_bt);
         mRecognizeButton = (ImageButton) findViewById(R.id.recognize_bt);
         mChecker = new PermissionChecker();
+        textView = findViewById(R.id.text_tip);
 
+        String str1 = getString(R.string.tips1);
+        String str2 = getString(R.string.tips2);
+        String str3 = getString(R.string.tips3);
+        String s = "<p>"+str1+"<br>"+str2+"<br>"+str3+"</p>";
+        textView.setText(Html.fromHtml(s));
+
+        mHandler = new Handler();
         userName = UserInfoLab.getUserInfo().getPhone();
 
         mProgressDialog = new ProgressDialog(this);
 
-        handler = new Handler();
         mCusImageView  = (ImageView) findViewById(R.id.image_photo);
         mCropButton.setEnabled(false);
         mRecognizeButton.setEnabled(false);
@@ -129,9 +136,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         View view =  navigationView.getHeaderView(0);
         TextView mText = (TextView) view.findViewById(R.id.description);
         mText.setText(UserInfoLab.getUserInfo().getName());
-
-        //check the latest available of the version
-        checkUpdate();
 
         //overflow menu
         setOverflowShowingAlways();
@@ -219,7 +223,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                  *   mFile = new File(getExternalStorageDirectory(),filename);
                  *   至于getExternalFileDir顾名思义获取file的，即会随着app删除而删除
                  */
-                mFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),"capturedImage" + String.valueOf(System.currentTimeMillis() + ".jpg"));
+                pFile = new File(Environment.getExternalStorageDirectory(),"ocrCamera");
+                if (!pFile.exists()){
+                    pFile.mkdirs();
+                }
+                mFile = new File(pFile,"capturedImage" + String.valueOf(System.currentTimeMillis() + ".jpg"));
                 if(!mFile.exists()){
                     try{
                         mFile.createNewFile();
@@ -239,6 +247,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 Intent intent3 = new Intent(this,CameraActivity.class);
                 intent3.putExtra("filePath",mFile);
+                sendUpdateInfo(mUri);
                 startActivityForResult(intent3,REQUEST_CAMERA);
                 overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
@@ -271,28 +280,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         mUri = getImageContentUri(this,mFile);
                     }
                     crop(mUri);
-                    setUri(mUri);
                     imagePath = mFile.getAbsolutePath();
                     /**
                      * 原来我们在保存成功后，还要发一个系统广播通知手机有图片更新，发生广播给系统更新图库
                      */
-                    Intent intentNotify = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+
                     Uri uri;
                     if(Build.VERSION.SDK_INT >= 24){
                         uri = FileProvider.getUriForFile(this,getPackageName()+".ocrProvider",mFile);
                     }else{
                         uri = Uri.fromFile(mFile);
                     }
-                    intentNotify.setData(uri);
-                    this.sendBroadcast(intentNotify);
-                }break;
+                    sendUpdateInfo(uri);
+                }else {
+                    if (mFile.exists()){
+                        mFile.delete();
+                    }
+                }
+                break;
             //成功裁剪完设置图片
             case CAMERA_CROP:
                 if(resultCode == RESULT_OK){
                     setImage(getUri());
                     mCropButton.setEnabled(true);
                     mRecognizeButton.setEnabled(true);
-                }break;
+                }else {
+                    if(cropFile.exists()){
+                        cropFile.delete();
+                    }
+                }
+                break;
             case SELECT:
                 if(resultCode == RESULT_OK && data!=null){
                     Uri uri = data.getData();
@@ -309,35 +326,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 裁剪方法，如果是7.0要多加配置，绕
+     * 裁剪方法，如果是7.0要多加配置
      * @param uri
      */
     public void crop(Uri uri){
-        //启动裁剪功能，裁剪结束后覆盖原来图片
+        //启动裁剪
+        cropFile = new File(pFile,"sampleCrop"+System.currentTimeMillis()+".jpg");
+        if (!cropFile.exists()){
+            try {
+                cropFile.createNewFile();
+            }catch (Exception e){e.printStackTrace();}
+
+        }
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(uri,"image/*");
+        intent.putExtra("crop",true);
+        intent.putExtra("scale",true);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(cropFile));
         Log.e("调用裁剪方法的Uri",uri.toString());
-        //PICK原来6.0就失效了,putExtra裁剪完再存进去
-        if (Build.VERSION.SDK_INT>= Build.VERSION_CODES.M){
-            /**
-             * 来自7.0以后拍照生成的fileprovider改变为content://media格式，7.0以前存储有
-             * content://media 和 fileuri ，7.0以后只能用fileuri(Uri.fromfile)存进去
-             * */
-             if(uri.getAuthority().equals("media")){
-                 //media，因为由file变，是拍照
-                 intent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(mFile));
-            }
-            //来自6.0以后选择图库将provider转化为fileuri或者media类型
-            else{
-                 intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
-                 File file = new File(changeToPath(uri));
-                 //系统provider
-                 intent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(file));
-            }
-            //6.0选择图库以下使用传统的conten://media...
-        }else{
-            intent.putExtra(MediaStore.EXTRA_OUTPUT,uri);
-            //media
+
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N){
+            Uri cropUri = getImageContentUri(this,cropFile);
+            setUri(cropUri);
+        }else {
+            setUri(Uri.fromFile(cropFile));
         }
         startActivityForResult(intent,CAMERA_CROP);
         overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
@@ -379,12 +391,62 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     public void setImage(Uri uri){
         try{
-            Bitmap bitmap = compressPhoto(uri);
-            mCusImageView.setImageBitmap(bitmap);
-            Intent intent = SecondActivity.newInstance(this,imagePath,userName);
-            intent.putExtra("IMAGE_PATH",imagePath);
-            startActivity(intent);
-            overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
+           // Bitmap bitmap = compressPhoto(uri); glide会压缩图片，主要解决裁剪后图片分辨率自动填补问题
+            Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
+            RequestOptions options = new RequestOptions()
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
+                    .transforms(new GrayscaleTransformation(),new ContrastFilterTransformation(2F),new SepiaFilterTransformation());
+            Glide.with(this)
+                    .load(bitmap)
+                    .apply(options)
+                    //监听图片加载后的变换，返回drawable
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            //替换原图
+                            BitmapDrawable bd = (BitmapDrawable) resource;
+                            Log.w("glide图片变换后",resource.getIntrinsicWidth()+"  "+resource.getIntrinsicHeight());
+                            ByteArrayOutputStream out = new ByteArrayOutputStream();
+                            bd.getBitmap().compress(Bitmap.CompressFormat.JPEG,100,out);
+                            try{
+                                File file = new File(pFile,"sampleTransformed"+System.currentTimeMillis()+".jpg");
+                                imagePath = file.getAbsolutePath();
+                                if (!file.exists()){
+                                    file.createNewFile();
+                                }
+                                FileOutputStream fileOutputStream = new FileOutputStream(file);
+                                fileOutputStream.write(out.toByteArray());
+                                Log.w("glide变换后byte",out.toByteArray().length+"");
+                                if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N){
+                                    Uri uri = getImageContentUri(MainActivity.this,file);
+                                    setUri(uri);
+                                    sendUpdateInfo(uri);
+                                }else {
+                                    setUri(Uri.fromFile(file));
+                                    sendUpdateInfo(Uri.fromFile(file));
+                                }
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                            mHandler.post(()->{
+                                Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,userName);
+                                intent.putExtra("IMAGE_PATH",imagePath);
+                                if (cropFile.exists()){
+                                    cropFile.delete();
+                                }
+                               // startActivity(intent);
+                                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
+                            });
+                            return false;
+                        }
+                    })
+                    .into(mCusImageView);
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -455,16 +517,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             e.printStackTrace();
         }
         bitmap  =  BitmapFactory.decodeStream(in,null,options);
-        //质量压缩
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG,100,bout);
-        ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
-        newBitmap = BitmapFactory.decodeStream(bin);
-        if(newBitmap != null){
-            return newBitmap;
-        }else{
-            return bitmap;
-        }
+        return bitmap;
+
     }
 
 
@@ -504,23 +558,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 helperDialogFragment dialogFragment = new helperDialogFragment();
                 dialogFragment.show(manager,"使用技巧");
                 break;
-            case R.id.check_update:
-                checkUpdate();
-                if(isNewVersion){
-                    Toast.makeText(this,"当前版本已经是最新！",Toast.LENGTH_SHORT).show();
-                }
-                break;
-            case R.id.log_out:
-                Intent intent = new Intent(this,LoginActivity.class);
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-                SharedPreferences.Editor editor = preferences.edit();
-                editor.putString("token","无token");
-                editor.apply();
+            case R.id.setting_item:
+                Intent intent = new Intent(this, SettingActivity.class);
                 startActivity(intent);
                 overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
-                finish();
             case R.id.exit_item:
-                System.exit(0);
+                finish();
                 break;
             default:break;
 
@@ -582,7 +625,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
             case R.id.setting_item:
-                Intent intent1 = new Intent(this,SettingActivity.class);
+                Intent intent1 = new Intent(this,AboutActivity.class);
                 startActivity(intent1);
                 overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
@@ -591,69 +634,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return true;
     }
 
-    /**
-     * 检查更新
-     */
-    public void checkUpdate(){
-        mOkHttpClient = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url("http://119.29.193.41/api/app/update")
-                .build();
-        mOkHttpClient.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                new Handler(MainActivity.this.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(MainActivity.this, "连接服务器失败，请检查网络！", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if(response.isSuccessful()){
-                    String str = response.body().string();
-                    Log.e("str:",str + "");
-                    int code = 0;
-                    try{
-                        JSONObject jsonObject = new JSONObject(str);
-                        code = jsonObject.getInt("code");
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                    parseJson(str);
-                    if(code == 200){
-                        final CheckHelper helper = new CheckHelper(MainActivity.this,info);
-                        if(helper.hasNewVersion()){
-                            new Handler(getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    helper.showDialog(MainActivity.this);
-                                }
-                            });
-                            isNewVersion = false;
-                        }else {
-                            isNewVersion = true;
-                        }
-                    }else{
-                        new Handler(getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(MainActivity.this,info.getMessage(),Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-                }
-            }
-        });
-    }
-
-    public void parseJson(String json){
-        info = JSON.parseObject(json, UpdateInfo.class);
-        downloadUrl = info.getData().getUpdateUrl();
-    }
 
     @Override
     protected void onPause() {
@@ -673,7 +653,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
-        Log.e("错误：","onReume()");
+        Log.e("错误：","onResume()");
     }
 
     @Override
@@ -702,6 +682,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } return true;
     }
 
+    public void sendUpdateInfo(Uri uri){
+        Intent intentNotify = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        intentNotify.setData(uri);
+        sendBroadcast(intentNotify);
+    }
 
 }
 

@@ -1,4 +1,4 @@
-package com.example.shinelon.ocrcamera.helper;
+package com.example.shinelon.ocrcamera.dataModel;
 
 import java.util.List;
 
@@ -6,30 +6,18 @@ import java.util.List;
  * Created by Shinelon on 2017/9/18.
  */
 
-public class UploadInfo {
+public class TxtInfo {
+
 
     /**
      * code : 200
-     * data : {"endRow":2,"firstPage":1,"hasNextPage":false,"hasPreviousPage":false,"isFirstPage":true,"isLastPage":true,"lastPage":1,"list":[ {
-     "createTime": "2017-11-18 14:58:59",
-     "dpStatus": 0,
-     "fileClass": 2,
-     "fileId": 4,
-     "fileSize": "69KB",
-     "fileType": "png",
-     "originalFileName": "附件上传.png",
-     "ocrFileName": "ocr文件名1.txt",
-     "updateTime": "2017-11-18 14:58:59",
-     "userId": "de6a569614654a0a9e3bd4b54edb1104"
-     }
-     ]}
+     * data : {"endRow":2,"firstPage":1,"hasNextPage":false,"hasPreviousPage":false,"isFirstPage":true,"isLastPage":true,"lastPage":1,"list":[{"fileId":3,"fileName":"1499217630472.txt","fileSize":"25KB","fileType":"txt","fileClass":1,"userId":"1b8f1ce2-0d67-4b0f-a16f-be1d31f1832c","createTime":"2017-07-05 09:20:30"},{"fileId":4,"fileName":"1499217633331.txt","fileSize":"25KB","fileType":"txt","fileClass":1,"userId":"1b8f1ce2-0d67-4b0f-a16f-be1d31f1832c","createTime":"2017-07-05 09:20:33"}],"navigatePages":8,"navigatepageNums":[1],"nextPage":0,"pageNum":1,"pageSize":5,"pages":1,"prePage":0,"size":2,"startRow":1,"total":2}
      * success : true
-     * message : 分页获取上传的图片记录成功
+     * message : 分页获取上传的文本记录成功
      */
 
     private int code;
     private DataBean data;
-    private boolean success;
     private String message;
 
     public int getCode() {
@@ -46,14 +34,6 @@ public class UploadInfo {
 
     public void setData(DataBean data) {
         this.data = data;
-    }
-
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public void setSuccess(boolean success) {
-        this.success = success;
     }
 
     public String getMessage() {
@@ -73,7 +53,7 @@ public class UploadInfo {
          * isFirstPage : true
          * isLastPage : true
          * lastPage : 1
-         * list :[{}]
+         * list : [{"fileId":3,"fileName":"1499217630472.txt","fileSize":"25KB","fileType":"txt","fileClass":1,"userId":"1b8f1ce2-0d67-4b0f-a16f-be1d31f1832c","createTime":"2017-07-05 09:20:30"},{"fileId":4,"fileName":"1499217633331.txt","fileSize":"25KB","fileType":"txt","fileClass":1,"userId":"1b8f1ce2-0d67-4b0f-a16f-be1d31f1832c","createTime":"2017-07-05 09:20:33"}]
          * navigatePages : 8
          * navigatepageNums : [1]
          * nextPage : 0
@@ -250,17 +230,21 @@ public class UploadInfo {
         }
 
         public static class ListBean {
+            /**
+             * fileId : 3
+             * fileName : 1499217630472.txt
+             * fileSize : 25KB
+             * fileType : txt
+             * fileClass : 1
+             * userId : 1b8f1ce2-0d67-4b0f-a16f-be1d31f1832c
+             * createTime : 2017-07-05 09:20:30
+             */
 
             private int fileId;
-            private int dpStatus;
+            private String fileName;
             private String fileSize;
-            private String fileType;
-            private int fileClass;
             private String userId;
             private String createTime;
-            private String updateTime;
-            private String originalFileName;
-            private String ocrFileName;
 
             public int getFileId() {
                 return fileId;
@@ -270,43 +254,12 @@ public class UploadInfo {
                 this.fileId = fileId;
             }
 
-            public String getOcrFileName() {
-                return ocrFileName;
+            public String getFileName() {
+                return fileName;
             }
 
-            public String getOriginalFileName() {
-
-                return originalFileName;
-            }
-
-            public String getUpdateTime() {
-
-                return updateTime;
-            }
-
-            public int getDpStatus() {
-
-                return dpStatus;
-            }
-
-            public void setOcrFileName(String ocrFileName) {
-
-                this.ocrFileName = ocrFileName;
-            }
-
-            public void setOriginalFileName(String originalFileName) {
-
-                this.originalFileName = originalFileName;
-            }
-
-            public void setUpdateTime(String updateTime) {
-
-                this.updateTime = updateTime;
-            }
-
-            public void setDpStatus(int dpStatus) {
-
-                this.dpStatus = dpStatus;
+            public void setFileName(String fileName) {
+                this.fileName = fileName;
             }
 
             public String getFileSize() {
@@ -315,22 +268,6 @@ public class UploadInfo {
 
             public void setFileSize(String fileSize) {
                 this.fileSize = fileSize;
-            }
-
-            public String getFileType() {
-                return fileType;
-            }
-
-            public void setFileType(String fileType) {
-                this.fileType = fileType;
-            }
-
-            public int getFileClass() {
-                return fileClass;
-            }
-
-            public void setFileClass(int fileClass) {
-                this.fileClass = fileClass;
             }
 
             public String getUserId() {

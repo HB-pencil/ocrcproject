@@ -12,7 +12,7 @@
     android:paddingTop="16dp"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
-    <com.example.shinelon.ocrcamera.helper.CircleImageView
+    <com.example.shinelon.ocrcamera.customView.CircleImageView
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:layout_marginStart="10dp"

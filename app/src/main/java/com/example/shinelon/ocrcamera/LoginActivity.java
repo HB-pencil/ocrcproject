@@ -21,8 +21,8 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.example.shinelon.ocrcamera.helper.ButtonPoster;
-import com.example.shinelon.ocrcamera.helper.JavaBean;
-import com.example.shinelon.ocrcamera.helper.UserInfoLab;
+import com.example.shinelon.ocrcamera.dataModel.JavaBean;
+import com.example.shinelon.ocrcamera.dataModel.UserInfoLab;
 import com.example.shinelon.ocrcamera.helper.messageDialog;
 
 import org.json.JSONObject;

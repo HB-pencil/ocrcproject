@@ -17,19 +17,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
-import com.example.shinelon.ocrcamera.helper.AsycProcessTask;
+import com.example.shinelon.ocrcamera.task.AsycProcessTask;
 import com.example.shinelon.ocrcamera.helper.LogInterceptor;
-import com.example.shinelon.ocrcamera.helper.UserInfoLab;
+import com.example.shinelon.ocrcamera.dataModel.UserInfoLab;
 import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-
-import javax.security.auth.login.LoginException;
 
 import okhttp3.Call;
 import okhttp3.Callback;

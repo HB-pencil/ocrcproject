@@ -5,6 +5,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 
+import com.example.shinelon.ocrcamera.fragment.reviseInfoFragment;
+import com.example.shinelon.ocrcamera.fragment.reviseKeyFragment;
+
 /**
  * Created by Shinelon on 2017/7/7.
  */

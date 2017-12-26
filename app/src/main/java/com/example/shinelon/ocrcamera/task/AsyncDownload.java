@@ -1,4 +1,4 @@
-package com.example.shinelon.ocrcamera.helper;
+package com.example.shinelon.ocrcamera.task;
 
 import android.app.ProgressDialog;
 import android.content.Context;

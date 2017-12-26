@@ -1,4 +1,4 @@
-package com.example.shinelon.ocrcamera;
+package com.example.shinelon.ocrcamera.task;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -16,13 +16,13 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
-import com.example.shinelon.ocrcamera.helper.UploadInfo;
+import com.example.shinelon.ocrcamera.R;
+import com.example.shinelon.ocrcamera.dataModel.UploadInfo;
 
 import java.io.File;
 import java.io.FileOutputStream;
