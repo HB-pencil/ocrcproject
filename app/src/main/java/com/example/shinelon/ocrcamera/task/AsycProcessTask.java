@@ -80,7 +80,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                 }
             });
             String result = mocrLayout.getText();
-            String regex = "[`~!@#$%^&*()\\-+={}':;,\\[\\].<>/?￥%…（）_+|【】‘；：”“’。，、？\\s]";
+            String regex = "[`~!@#$%^&*()\\-+={}\\[\\].<>/?￥_+|【】？乂』\\s]";
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(result);
             setResult(matcher.replaceAll("").trim());

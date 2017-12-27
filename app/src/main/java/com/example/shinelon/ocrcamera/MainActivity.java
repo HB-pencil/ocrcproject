@@ -37,6 +37,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -89,6 +90,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Handler mHandler;
     private File pFile;
     private File cropFile;
+    private ProgressBar progressBar;
+    private TextView progresssBarText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,6 +118,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mProgressDialog = new ProgressDialog(this);
 
         mCusImageView  = (ImageView) findViewById(R.id.image_photo);
+        progressBar = findViewById(R.id.progress_bar);
+        progresssBarText = findViewById(R.id.progress_bar_text);
+
         mCropButton.setEnabled(false);
         mRecognizeButton.setEnabled(false);
         mGalleryButton.setOnClickListener(this);
@@ -391,6 +397,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     public void setImage(Uri uri){
         try{
+            textView.setVisibility(View.INVISIBLE);
+            progressBar.setVisibility(View.VISIBLE);
+            progresssBarText.setVisibility(View.VISIBLE);
            // Bitmap bitmap = compressPhoto(uri); glide会压缩图片，主要解决裁剪后图片分辨率自动填补问题
             Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
             RequestOptions options = new RequestOptions()
@@ -434,15 +443,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }catch (Exception e){
                                 e.printStackTrace();
                             }
-                            mHandler.post(()->{
+                            progressBar.post(()->progressBar.setVisibility(View.GONE));
+                            progresssBarText.post(()->progresssBarText.setVisibility(View.GONE));
+                            mHandler.postDelayed(()->{
                                 Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,userName);
                                 intent.putExtra("IMAGE_PATH",imagePath);
                                 if (cropFile.exists()){
                                     cropFile.delete();
                                 }
-                               // startActivity(intent);
+                                startActivity(intent);
                                 overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
-                            });
+                            },500);
                             return false;
                         }
                     })
