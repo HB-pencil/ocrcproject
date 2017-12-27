@@ -19,10 +19,15 @@
            android:title="清除下载数据"
            android:key="deleteAll"
            android:summary="@string/deleteAll"/>
+   </PreferenceCategory>
+   <PreferenceCategory
+       android:title="识别设置">
        <SwitchPreference
+           android:key="connect"
            android:title="联网识别"
            android:summary="@string/connect"
-           android:key="connect"
+           android:switchTextOn="开启"
+           android:switchTextOff="关闭"
            android:defaultValue="false"/>
    </PreferenceCategory>
 </PreferenceScreen>
