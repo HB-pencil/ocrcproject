@@ -67,7 +67,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
     @Override
     public void onPreExecute(){
         setResult("");
-        if(!CheckApplication.isNotNativeRecognize){
+        if(CheckApplication.isNotNativeRecognize){
             daTengxuduList = new ArrayList<>();
             daBaiduList = new ArrayList<>();
             baiduRs = new ArrayList<>();
@@ -88,7 +88,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
         String inputFile = args[0];
         File file = new File(inputFile);
 
-        publishProgress("开始识别");
+        publishProgress("正在识别");
         /**
          * 要有足够长的时间等待ocr线程的完成！
          */
@@ -124,7 +124,6 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                     if(baiduRs.size()>=1){
                         publishProgress("识别完成");
                     }
-                    notifyAll();
                 }
                 @Override
                 public void onError(OCRError error) {
