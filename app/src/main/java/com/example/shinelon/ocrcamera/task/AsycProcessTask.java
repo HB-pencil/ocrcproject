@@ -18,18 +18,21 @@ import com.example.shinelon.ocrcamera.dataModel.DataString;
 import com.example.shinelon.ocrcamera.dataModel.TentcentRs;
 import com.example.shinelon.ocrcamera.helper.Authorization;
 import com.example.shinelon.ocrcamera.helper.CheckApplication;
+import com.example.shinelon.ocrcamera.helper.LogInterceptor;
 import com.example.shinelon.ocrcamera.helper.RetorfitRequest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
@@ -72,10 +75,17 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
             daBaiduList = new ArrayList<>();
             baiduRs = new ArrayList<>();
             tengxuRs = new ArrayList<>();
+
+            LogInterceptor interceptor = new LogInterceptor();
+            OkHttpClient.Builder builder = new OkHttpClient().newBuilder();
+            builder.addInterceptor(interceptor)
+                    .build();
+            OkHttpClient client = builder.build();
             retrofit = new Retrofit.Builder()
                     .baseUrl("http://recgnition.image.myqcloud.com/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                    .client(client)
                     .build();
             request = retrofit.create(RetorfitRequest.class);
         }
@@ -88,7 +98,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
         String inputFile = args[0];
         File file = new File(inputFile);
 
-        publishProgress("正在识别");
+        publishProgress("开始识别");
         /**
          * 要有足够长的时间等待ocr线程的完成！
          */
@@ -135,16 +145,11 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
             RequestBody appid = RequestBody.create(null,"1253939683");
             RequestBody bucket = RequestBody.create(null,"hardblack");
             RequestBody fileBody = RequestBody.create(MediaType.parse("image/jpeg"),file);
+
             MultipartBody.Part body = MultipartBody.Part.createFormData("image",file.getName(),fileBody);
             String authorization = "";
             try {
-                authorization = Authorization.generateKey();
-                Log.e("权限",authorization);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-            Log.w("第二个识别",file.getAbsolutePath());
-            try {
+                Log.e("腾讯-------------------","true");
                 request.getResult(authorization,appid,bucket,body)
                         .subscribe(new Observer<TentcentRs>() {
                             @Override
@@ -174,14 +179,17 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                                 //归类以后在进行排序
                                 sortData(listOfList,TENGXU);
                             }
+
                             @Override
                             public void onError(Throwable e) {
-                                Log.d("onError","three");
+                                Log.e("onError",e.getMessage());
+                                e.printStackTrace();
                             }
+
                             @Override
                             public void onComplete() {
                                 Log.d("onComplete","four");
-                                publishProgress("正在处理");
+                                publishProgress("识别完成");
                             }
                         });
             }catch (Exception e){
@@ -191,9 +199,9 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
             /**
              * 要有足够长的时间等待ocr线程的完成！
              */
-            publishProgress("识别完成");
+            publishProgress("正在处理");
             try {
-                Thread.sleep(2000);
+                Thread.sleep(4000);
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -260,7 +268,6 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
         }
     }
 
-
     @Override
     public void onProgressUpdate(String... values){
         mProgressDialog.setMessage(values[0]);
@@ -276,7 +283,6 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
         }
         if(mProgressDialog.isShowing()){
             mProgressDialog.dismiss();
-            mProgressDialog = null;
         }
     }
     public void setResult(String result){
