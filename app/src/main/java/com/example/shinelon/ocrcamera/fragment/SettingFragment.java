@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.SwitchPreference;
@@ -15,6 +16,7 @@ import com.example.shinelon.ocrcamera.AboutActivity;
 import com.example.shinelon.ocrcamera.LoginActivity;
 import com.example.shinelon.ocrcamera.R;
 import com.example.shinelon.ocrcamera.dataModel.UpdateInfo;
+import com.example.shinelon.ocrcamera.helper.CheckApplication;
 import com.example.shinelon.ocrcamera.helper.CheckHelper;
 import org.json.JSONObject;
 import java.io.IOException;
@@ -67,7 +69,12 @@ public class SettingFragment extends PreferenceFragment{
             Toast.makeText(getActivity(),"暂未实现！",Toast.LENGTH_SHORT).show();
             return false;
         });
-        switchPreference = (SwitchPreference)findPreference("connect");
+        findPreference("connect").setOnPreferenceChangeListener((preference, o) -> {
+            CheckApplication.isNotNativeRecognize = (boolean)o;
+            preference.setSelectable(true);
+            Log.e("newValue",CheckApplication.isNotNativeRecognize+"前后"+o);
+            return true;
+        });
     }
 
     /**
@@ -112,9 +119,6 @@ public class SettingFragment extends PreferenceFragment{
                                     helper.showDialog(getActivity());
                                 }
                             });
-                            isNewVersion = false;
-                        }else {
-                            isNewVersion = true;
                         }
                     }else{
                         new Handler(getActivity().getMainLooper()).post(new Runnable() {

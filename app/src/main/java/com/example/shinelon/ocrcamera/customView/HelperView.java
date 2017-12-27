@@ -38,8 +38,8 @@ public class HelperView extends View {
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         int w = displayMetrics.widthPixels;
         int h = displayMetrics.heightPixels;
-        layoutParams.width = (int) (w * 0.75);
-        layoutParams.height =(int) (h * 0.65);
+        layoutParams.width = (int) (w * 0.85);
+        layoutParams.height =(int) (h * 0.70);
         layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
         setLayoutParams(layoutParams);
         setMeasuredDimension(layoutParams.width,layoutParams.height);

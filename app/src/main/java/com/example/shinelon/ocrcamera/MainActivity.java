@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -17,6 +18,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -39,6 +41,11 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.baidu.ocr.sdk.OCR;
+import com.baidu.ocr.sdk.OnResultListener;
+import com.baidu.ocr.sdk.exception.OCRError;
+import com.baidu.ocr.sdk.model.AccessToken;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -46,6 +53,7 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
+import com.example.shinelon.ocrcamera.helper.CheckApplication;
 import com.example.shinelon.ocrcamera.helper.PermissionChecker;
 import com.example.shinelon.ocrcamera.dataModel.UpdateInfo;
 import com.example.shinelon.ocrcamera.dataModel.UserInfoLab;
@@ -60,10 +68,12 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import jp.wasabeef.glide.transformations.GrayscaleTransformation;
+import jp.wasabeef.glide.transformations.gpu.BrightnessFilterTransformation;
 import jp.wasabeef.glide.transformations.gpu.ContrastFilterTransformation;
 import jp.wasabeef.glide.transformations.gpu.SepiaFilterTransformation;
 import okhttp3.OkHttpClient;
 import android.support.v7.widget.Toolbar;
+import android.widget.Toast;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,NavigationView.OnNavigationItemSelectedListener{
@@ -92,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private File cropFile;
     private ProgressBar progressBar;
     private TextView progresssBarText;
+    private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        handler = new Handler();
         mGalleryButton = (ImageButton) findViewById(R.id.gallery_bt);
         mCameraButton = (ImageButton) findViewById(R.id.camera_bt);
         mCropButton = (ImageButton) findViewById(R.id.corp_bt);
@@ -132,19 +144,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,drawerLayout,toolbar,R.string.open,R.string.close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+
+        pFile = new File(Environment.getExternalStorageDirectory(),"ocrCamera");
+        if (!pFile.exists()){
+            pFile.mkdirs();
+        }
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         View view =  navigationView.getHeaderView(0);
         TextView mText = (TextView) view.findViewById(R.id.description);
         mText.setText(UserInfoLab.getUserInfo().getName());
-
-        //overflow menu
-        setOverflowShowingAlways();
 
 
         Log.d("ACTIVITY创建","activity创建");
@@ -229,10 +244,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                  *   mFile = new File(getExternalStorageDirectory(),filename);
                  *   至于getExternalFileDir顾名思义获取file的，即会随着app删除而删除
                  */
-                pFile = new File(Environment.getExternalStorageDirectory(),"ocrCamera");
-                if (!pFile.exists()){
-                    pFile.mkdirs();
-                }
+
                 mFile = new File(pFile,"capturedImage" + String.valueOf(System.currentTimeMillis() + ".jpg"));
                 if(!mFile.exists()){
                     try{
@@ -320,9 +332,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if(resultCode == RESULT_OK && data!=null){
                     Uri uri = data.getData();
                     Log.d("图库URI",uri.toString()+ "   "+uri.getPath());
-                    imagePath = changeToPath(uri);
                     setUri(uri);
-                    crop(uri);
+                    crop(getUri());
                 }
                 break;
             default:
@@ -342,7 +353,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             try {
                 cropFile.createNewFile();
             }catch (Exception e){e.printStackTrace();}
-
         }
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(uri,"image/*");
@@ -401,11 +411,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             progressBar.setVisibility(View.VISIBLE);
             progresssBarText.setVisibility(View.VISIBLE);
            // Bitmap bitmap = compressPhoto(uri); glide会压缩图片，主要解决裁剪后图片分辨率自动填补问题
+            Log.e("openUri",uri.toString());
             Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
             RequestOptions options = new RequestOptions()
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .skipMemoryCache(true)
-                    .transforms(new GrayscaleTransformation(),new ContrastFilterTransformation(2F),new SepiaFilterTransformation());
+                    .transforms(new GrayscaleTransformation(),new ContrastFilterTransformation(2F),new SepiaFilterTransformation(),new BrightnessFilterTransformation());
             Glide.with(this)
                     .load(bitmap)
                     .apply(options)
@@ -598,19 +609,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    /**
-     * 总是从上面弹出菜单
-     */
-    public void setOverflowShowingAlways(){
-        try{
-            ViewConfiguration config = ViewConfiguration.get(this);
-            Field menuKeyFiled = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
-            menuKeyFiled.setAccessible(true);
-            menuKeyFiled.setBoolean(config,false);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -664,7 +662,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
-        Log.e("错误：","onResume()");
+        Log.e("错误：","onResume()"+ CheckApplication.isNotNativeRecognize);
     }
 
     @Override

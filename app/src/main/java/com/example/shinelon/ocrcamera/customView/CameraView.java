@@ -69,7 +69,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback{
             parameters.setRotation(0);
         }
         parameters.setPreviewSize(preList.get(preList.size()-1).width,preList.get(preList.size()-1).height);
-        parameters.setPictureSize( picList.get((int)( picList.size()*0.8)).width,picList.get((int)(picList.size()*0.8)).height);
+        parameters.setPictureSize( picList.get((int)( picList.size()*0.7)).width,picList.get((int)(picList.size()*0.7)).height);
         parameters.setPreviewFormat(ImageFormat.JPEG);
         parameters.setPictureFormat(ImageFormat.JPEG);
         if(state){

@@ -141,8 +141,8 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         int w = displayMetrics.widthPixels;
         int h = displayMetrics.heightPixels;
-        layoutParams.width = (int) (w * 0.85);
-        layoutParams.height =(int) (h * 0.7);
+        layoutParams.width = (int) (w * 0.88);
+        layoutParams.height =(int) (h * 0.72);
         layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
 
         layout.setLayoutParams(layoutParams);

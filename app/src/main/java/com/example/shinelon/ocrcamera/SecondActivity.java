@@ -1,5 +1,6 @@
 package com.example.shinelon.ocrcamera;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.text.style.UpdateAppearance;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,6 +29,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -50,6 +54,9 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
     private String imageUrl;
     private String customFileName;
     private String file;
+    private AsycProcessTask task;
+    private ProgressDialog mProgressDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,15 +69,21 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
 
         Bundle extras = getIntent().getExtras();
 
+        mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setCancelable(false);
+        mProgressDialog.setCanceledOnTouchOutside(false);
+
         if( extras != null) {
             imageUrl = extras.getString(IMAGE_PATH);
-            doRecognize();
+            doRecognize(mProgressDialog);
         }
     }
 
-    public void doRecognize() {
+    public void doRecognize(ProgressDialog dialog) {
         // Starting recognition process
-        new AsycProcessTask(this).execute(imageUrl);
+        task = new AsycProcessTask(dialog);
+        task.registerlistener(message->displayMessage(message));
+        task.execute(imageUrl);
         System.out.println("自动识别路径为    " + imageUrl);
         Log.d("自动识别路径:", imageUrl);
     }
@@ -247,15 +260,6 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
         return token;
     }
 
-            /**
-             * @param message
-             */
-            public void updateResult(String message) {
-
-                displayMessage(message);
-
-            }
-
             public void displayMessage(String text) {
                 mEditText.post(new MessagePoster(text));
                 try{
@@ -283,5 +287,6 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        task.unregisterListener();
     }
 }
