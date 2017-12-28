@@ -20,6 +20,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.shinelon.ocrcamera.helper.CheckApplication;
 import com.example.shinelon.ocrcamera.task.AsycProcessTask;
 import com.example.shinelon.ocrcamera.helper.LogInterceptor;
 import com.example.shinelon.ocrcamera.dataModel.UserInfoLab;
@@ -159,7 +160,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
            imgName = customFileName + ".jpg";
        }
        Log.e( "sendFile ",txtName + "     "+imgName );
-       LogInterceptor interceptor = new LogInterceptor();
+       LogInterceptor interceptor = new LogInterceptor(CheckApplication.getCotex());
        OkHttpClient client = new OkHttpClient.Builder()
                .addInterceptor(interceptor)
                .build();

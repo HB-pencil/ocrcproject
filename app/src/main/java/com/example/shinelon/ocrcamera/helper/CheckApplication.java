@@ -1,7 +1,9 @@
 package com.example.shinelon.ocrcamera.helper;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -34,6 +36,7 @@ public class CheckApplication extends Application {
     public static RecognitionManager manager = null;
     public static boolean isNotNativeRecognize = false;
     private Handler handler = null;
+    public static Context context;
 
     @Override
     public void onCreate() {
@@ -42,6 +45,7 @@ public class CheckApplication extends Application {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         isNotNativeRecognize = preferences.getBoolean("connect",false);
         init();
+        context = getApplicationContext();
     }
 
     public void init(){
@@ -107,6 +111,8 @@ public class CheckApplication extends Application {
         handler = null;
     }
 
-
+    public static Context getCotex(){
+        return context;
+    }
 }
 

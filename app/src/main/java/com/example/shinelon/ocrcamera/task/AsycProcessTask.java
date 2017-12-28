@@ -1,6 +1,7 @@
 package com.example.shinelon.ocrcamera.task;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 import com.abbyy.mobile.ocr4.ImageLoadingOptions;
@@ -76,7 +77,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
             baiduRs = new ArrayList<>();
             tengxuRs = new ArrayList<>();
 
-            LogInterceptor interceptor = new LogInterceptor();
+            LogInterceptor interceptor = new LogInterceptor(CheckApplication.getCotex());
             OkHttpClient.Builder builder = new OkHttpClient().newBuilder();
             builder.addInterceptor(interceptor)
                     .build();
@@ -148,6 +149,12 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
 
             MultipartBody.Part body = MultipartBody.Part.createFormData("image",file.getName(),fileBody);
             String authorization = "";
+            try {
+                authorization = Authorization.generateKey();
+                Log.e("权限",authorization);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
             try {
                 Log.e("腾讯-------------------","true");
                 request.getResult(authorization,appid,bucket,body)

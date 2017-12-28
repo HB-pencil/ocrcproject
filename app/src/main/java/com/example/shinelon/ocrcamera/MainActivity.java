@@ -459,9 +459,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             mHandler.postDelayed(()->{
                                 Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,userName);
                                 intent.putExtra("IMAGE_PATH",imagePath);
-                                if (cropFile.exists()){
-                                    cropFile.delete();
-                                }
                                 startActivity(intent);
                                 overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                             },500);
@@ -469,6 +466,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     })
                     .into(mCusImageView);
+            if (cropFile.exists()){
+                cropFile.delete();
+            }
         }catch(Exception e){
             e.printStackTrace();
         }
