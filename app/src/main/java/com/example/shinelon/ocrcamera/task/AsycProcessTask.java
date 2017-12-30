@@ -1,7 +1,6 @@
 package com.example.shinelon.ocrcamera.task;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 import com.abbyy.mobile.ocr4.ImageLoadingOptions;
@@ -26,7 +25,6 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import io.reactivex.Observer;
@@ -38,6 +36,7 @@ import okhttp3.RequestBody;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
+
 
 
 /**
@@ -59,7 +58,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
      * str
      * 不能为null，不然会报错，因为子线程返回值必须为String
      */
-    private static String str ="";
+    private static String str ="  ";
     private Retrofit retrofit;
     private RetorfitRequest request;
 
@@ -70,7 +69,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
 
     @Override
     public void onPreExecute(){
-        setResult("");
+        setResult("  ");
         if(CheckApplication.isNotNativeRecognize){
             daTengxuduList = new ArrayList<>();
             daBaiduList = new ArrayList<>();
@@ -82,8 +81,9 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
             builder.addInterceptor(interceptor)
                     .build();
             OkHttpClient client = builder.build();
+
             retrofit = new Retrofit.Builder()
-                    .baseUrl("http://recgnition.image.myqcloud.com/")
+                    .baseUrl("http://recognition.image.myqcloud.com/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .client(client)
@@ -95,14 +95,10 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
 
     @Override
     public String doInBackground(String... args){
-        StringBuffer sb = new StringBuffer();
         String inputFile = args[0];
         File file = new File(inputFile);
 
         publishProgress("开始识别");
-        /**
-         * 要有足够长的时间等待ocr线程的完成！
-         */
         if (CheckApplication.isNotNativeRecognize){
             // 通用文字识别参数设置
             GeneralParams param = new GeneralParams();
@@ -130,11 +126,19 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                         Log.e("每个字段和字符数",itemString+"  "+itemString.length());
                     }
                     List<List<DataString>> listOflist = handleDataList(daBaiduList);
-                    sortData(listOflist,BAIDU);
-                    publishProgress("正在处理");
-                    if(baiduRs.size()>=1){
-                        publishProgress("识别完成");
+                    if(listOflist.size()>0){
+                        sortData(listOflist,BAIDU);
+                    }else {
+                        setResult("null");
                     }
+
+                    synchronized (baiduRs){
+                        if(baiduRs.size()>=1){
+                            publishProgress("正在处理");
+                            baiduRs.notifyAll();
+                        }
+                    }
+                    Log.e("TAG", "baidu "+Thread.currentThread().getName() );
                 }
                 @Override
                 public void onError(OCRError error) {
@@ -156,12 +160,13 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                 e.printStackTrace();
             }
             try {
+                publishProgress("正在处理");
                 Log.e("腾讯-------------------","true");
                 request.getResult(authorization,appid,bucket,body)
                         .subscribe(new Observer<TentcentRs>() {
                             @Override
                             public void onSubscribe(Disposable d) {
-                                Log.d("onSubscrie","first");
+                                Log.d("onSubscribe","first");
                             }
                             @Override
                             public void onNext(TentcentRs tentcentRs) {
@@ -196,7 +201,6 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                             @Override
                             public void onComplete() {
                                 Log.d("onComplete","four");
-                                publishProgress("识别完成");
                             }
                         });
             }catch (Exception e){
@@ -204,18 +208,25 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                 Log.w("第二个识别:","出错了"+e.getMessage());
             }
             /**
-             * 要有足够长的时间等待ocr线程的完成！
+             * 同步问题，非生产者消费者问题
              */
             publishProgress("正在处理");
-            try {
-                Thread.sleep(4000);
-            }catch (Exception e){
-                e.printStackTrace();
+
+
+            synchronized (baiduRs){
+                if(baiduRs.size()==0&&("  ").equals(getResult())){
+                    //str没有内容等待
+                    try {
+                        baiduRs.wait();
+                    }catch (Exception e){e.printStackTrace();}
+                }
             }
+
             if(!"".equals(getResult())){
                 Log.e("getResult",getResult());
                 return getResult();
             }else {
+                publishProgress("识别完成");
                 compareListString(baiduRs,tengxuRs);
                 Iterator<String> iterator = baiduRs.iterator();
                 StringBuffer stringBuffer = new StringBuffer();
@@ -265,14 +276,10 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
             }
         }
 
-        if(!"".equals(getResult())){
-            Log.e("getResult",getResult());
-            publishProgress("识别完成");
-            return getResult();
-        }else {
-            return null;
+        Log.e("getResult",getResult());
+        publishProgress("识别完成");
+        return getResult();
 
-        }
     }
 
     @Override

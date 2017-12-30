@@ -26,7 +26,7 @@ public class LogInterceptor implements Interceptor {
                  .removeHeader("User-Agent")
                  .addHeader("User-Agent", WebSettings.getDefaultUserAgent(context))
                  .build();
-         Response response = chain.proceed(request);
+        Response response = chain.proceed(request);
         Log.w("拦截器", "intercept: "+ response.code() );
          return response;
     }

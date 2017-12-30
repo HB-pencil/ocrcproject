@@ -14,7 +14,7 @@ import android.util.Log;
  */
 
 public class PermissionChecker {
-    public static final int REQUEST_STORAGY = 1;
+    public static final int REQUEST_ALL = 1;
     /**
      * 检测权限
      * @param permissions
@@ -50,7 +50,7 @@ public class PermissionChecker {
      * @param permissions
      */
     public void requestPermission(Activity context,String [] permissions){
-        ActivityCompat.requestPermissions(context,permissions,REQUEST_STORAGY);
+        ActivityCompat.requestPermissions(context,permissions,REQUEST_ALL);
     }
 
     /**

@@ -6,7 +6,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -36,16 +35,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
-import com.baidu.ocr.sdk.OCR;
-import com.baidu.ocr.sdk.OnResultListener;
-import com.baidu.ocr.sdk.exception.OCRError;
-import com.baidu.ocr.sdk.model.AccessToken;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -55,7 +48,6 @@ import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.example.shinelon.ocrcamera.helper.CheckApplication;
 import com.example.shinelon.ocrcamera.helper.PermissionChecker;
-import com.example.shinelon.ocrcamera.dataModel.UpdateInfo;
 import com.example.shinelon.ocrcamera.dataModel.UserInfoLab;
 import com.example.shinelon.ocrcamera.helper.helperDialogFragment;
 import com.example.shinelon.ocrcamera.task.DowanloadRecordActivity;
@@ -169,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * 6.0以上动态权限检测
      */
-    private static final String permissions [] = {Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE};
+    private static final String permissions [] = {Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.CAMERA};
     @Override
     public void onStart(){
         super.onStart();
@@ -177,12 +169,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mChecker.checkPermissions(this, permissions);
             Log.w("onStart", "我是onStart!");
         }
+        Log.e("错误：","onStart()"+ CheckApplication.isNotNativeRecognize);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode){
-            case PermissionChecker.REQUEST_STORAGY:
+            case PermissionChecker.REQUEST_ALL:
                 for(int i = 0;i<permissions.length;i++){
                     if( grantResults[i] == PackageManager.PERMISSION_DENIED){
                     /**  if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
@@ -416,7 +409,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             RequestOptions options = new RequestOptions()
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .skipMemoryCache(true)
-                    .transforms(new GrayscaleTransformation(),new ContrastFilterTransformation(2F),new SepiaFilterTransformation(),new BrightnessFilterTransformation());
+                    .transforms(new GrayscaleTransformation(),new ContrastFilterTransformation(2F),new SepiaFilterTransformation(),new BrightnessFilterTransformation(-0.2F));
             Glide.with(this)
                     .load(bitmap)
                     .apply(options)
@@ -433,7 +426,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             BitmapDrawable bd = (BitmapDrawable) resource;
                             Log.w("glide图片变换后",resource.getIntrinsicWidth()+"  "+resource.getIntrinsicHeight());
                             ByteArrayOutputStream out = new ByteArrayOutputStream();
-                            bd.getBitmap().compress(Bitmap.CompressFormat.JPEG,100,out);
+                            bd.getBitmap().compress(Bitmap.CompressFormat.JPEG,50,out);
                             try{
                                 File file = new File(pFile,"sampleTransformed"+System.currentTimeMillis()+".jpg");
                                 imagePath = file.getAbsolutePath();
@@ -659,11 +652,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.e("错误：","onResume()"+ CheckApplication.isNotNativeRecognize);
-    }
 
     @Override
     protected void onDestroy() {
