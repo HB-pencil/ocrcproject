@@ -290,7 +290,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
     @Override
     public void onPostExecute(String result){
         Log.d("onPostExecute",result);
-        if(result.length()>=1){
+        if(result.length()>=1&&!result.equals("null")){
             listener.updateResult(result);
         }else{
             listener.updateResult("识别出错，请重试！");
