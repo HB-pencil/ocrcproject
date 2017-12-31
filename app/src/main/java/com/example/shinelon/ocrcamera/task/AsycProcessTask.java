@@ -7,6 +7,7 @@ import com.abbyy.mobile.ocr4.ImageLoadingOptions;
 import com.abbyy.mobile.ocr4.RecognitionManager;
 import com.abbyy.mobile.ocr4.layout.MocrLayout;
 import com.abbyy.mobile.ocr4.layout.MocrPrebuiltLayoutInfo;
+import com.alibaba.fastjson.JSONObject;
 import com.baidu.ocr.sdk.OCR;
 import com.baidu.ocr.sdk.OnResultListener;
 import com.baidu.ocr.sdk.exception.OCRError;
@@ -22,17 +23,24 @@ import com.example.shinelon.ocrcamera.helper.LogInterceptor;
 import com.example.shinelon.ocrcamera.helper.RetorfitRequest;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -53,14 +61,14 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
     private final int BAIDU = 0;
     private final int TENGXU =1;
     private UpdateListener listener;
-
+    private  Request request;
+    private OkHttpClient client;
     /**
      * str
      * 不能为null，不然会报错，因为子线程返回值必须为String
      */
-    private static String str ="  ";
-    private Retrofit retrofit;
-    private RetorfitRequest request;
+    private static String str ="";
+
 
     public AsycProcessTask(ProgressDialog d){
         mProgressDialog = d;
@@ -69,26 +77,14 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
 
     @Override
     public void onPreExecute(){
-        setResult("  ");
+        setResult("");
         if(CheckApplication.isNotNativeRecognize){
             daTengxuduList = new ArrayList<>();
             daBaiduList = new ArrayList<>();
             baiduRs = new ArrayList<>();
             tengxuRs = new ArrayList<>();
 
-            LogInterceptor interceptor = new LogInterceptor(CheckApplication.getCotex());
-            OkHttpClient.Builder builder = new OkHttpClient().newBuilder();
-            builder.addInterceptor(interceptor)
-                    .build();
-            OkHttpClient client = builder.build();
 
-            retrofit = new Retrofit.Builder()
-                    .baseUrl("http://recognition.image.myqcloud.com/")
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                    .client(client)
-                    .build();
-            request = retrofit.create(RetorfitRequest.class);
         }
 
     }
@@ -132,12 +128,12 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                         setResult("null");
                     }
 
-                    synchronized (baiduRs){
-                        if(baiduRs.size()>=1){
-                            publishProgress("正在处理");
-                            baiduRs.notifyAll();
-                        }
+                    synchronized (str){
+                        str.notifyAll();
                     }
+
+                    publishProgress("正在处理");
+
                     Log.e("TAG", "baidu "+Thread.currentThread().getName() );
                 }
                 @Override
@@ -147,11 +143,6 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                 }
             });
 
-            RequestBody appid = RequestBody.create(null,"1253939683");
-            RequestBody bucket = RequestBody.create(null,"hardblack");
-            RequestBody fileBody = RequestBody.create(MediaType.parse("image/jpeg"),file);
-
-            MultipartBody.Part body = MultipartBody.Part.createFormData("image",file.getName(),fileBody);
             String authorization = "";
             try {
                 authorization = Authorization.generateKey();
@@ -159,70 +150,80 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
             }catch (Exception e){
                 e.printStackTrace();
             }
+
+            RequestBody body = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addPart(Headers.of("Content-Disposition","form-data;name=\"appid\""),
+                            RequestBody.create(null,"1253939683"))
+                    .addPart(Headers.of("Content-Disposition","form-data;name=\"bucket\""),
+                            RequestBody.create(null,"hardblack"))
+                    .addPart(Headers.of("Content-Disposition","form-data;name=\"image\";filename=\"" + file.getName() + "\""),
+                            RequestBody.create(MediaType.parse("image/*"),file))
+                    .build();
+            LogInterceptor interceptor = new LogInterceptor(CheckApplication.getCotex());
+            request = new Request.Builder()
+                    .url("http://recognition.image.myqcloud.com/ocr/general")
+                    .addHeader("Authorization",authorization)
+                    .post(body)
+                    .build();
+            Response response;
             try {
                 publishProgress("正在处理");
                 Log.e("腾讯-------------------","true");
-                request.getResult(authorization,appid,bucket,body)
-                        .subscribe(new Observer<TentcentRs>() {
-                            @Override
-                            public void onSubscribe(Disposable d) {
-                                Log.d("onSubscribe","first");
-                            }
-                            @Override
-                            public void onNext(TentcentRs tentcentRs) {
-                                Log.d("onNext","second");
-                                List<TentcentRs.DataBean.ItemsBean> list = tentcentRs.getData().getItems();
-                                Iterator iterator = list.iterator();
-                                while (iterator.hasNext()){
-                                    TentcentRs.DataBean.ItemsBean itemsBean = (TentcentRs.DataBean.ItemsBean) iterator.next();
-                                    String itemString = itemsBean.getItemstring();
-                                    itemString = itemString.replaceAll("\\s*","").trim();
-                                    DataString da = new DataString();
-                                    da.setItemString(itemString);
-                                    da.setX(itemsBean.getItemcoord().getX());
-                                    da.setY(itemsBean.getItemcoord().getY());
-                                    da.setFlag(false);
-                                    daTengxuduList.add(da);
-                                    Log.e("腾讯坐标xy",itemsBean.getItemcoord().getX()+"  "+itemsBean.getItemcoord().getY());
-                                    Log.w("腾讯每个字段及其字符数",itemString+"  "+itemString.length());
-                                }
-                                //对于dataList里面的Data字符串数据进行分类，同一行y坐标相差10以内的归类在一起
-                                List<List<DataString>> listOfList = handleDataList( daTengxuduList);
-                                //归类以后在进行排序
-                                sortData(listOfList,TENGXU);
-                            }
+                client = new OkHttpClient();
+                response = client.newBuilder()
+                        .connectTimeout(30,TimeUnit.SECONDS)
+                        .readTimeout(30,TimeUnit.SECONDS)
+                        .writeTimeout(30,TimeUnit.SECONDS)
+                        .addInterceptor(interceptor)
+                        .build()
+                        .newCall(request)
+                        .execute();
+                String string = response.body().string();
+                Log.e("腾讯string",string);
+                if(response.code()==200){
+                    TentcentRs tentcentRs = JSONObject.parseObject(string,TentcentRs.class);
+                    List<TentcentRs.DataBean.ItemsBean> list = tentcentRs.getData().getItems();
+                    Iterator iterator = list.iterator();
+                    while (iterator.hasNext()){
+                        TentcentRs.DataBean.ItemsBean itemsBean = (TentcentRs.DataBean.ItemsBean) iterator.next();
+                        String itemString = itemsBean.getItemstring();
+                        itemString = itemString.replaceAll("\\s*","").trim();
+                        DataString da = new DataString();
+                        da.setItemString(itemString);
+                        da.setX(itemsBean.getItemcoord().getX());
+                        da.setY(itemsBean.getItemcoord().getY());
+                        da.setFlag(false);
+                        daTengxuduList.add(da);
+                        Log.e("腾讯坐标xy",itemsBean.getItemcoord().getX()+"  "+itemsBean.getItemcoord().getY());
+                        Log.w("腾讯每个字段及其字符数",itemString+"  "+itemString.length());
+                    }
+                    //对于dataList里面的Data字符串数据进行分类，同一行y坐标相差10以内的归类在一起
+                    List<List<DataString>> listOfList = handleDataList( daTengxuduList);
+                    //归类以后在进行排序
+                    sortData(listOfList,TENGXU);
+                }else {
+                    Log.e("错误",string);
+                }
 
-                            @Override
-                            public void onError(Throwable e) {
-                                Log.e("onError",e.getMessage());
-                                e.printStackTrace();
-                            }
 
-                            @Override
-                            public void onComplete() {
-                                Log.d("onComplete","four");
-                            }
-                        });
-            }catch (Exception e){
-                e.printStackTrace();
-                Log.w("第二个识别:","出错了"+e.getMessage());
-            }
-            /**
-             * 同步问题，非生产者消费者问题
-             */
+            }catch (Exception e){e.printStackTrace();}
+
             publishProgress("正在处理");
 
-
-            synchronized (baiduRs){
-                if(baiduRs.size()==0&&("  ").equals(getResult())){
-                    //str没有内容等待
-                    try {
-                        baiduRs.wait();
-                    }catch (Exception e){e.printStackTrace();}
+            try {
+                synchronized (str){
+                    if(baiduRs.size()==0){
+                        if( !"null".equals(getResult()) ){
+                            str.wait();
+                        }
+                    }
                 }
+            }catch (Exception e){
+                e.printStackTrace();
             }
 
-            if(!"".equals(getResult())){
+            if(("null").equals(getResult())){
                 Log.e("getResult",getResult());
                 return getResult();
             }else {
@@ -250,7 +251,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                 MocrLayout mocrLayout =   CheckApplication.getManager().recognizeText(inputStream, options, new RecognitionManager.RecognitionCallback() {
                     @Override
                     public boolean onRecognitionProgress(int i, int i1) {
-                        Log.e("i和i1",i+"   "+i1);
+                        Log.e("i和i1",i+"");
                         while (i<10){
                             publishProgress("正在处理");
                         }
@@ -290,7 +291,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
     @Override
     public void onPostExecute(String result){
         Log.d("onPostExecute",result);
-        if(result.length()>=1&&!result.equals("null")){
+        if(!"".equals(result) && !result.equals("null")){
             listener.updateResult(result);
         }else{
             listener.updateResult("识别出错，请重试！");
@@ -346,7 +347,6 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
             baiduRs.set(i,a);
         }
     }
-
 
 
     /**

@@ -13,12 +13,12 @@ android {
             storePassword keystoreProperties['storePassword']
         }
     }
-    compileSdkVersion 27
+    compileSdkVersion 26
     buildToolsVersion "26.0.2"
     defaultConfig {
         applicationId "com.example.shinelon.ocrcamera"
         minSdkVersion 19
-        targetSdkVersion 27
+        targetSdkVersion 26
         versionCode 7
         versionName "1.1.5"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -61,21 +61,19 @@ dependencies {
     })
     debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5'
     releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
-    implementation 'com.android.support:appcompat-v7:27.0.2'
+    implementation 'com.android.support:appcompat-v7:26.0.2'
     androidTestCompile 'junit:junit:4.12'
     testCompile 'junit:junit:4.12'
     implementation 'jp.co.cyberagent.android.gpuimage:gpuimage-library:1.4.1'
     implementation 'com.squareup.okhttp3:okhttp:3.9.0'
     implementation 'com.alibaba:fastjson:1.2.34'
-    implementation 'com.android.support:recyclerview-v7:27.0.2'
+    implementation 'com.android.support:recyclerview-v7:26.0.2'
     implementation 'com.squareup.retrofit2:retrofit:2.3.0'
-    implementation 'com.android.support:design:27.0.2'
+    implementation 'com.android.support:design:26.0.2'
     implementation 'io.reactivex.rxjava2:rxjava:2.1.6'
     implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
-    implementation 'com.github.bumptech.glide:glide:4.4.0'
-    implementation 'jp.wasabeef:glide-transformations:3.0.1'
     implementation files('src/libs/MobileOcrEngine.jar')
     implementation files('src/libs/ocr-sdk.jar')
     implementation files('src/libs/commons-codec-1.10.jar')

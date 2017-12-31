@@ -39,33 +39,31 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.RequestOptions;
-import com.bumptech.glide.request.target.Target;
 import com.example.shinelon.ocrcamera.helper.CheckApplication;
 import com.example.shinelon.ocrcamera.helper.PermissionChecker;
 import com.example.shinelon.ocrcamera.dataModel.UserInfoLab;
 import com.example.shinelon.ocrcamera.helper.helperDialogFragment;
 import com.example.shinelon.ocrcamera.task.DowanloadRecordActivity;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import jp.wasabeef.glide.transformations.GrayscaleTransformation;
-import jp.wasabeef.glide.transformations.gpu.BrightnessFilterTransformation;
-import jp.wasabeef.glide.transformations.gpu.ContrastFilterTransformation;
-import jp.wasabeef.glide.transformations.gpu.SepiaFilterTransformation;
-import okhttp3.OkHttpClient;
+import java.util.ArrayList;
+import java.util.List;
+
+import jp.co.cyberagent.android.gpuimage.GPUImage;
+import jp.co.cyberagent.android.gpuimage.GPUImageBrightnessFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageContrastFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageFilterGroup;
+import jp.co.cyberagent.android.gpuimage.GPUImageGrayscaleFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSepiaFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSharpenFilter;
+
 import android.support.v7.widget.Toolbar;
-import android.widget.Toast;
+
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener,NavigationView.OnNavigationItemSelectedListener{
@@ -95,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ProgressBar progressBar;
     private TextView progresssBarText;
     private Handler handler;
+    GPUImage gpuImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,6 +140,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,drawerLayout,toolbar,R.string.open,R.string.close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+
+        gpuImage= new GPUImage(this);
 
         pFile = new File(Environment.getExternalStorageDirectory(),"ocrCamera");
         if (!pFile.exists()){
@@ -291,7 +292,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         mUri = getImageContentUri(this,mFile);
                     }
                     crop(mUri);
-                    imagePath = mFile.getAbsolutePath();
                     /**
                      * 原来我们在保存成功后，还要发一个系统广播通知手机有图片更新，发生广播给系统更新图库
                      */
@@ -403,65 +403,67 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             textView.setVisibility(View.INVISIBLE);
             progressBar.setVisibility(View.VISIBLE);
             progresssBarText.setVisibility(View.VISIBLE);
-           // Bitmap bitmap = compressPhoto(uri); glide会压缩图片，主要解决裁剪后图片分辨率自动填补问题
             Log.e("openUri",uri.toString());
-            Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
-            RequestOptions options = new RequestOptions()
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .skipMemoryCache(true)
-                    .transforms(new GrayscaleTransformation(),new ContrastFilterTransformation(2F),new SepiaFilterTransformation(),new BrightnessFilterTransformation(-0.2F));
-            Glide.with(this)
-                    .load(bitmap)
-                    .apply(options)
-                    //监听图片加载后的变换，返回drawable
-                    .listener(new RequestListener<Drawable>() {
-                        @Override
-                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                            return false;
-                        }
+            InputStream inputStream = getContentResolver().openInputStream(uri);
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG,20,out);
 
-                        @Override
-                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                            //替换原图
-                            BitmapDrawable bd = (BitmapDrawable) resource;
-                            Log.w("glide图片变换后",resource.getIntrinsicWidth()+"  "+resource.getIntrinsicHeight());
-                            ByteArrayOutputStream out = new ByteArrayOutputStream();
-                            bd.getBitmap().compress(Bitmap.CompressFormat.JPEG,50,out);
-                            try{
-                                File file = new File(pFile,"sampleTransformed"+System.currentTimeMillis()+".jpg");
-                                imagePath = file.getAbsolutePath();
-                                if (!file.exists()){
-                                    file.createNewFile();
-                                }
-                                FileOutputStream fileOutputStream = new FileOutputStream(file);
-                                fileOutputStream.write(out.toByteArray());
-                                Log.w("glide变换后byte",out.toByteArray().length+"");
-                                if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N){
-                                    Uri uri = getImageContentUri(MainActivity.this,file);
-                                    setUri(uri);
-                                    sendUpdateInfo(uri);
-                                }else {
-                                    setUri(Uri.fromFile(file));
-                                    sendUpdateInfo(Uri.fromFile(file));
-                                }
-                            }catch (Exception e){
-                                e.printStackTrace();
-                            }
-                            progressBar.post(()->progressBar.setVisibility(View.GONE));
-                            progresssBarText.post(()->progresssBarText.setVisibility(View.GONE));
-                            mHandler.postDelayed(()->{
-                                Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,userName);
-                                intent.putExtra("IMAGE_PATH",imagePath);
-                                startActivity(intent);
-                                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
-                            },500);
-                            return false;
-                        }
-                    })
-                    .into(mCusImageView);
-            if (cropFile.exists()){
-                cropFile.delete();
-            }
+            new Thread(()->{
+                gpuImage.setImage(bitmap);
+                GPUImageFilterGroup group = new GPUImageFilterGroup();
+                group.addFilter(new GPUImageGrayscaleFilter());
+                group.addFilter(new GPUImageSepiaFilter(1.0F));
+                group.addFilter(new GPUImageBrightnessFilter(-0.15F));
+                group.addFilter(new GPUImageSharpenFilter(0.2F));
+                group.addFilter(new GPUImageContrastFilter(1.2F));
+                group.updateMergedFilters();
+
+                gpuImage.setFilter(group);
+                Bitmap bitmap1 = gpuImage.getBitmapWithFilterApplied();
+
+                ByteArrayOutputStream out1 = new ByteArrayOutputStream();
+                bitmap1.compress(Bitmap.CompressFormat.JPEG,20,out1);
+                try{
+                    File file = new File(pFile,"sampleTransformed"+System.currentTimeMillis()+".jpg");
+                    imagePath = file.getAbsolutePath();
+                    if (!file.exists()){
+                        file.createNewFile();
+                    }
+                    FileOutputStream fileOutputStream = new FileOutputStream(file);
+                    fileOutputStream.write(out1.toByteArray());
+                    Log.w("glide变换后byte",out.toByteArray().length+"");
+                    if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N){
+                        Uri uri1 = getImageContentUri(MainActivity.this,file);
+                        setUri(uri1);
+                        sendUpdateInfo(uri1);
+                    }else {
+                        setUri(Uri.fromFile(file));
+                        sendUpdateInfo(Uri.fromFile(file));
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+                mHandler.postDelayed(()->{
+                    Intent intent = SecondActivity.newInstance(MainActivity.this,imagePath,userName);
+                    intent.putExtra("IMAGE_PATH",imagePath);
+                    startActivity(intent);
+                    overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
+                },500);
+
+                mHandler.post(()->{
+                    progresssBarText.setVisibility(View.GONE);
+                    progressBar.setVisibility(View.GONE);
+                    mCusImageView.setImageBitmap(bitmap1);
+                });
+                if (cropFile.exists()){
+                    cropFile.delete();
+                }
+
+
+            }).start();
+
         }catch(Exception e){
             e.printStackTrace();
         }

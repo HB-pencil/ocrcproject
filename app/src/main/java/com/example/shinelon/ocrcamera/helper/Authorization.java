@@ -15,7 +15,7 @@ public class Authorization{
 
     public static String generateKey() throws Exception{
         String current = String.valueOf(System.currentTimeMillis()/1000);
-        String expired = String.valueOf(System.currentTimeMillis()/1000+ 10);
+        String expired = String.valueOf(System.currentTimeMillis()/1000+ 3600);
         String original = "a=1253939683&" + "b=hardblack&" + "k=AKIDGSUM4cU98xa2KRBOabUFtQmwviKlN4w0&"
                 + "t=" + current + "&" + "e=" + expired;
         byte [] result = new byte[getResult(original).length + original.getBytes().length];
