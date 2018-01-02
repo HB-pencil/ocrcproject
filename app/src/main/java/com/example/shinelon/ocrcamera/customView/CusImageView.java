@@ -15,7 +15,7 @@ import android.widget.ImageView;
 /**
  * Created by Shinelon on 2017/12/16.自定义ImageView
  */
-
+@Deprecated
 public class CusImageView extends ImageView {
     private Paint mPaint = new Paint();
     private RectF rectF;

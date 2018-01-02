@@ -473,6 +473,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * @param uri
      * @return
      */
+    @Deprecated
     public String changeToPath(Uri uri){
         String[] proj = { MediaStore.Images.Media.DATA };
         //sdk<=11，cursor = manageQuery(uri,proj,null,null,null)
@@ -488,6 +489,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * 压缩图片方法由于使用GPUImageView，故而将自定义View及其相关压缩等注释掉，此方法暂时不用
      */
 
+    @Deprecated
     public Bitmap compressPhoto(Uri uri){
         Bitmap bitmap;
         Bitmap newBitmap;
