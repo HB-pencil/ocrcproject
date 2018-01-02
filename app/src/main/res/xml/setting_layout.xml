@@ -28,6 +28,6 @@
            android:summary="@string/connect"
            android:switchTextOn="开启"
            android:switchTextOff="关闭"
-           android:defaultValue="false"/>
+           android:defaultValue="true"/>
    </PreferenceCategory>
 </PreferenceScreen>

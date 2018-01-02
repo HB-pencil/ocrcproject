@@ -12,7 +12,7 @@ import android.view.View;
 import android.widget.RelativeLayout;
 
 /**
- * Created by Shinelon on 2017/12/15.
+ * Created by Shinelon on 2017/12/15.自定义辅助View
  */
 
 public class HelperView extends View {

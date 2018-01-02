@@ -10,14 +10,11 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -414,8 +411,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 GPUImageFilterGroup group = new GPUImageFilterGroup();
                 group.addFilter(new GPUImageGrayscaleFilter());
                 group.addFilter(new GPUImageSepiaFilter(1.0F));
-                group.addFilter(new GPUImageBrightnessFilter(-0.15F));
-                group.addFilter(new GPUImageSharpenFilter(0.2F));
+                group.addFilter(new GPUImageBrightnessFilter(-0.12F));
+                group.addFilter(new GPUImageSharpenFilter(0.3F));
                 group.addFilter(new GPUImageContrastFilter(1.2F));
                 group.updateMergedFilters();
 

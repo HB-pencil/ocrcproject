@@ -324,7 +324,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
             //“<br/>的/被前面替换没有了”
             String tempA = (a.replaceAll("[\\p{Punct}\\p{Space}]+","")).replaceAll("<br>","");
             String tempB = b.replaceAll("[\\p{Punct}\\p{Space}]+","");
-            Log.w("temA temB ",tempA+"\n"+tempB );
+            Log.w("temBaidu temTengxu ",tempA+"\n"+tempB );
             if(tempA.equalsIgnoreCase(tempB)){
                 Log.e("比较","相等");
             }else if(tempA.length()==tempB.length())
@@ -363,10 +363,10 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
             if(!state){
                 Log.w("分类", "handleDataList: 执行");
                 dataStrings = new ArrayList<>();
-                list.get(i).setFlag(true);
                 dataStrings.add(list.get(i));
+                list.get(i).setFlag(true);
                 //判断是否到达最后一个数据，不然会集合溢出
-                if(i!=list.size()-1){
+                if(i<list.size()-1){
                     //每次分类的具体行为
                     for(int j=i+1;j<list.size();j++){
                         if(list.get(j).getFlag()){
@@ -374,7 +374,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                             Log.w( "handleDataList(第二轮) ","已经分类 ");
                             continue;
                         }
-                        int v = Math.abs(list.get(i).getY() - list.get(j).getY());
+                        int v = Math.abs( (list.get(i).getY()) - (list.get(j).getY()) );
                         if(v<=10){
                             list.get(j).setFlag(true);
                             dataStrings.add(list.get(j));
@@ -418,7 +418,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
             StringBuffer stringBuffer = new StringBuffer();
             for(int m=0;m<stringList.size();m++){
                 if(flag==BAIDU){
-                    stringBuffer.append(stringList.get(m).getItemString()+"<br/>");
+                    stringBuffer.append(stringList.get(m).getItemString());
                 }else {
                     stringBuffer.append(stringList.get(m).getItemString());
                 }

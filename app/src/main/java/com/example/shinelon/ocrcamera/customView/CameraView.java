@@ -2,24 +2,17 @@ package com.example.shinelon.ocrcamera.customView;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
-import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.YuvImage;
 import android.hardware.Camera;
-import android.util.AttributeSet;
 import android.util.Log;
-import android.util.Size;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-
 import com.example.shinelon.ocrcamera.CameraActivity;
-
-import java.security.Policy;
 import java.util.List;
 
 
 /**
- * Created by Shinelon on 2017/12/15.
+ * Created by Shinelon on 2017/12/15.自定相机
  */
 
 public class CameraView extends SurfaceView implements SurfaceHolder.Callback{

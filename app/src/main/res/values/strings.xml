@@ -17,9 +17,9 @@
     <string name="open">Open</string>
     <string name="close">Close</string>
     <string name="more">糟糕，没有更多内容了！</string>
-    <string name="tips1">请选择图片或拍照,默认使用本地引擎识别</string>
-    <string name="tips2">如果要提高识别效率和准确度</string>
-    <string name="tips3">请在设置中开启联网识别</string>
+    <string name="tips1">请选择图片或拍照,默认使用联网识别</string>
+    <string name="tips2">如果想要离线识别</string>
+    <string name="tips3">请在设置中关闭联网识别</string>
     <string name="setting">系统设置</string>
     <string name="check">检查更新</string>
     <string name="check_your_update">检查可用的新版本</string>

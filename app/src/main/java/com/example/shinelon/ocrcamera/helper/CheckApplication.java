@@ -34,7 +34,7 @@ import java.util.Set;
 public class CheckApplication extends Application {
     public static Engine engine = null;
     public static RecognitionManager manager = null;
-    public static boolean isNotNativeRecognize = false;
+    public static boolean isNotNativeRecognize = true;
     private Handler handler = null;
     public static Context context;
 
@@ -43,7 +43,7 @@ public class CheckApplication extends Application {
         super.onCreate();
         LeakCanary.install(this);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        isNotNativeRecognize = preferences.getBoolean("connect",false);
+        isNotNativeRecognize = preferences.getBoolean("connect",true);
         init();
         context = getApplicationContext();
     }

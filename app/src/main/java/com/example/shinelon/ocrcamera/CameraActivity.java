@@ -13,13 +13,10 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
-
 import com.example.shinelon.ocrcamera.customView.CameraView;
-
 import java.io.File;
 import java.io.FileOutputStream;
 
-import retrofit2.http.Header;
 
 /**
  * Created by Shinelon on 2017/12/15.
