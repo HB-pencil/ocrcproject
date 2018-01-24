@@ -30,10 +30,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import io.reactivex.Observer;
-import io.reactivex.disposables.Disposable;
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -41,14 +37,11 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 
 
 /**
- * Created by Shinelon on 2017/6/30.
+ * Created by Shinelon on 2017/6/30.重点处理过程在  doInBackground()  里面
  */
 
 public class AsycProcessTask extends AsyncTask<String,String,String> {
@@ -96,11 +89,11 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
 
         publishProgress("开始识别");
         if (CheckApplication.isNotNativeRecognize){
-            // 通用文字识别参数设置
+            // 这一部分是百度通用文字识别参数设置(集成的sdk)
             GeneralParams param = new GeneralParams();
             param.setDetectDirection(true);
             param.setImageFile(file);
-            // 调用通用文字识别服务
+            // 调用百度通用文字识别服务
             OCR.getInstance().recognizeGeneral(param, new OnResultListener<GeneralResult>() {
                 @Override
                 public void onResult(GeneralResult result) {
@@ -108,10 +101,11 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                     for (WordSimple wordSimple : result.getWordList()) {
                         // wordSimple不包含位置信息
                         Word word = (Word) wordSimple;
+                        //获得识别的每一行结果并除去空格，此处识别结果是sdk封装的方法,结果是非json，也就是处理好的数据了
                         String itemString = word.getWords().replaceAll("\\s*","").trim();
-                        //百度只需要分行
-                        int x = word.getLocation().getLeft();
-                        int y = word.getLocation().getTop();
+
+                        int x = word.getLocation().getLeft(); //x坐标
+                        int y = word.getLocation().getTop();  //y坐标
                         DataString dataString = new DataString();
                         dataString.setItemString(itemString);
                         dataString.setX(x);
@@ -121,6 +115,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                         Log.e("百度xy", x+"  "+y);
                         Log.e("每个字段和字符数",itemString+"  "+itemString.length());
                     }
+                    //百度只需要分行，因为每一行都是有序的。分行是当同一行两个字段距离远，可能会被分两行显示，把他还原为一行
                     List<List<DataString>> listOflist = handleDataList(daBaiduList);
                     if(listOflist.size()>0){
                         sortData(listOflist,BAIDU);
@@ -198,9 +193,9 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
                         Log.e("腾讯坐标xy",itemsBean.getItemcoord().getX()+"  "+itemsBean.getItemcoord().getY());
                         Log.w("腾讯每个字段及其字符数",itemString+"  "+itemString.length());
                     }
-                    //对于dataList里面的Data字符串数据进行分类，同一行y坐标相差10以内的归类在一起
+                    //对于dataList里面的Data字符串数据进行分类分行，和百度一样，同一行y坐标相差10以内的归类在一起
                     List<List<DataString>> listOfList = handleDataList( daTengxuduList);
-                    //归类以后在进行排序
+                    //归类以后在进行排序，因为腾讯在按他的识别结果出来的行显示时会出现各种乱序。所以还要排序
                     sortData(listOfList,TENGXU);
                 }else {
                     Log.e("错误",string);
@@ -350,7 +345,7 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
 
 
     /**
-     *对腾讯返回的结果进行分类，根据坐标判断字段为同一行
+     *对腾讯返回的结果进行分类，根据y坐标相差10判断字段为同一行
      */
     public List<List<DataString>> handleDataList(List<DataString> list){
 
@@ -390,11 +385,12 @@ public class AsycProcessTask extends AsyncTask<String,String,String> {
 
 
     /**
-     * 对归类也就是分行后的数据进行排序
+     * 对归类也就是分行后的数据进行排序，按照x坐标大小
      */
     public void sortData(List<List<DataString>> lists,int flag){
         for (int i=0;i<lists.size();i++){
             List<DataString> stringList = lists.get(i);
+
             if(flag==TENGXU){
                 //直接选择排序
                 for(int j=0;j<stringList.size()-1;j++){
