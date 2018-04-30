@@ -49,6 +49,9 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import jp.co.cyberagent.android.gpuimage.GPUImage;
 import jp.co.cyberagent.android.gpuimage.GPUImageBrightnessFilter;
@@ -56,6 +59,7 @@ import jp.co.cyberagent.android.gpuimage.GPUImageContrastFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilterGroup;
 import jp.co.cyberagent.android.gpuimage.GPUImageGrayscaleFilter;
+import jp.co.cyberagent.android.gpuimage.GPUImageSaturationFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageSepiaFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageSharpenFilter;
 
@@ -406,14 +410,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG,20,out);
 
-            new Thread(()->{
+            ExecutorService service = Executors.newSingleThreadExecutor();
+            service.submit(()->{
                 gpuImage.setImage(bitmap);
                 GPUImageFilterGroup group = new GPUImageFilterGroup();
-                group.addFilter(new GPUImageGrayscaleFilter());
-                group.addFilter(new GPUImageSepiaFilter(1.0F));
-                group.addFilter(new GPUImageBrightnessFilter(-0.12F));
-                group.addFilter(new GPUImageSharpenFilter(0.3F));
-                group.addFilter(new GPUImageContrastFilter(1.2F));
+                group.addFilter(new GPUImageContrastFilter());
+                group.addFilter(new GPUImageBrightnessFilter(-0.02F));
+                group.addFilter(new GPUImageSepiaFilter(1.5F));
+
                 group.updateMergedFilters();
 
                 gpuImage.setFilter(group);
@@ -457,10 +461,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (cropFile.exists()){
                     cropFile.delete();
                 }
-
-
-            }).start();
-
+            });
         }catch(Exception e){
             e.printStackTrace();
         }

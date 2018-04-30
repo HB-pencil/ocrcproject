@@ -1,4 +1,5 @@
-apply plugin:'com.android.application'
+apply plugin: 'com.android.application'
+
 
 def keystorePropertiesFile = rootProject.file("key.properties")
 def keystoreProperties = new Properties()

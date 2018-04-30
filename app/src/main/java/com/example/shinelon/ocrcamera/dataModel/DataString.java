@@ -8,16 +8,6 @@ public class DataString {
     private String itemString;
     private int x;
     private int y;
-    private boolean flag;
-
-    public void setFlag(boolean flag) {
-        this.flag = flag;
-    }
-
-    public boolean getFlag() {
-
-        return flag;
-    }
 
     public void setItemString(String itemString) {
         this.itemString = itemString;
@@ -35,11 +25,11 @@ public class DataString {
         return itemString;
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
+    public int getXY(int or) {
+        if(or==1){
+            return x;
+        }else {
+            return y;
+        }
     }
 }

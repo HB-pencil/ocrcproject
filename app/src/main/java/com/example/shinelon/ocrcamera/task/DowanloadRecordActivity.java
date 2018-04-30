@@ -513,7 +513,6 @@ public class DowanloadRecordActivity extends AppCompatActivity{
 
                     holder.tipsText_1.setVisibility(View.INVISIBLE);
                     holder.tipsText_2.setVisibility(View.VISIBLE);
-
                 }
             });
         }else if(type == TEXT){

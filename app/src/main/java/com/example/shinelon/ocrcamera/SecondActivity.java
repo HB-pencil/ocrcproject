@@ -49,8 +49,10 @@ import okhttp3.Response;
 
 public class SecondActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private EditText  mEditText;
-    private Button mButton;
+    private EditText  mEditText1;
+    private EditText  mEditText2;
+    private Button mButton1;
+    private Button mButton2;
     private static final String IMAGE_PATH = "IMAGE_PATH";
     private String imageUrl;
     private String customFileName;
@@ -63,11 +65,14 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_second);
 
-        mButton = (Button) findViewById(R.id.confirm_bt);
-        mEditText = (EditText) findViewById(R.id.edit_text);
-        mEditText.setEnabled(false);
-        mButton.setOnClickListener(this);
-
+        mButton1 = (Button) findViewById(R.id.confirm_bt1);
+        mButton2 = (Button) findViewById(R.id.confirm_bt2);
+        mEditText1 = (EditText) findViewById(R.id.edit_text_one);
+        mEditText2 = (EditText) findViewById(R.id.edit_text_two);
+        mEditText1.setEnabled(false);
+        mEditText2.setEnabled(false);
+        mButton1.setOnClickListener(this);
+        mButton2.setOnClickListener(this);
         Bundle extras = getIntent().getExtras();
 
         mProgressDialog = new ProgressDialog(this);
@@ -83,8 +88,8 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
     public void doRecognize(ProgressDialog dialog) {
         // Starting recognition process
         task = new AsycProcessTask(dialog);
-        task.registerlistener(message->displayMessage(message));
-        task.execute(imageUrl);
+        task.registerlistener((message1,message2)->displayMessage(message1,message2));
+        task.executeOnExecutor(AsycProcessTask.SERIAL_EXECUTOR,imageUrl);
         System.out.println("自动识别路径为    " + imageUrl);
         Log.d("自动识别路径:", imageUrl);
     }
@@ -100,8 +105,13 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onClick(View view){
-        if(view.getId() == R.id.confirm_bt){
-            String content = mEditText.getText().toString();
+
+            String content = "";
+            if (view.getId()==R.id.confirm_bt1){
+                content = mEditText1.getText().toString();
+            }else {
+                content = mEditText2.getText().toString();
+            }
             String account = getIntent().getStringExtra(USER_NAME);
             SimpleDateFormat sf = new SimpleDateFormat("yy-MM-dd HH:mm:ss");
             Calendar time = Calendar.getInstance();
@@ -122,29 +132,26 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
             Log.d("SecondActivity","图片路径"+imgfile.getPath());
 
             View dialogview = getLayoutInflater().inflate(R.layout.custom_dialog,null);
-            EditText editText = (EditText)dialogview.findViewById(R.id.edit_dialog);
+            EditText editText = dialogview.findViewById(R.id.edit_dialog);
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setView(dialogview)
                     .setCancelable(false)
                     .setTitle("提示：")
-                    .setPositiveButton("确认", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                          customFileName = editText.getText().toString();
-                            if(txtfile.exists()&&imgfile.exists()){
-                                try {
-                                    sendFile(txtfile,imgfile);
-                                    Log.d("SEND", "onClick: 开始发送文件");
-                                }catch (Exception e){
-                                    e.printStackTrace();
-                                }
+                    .setPositiveButton("确认", (p1,p2)->{
+                        customFileName = editText.getText().toString();
+                        if(txtfile.exists()&&imgfile.exists()){
+                            try {
+                                sendFile(txtfile,imgfile);
+                                Log.d("SEND", "onClick: 开始发送文件");
 
+                            }catch (Exception e){
+                                e.printStackTrace();
                             }
+
                         }
                     })
                     .create();
             dialog.show();
-        }
     }
 
     /**
@@ -152,6 +159,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
      * @param
      */
    public void sendFile (File txtFile,File imgFile) throws Exception{
+       mProgressDialog.show();
        String txtName = txtFile.getName();
        String imgName = imgFile.getName();
        if(customFileName!=null){
@@ -185,6 +193,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
                new Handler(SecondActivity.this.getMainLooper()).post(new Runnable() {
                    @Override
                    public void run() {
+                       mProgressDialog.dismiss();
                        Toast.makeText(SecondActivity.this, "请检查网络！", Toast.LENGTH_SHORT).show();
                    }
                });
@@ -206,6 +215,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
                             new Handler(getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
+                                    mProgressDialog.dismiss();
                                     Toast.makeText(SecondActivity.this, "发送成功！", Toast.LENGTH_SHORT).show();
                                     File fileTxt = new File(getFilesDir(),file);
                                     if (fileTxt.exists()){
@@ -218,6 +228,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
                             new Handler(getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
+                                    mProgressDialog.dismiss();
                                     Toast.makeText(SecondActivity.this, "发送失败，请稍后再试！", Toast.LENGTH_SHORT).show();
                                 }
                             });
@@ -226,6 +237,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
                         new Handler(SecondActivity.this.getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {
+                                mProgressDialog.dismiss();
                                 Toast.makeText(SecondActivity.this, "访问服务器失败，请稍后再试！", Toast.LENGTH_SHORT).show();
                             }
                         });
@@ -246,7 +258,8 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.edit:
-                mEditText.setEnabled(true);
+                mEditText1.setEnabled(true);
+                mEditText2.setEnabled(true);
                     break;
                 default:
                     break;
@@ -261,28 +274,31 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
         return token;
     }
 
-            public void displayMessage(String text) {
-                mEditText.post(new MessagePoster(text));
+            public void displayMessage(String text1,String text2) {
+                mEditText1.post(new MessagePoster(text1,text2));
                 try{
                     Thread.sleep(200);
                 }catch (Exception e){
                     e.printStackTrace();
                 }
-                System.out.println("结果"+text);
-                Log.d("结果：",text);
+                System.out.println("结果"+text1);
+                Log.d("结果：",text1);
             }
 
             class MessagePoster implements Runnable {
-                public MessagePoster(String message) {
-                    mMessage = message;
+                public MessagePoster(String message1,String message2) {
+                    mMessage1 = message1;
+                    mMessage2 = message2;
                 }
 
                 @Override
                 public void run() {
-                    mEditText.setText(Html.fromHtml(mMessage));
+                    mEditText1.setText(Html.fromHtml(mMessage1));
+                    mEditText2.setText(Html.fromHtml(mMessage2));
                 }
 
-                private final String mMessage;
+                private final String mMessage1;
+                private final String mMessage2;
             }
 
     @Override
