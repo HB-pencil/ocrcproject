@@ -13,7 +13,6 @@ import com.baidu.ocr.sdk.OnResultListener;
 import com.baidu.ocr.sdk.exception.OCRError;
 import com.baidu.ocr.sdk.model.GeneralParams;
 import com.baidu.ocr.sdk.model.GeneralResult;
-import com.baidu.ocr.sdk.model.VertexesLocation;
 import com.baidu.ocr.sdk.model.Word;
 import com.baidu.ocr.sdk.model.WordSimple;
 import com.example.shinelon.ocrcamera.dataModel.DataString;
@@ -87,7 +86,6 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
     public List<String> doInBackground(String... args){
         String inputFile = args[0];
         File file = new File(inputFile);
-
         publishProgress("开始识别");
         if (CheckApplication.isNotNativeRecognize){
             // 这一部分是百度通用文字识别参数设置(集成的sdk)
@@ -119,7 +117,6 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                     for(int i=0;i<daBaiduList.size();i++){
                         baiduRs.add(daBaiduList.get(i).getItemString());
                     }
-
 
                     if(baiduRs.size()==0){
                         setResult("null","null");
@@ -246,7 +243,6 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                 Log.e("两者list字段各自长度",baiduRs.size()+"    "+tengxuRs.size());
                 return getResult();
             }
-
             //以下为本地识别
         }else {
             try {
