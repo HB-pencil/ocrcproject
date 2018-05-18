@@ -201,8 +201,9 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
 
            @Override
            public void onResponse(Call call, Response response) throws IOException {
+               String str = response.body().string();
+                    Log.e("响应",str);
                     if (response.isSuccessful()) {
-                        String str = response.body().string();
                         Log.d("发送文件：", str);
                         String result = "";
                         try {

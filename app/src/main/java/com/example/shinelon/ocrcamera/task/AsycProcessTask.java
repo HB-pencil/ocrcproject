@@ -2,6 +2,7 @@ package com.example.shinelon.ocrcamera.task;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+import android.util.ArrayMap;
 import android.util.Log;
 import com.abbyy.mobile.ocr4.ImageLoadingOptions;
 import com.abbyy.mobile.ocr4.RecognitionManager;
@@ -20,11 +21,11 @@ import com.example.shinelon.ocrcamera.dataModel.TentcentRs;
 import com.example.shinelon.ocrcamera.helper.Authorization;
 import com.example.shinelon.ocrcamera.helper.CheckApplication;
 import com.example.shinelon.ocrcamera.helper.LogInterceptor;
-import com.example.shinelon.ocrcamera.helper.RetorfitRequest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -97,7 +98,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             OCR.getInstance().recognizeGeneral(param, new OnResultListener<GeneralResult>() {
                 @Override
                 public void onResult(GeneralResult result) {
-                    // 调用成功，返回GeneralResult对象，此方法UI线程回调
+                    // 调用成功，返回GeneralResult对象，注意此方法UI线程回调
                     for (WordSimple wordSimple : result.getWordList()) {
                         // wordSimple不包含位置信息
                         Word word = (Word) wordSimple;
@@ -113,26 +114,17 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                         Log.e("百度xy", x+"  "+y);
                         Log.e("每个字段和字符数",itemString+"  "+itemString.length());
                     }
-
-                    for(int i=0;i<daBaiduList.size();i++){
-                        baiduRs.add(daBaiduList.get(i).getItemString());
-                    }
-
-                    if(baiduRs.size()==0){
-                        setResult("null","null");
-                    }
                     synchronized (str1){
                         str1.notifyAll();
                     }
-
-                    publishProgress("正在处理");
-
-                    Log.e("TAG", "baidu "+Thread.currentThread().getName() );
                 }
                 @Override
                 public void onError(OCRError error) {
                     // 调用失败，返回OCRError对象
                     setResult(error.getMessage(),error.getMessage());
+                    synchronized (str1){
+                        str1.notifyAll();
+                    }
                 }
             });
 
@@ -181,7 +173,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                     while (iterator.hasNext()){
                         TentcentRs.DataBean.ItemsBean itemsBean = (TentcentRs.DataBean.ItemsBean) iterator.next();
                         String itemString = itemsBean.getItemstring();
-                        itemString = itemString.replaceAll("\\s*","").trim();
+                        itemString = itemString.replaceAll("[\\s]+","").trim();
                         DataString da = new DataString();
                         da.setItemString(itemString);
                         da.setX(itemsBean.getItemcoord().getX());
@@ -191,22 +183,18 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                         Log.w("腾讯每个字段及其字符数",itemString+"  "+itemString.length());
                     }
                     //对于dataList里面的Data字符串数据进行分类分行，和百度一样，同一行y坐标相差10以内的归类在一起
-                    List<List<DataString>> listOfList = handleDataList( daTengxuduList,2);
+                    List<List<DataString>> lists = handleDataList( daTengxuduList,2);
                     //归类以后在进行排序，因为腾讯在按他的识别结果出来的行显示时会出现各种乱序。所以还要排序
-                    sortData(listOfList);
+                    sortData(lists,2);
                 }else {
                     Log.e("错误",string);
                 }
-
-
             }catch (Exception e){e.printStackTrace();}
-
             publishProgress("正在处理");
-
             try {
                 //同步
                 synchronized (str1){
-                    if(baiduRs.size()==0){
+                    if(daBaiduList.size()==0){
                         if( !"null".equals(getResult()) ){
                             str1.wait();
                         }
@@ -215,6 +203,14 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             }catch (Exception e){
                 e.printStackTrace();
             }
+
+            //百度分行，因为距离远会被分开
+            List<List<DataString>> lists =  handleDataList(daBaiduList,1);
+            sortData(lists,1);
+            if(baiduRs.size()==0){
+                setResult("null","null");
+            }
+            publishProgress("正在处理");
 
             if(("null").equals(getResult())){
                 Log.e("getResult",getResult().toString());
@@ -245,6 +241,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             }
             //以下为本地识别
         }else {
+
             try {
                 FileInputStream inputStream = new FileInputStream(file);
                 ImageLoadingOptions options = new ImageLoadingOptions();
@@ -301,7 +298,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             mProgressDialog.dismiss();
         }
     }
-    public void setResult(String result1,String result2){
+    private void setResult(String result1,String result2){
         str1 = result1;
         str2 = result2;
     }
@@ -313,62 +310,79 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
     }
 
 
-    public void compareListString(List<String> baiduRs,List<String> tengxuRs){
-        int n = baiduRs.size()-tengxuRs.size();
-        //判断谁的行数多，有时候最后一行一两个字，腾讯的才能识别出来
-        if(n<0){
-            //腾讯识别行数多时，百度全部校验，否则百度校验少n个
-            n = 0;
-        }
-        for(int i=0;i<baiduRs.size()-n;i++){
+    private void compareListString(List<String> baiduRs,List<String> tengxuRs){
+        //比较两者都有返回结果的行
+        int n = Math.min(baiduRs.size(),tengxuRs.size());
+        for(int i=0;i<n;i++){
             //各自每一行数据
             String a =baiduRs.get(i);
             String b =tengxuRs.get(i);
-            Log.e("长度",a.length()+"   "+b.length());
+            Log.e("长度B&T",a.length()+"   "+b.length());
             //比较时去除不重要的标点符号干扰
-            String tempA = a.replaceAll("[\\p{Punct}\\p{Space}]+","");
-            String tempB = b.replaceAll("[\\p{Punct}\\p{Space}]+","");
-            Log.w("temBaidu temTengxu ",tempA+"\n"+tempB );
+            String tempA = a.replaceAll("\\s*\\p{Punct}\\s*","");
+            String tempB = b.replaceAll("\\s*\\p{Punct}\\s*","");
+            Log.w("temBaidu&temTengxu ",tempA+"\n"+tempB );
             if(tempA.equalsIgnoreCase(tempB)){
-                Log.e("比较","相等");
+                Log.e("比较","两者相等");
             }else if(tempA.length()==tempB.length())
             {
-                for(int k=0;k<tempA.length();k++){
-                    if(tempA.charAt(k)!=tempB.charAt(k)){
-                        a.replaceAll(tempA.substring(k,k+1),"<font color=\"#ff0000\">" + tempA.charAt(k) + "</font>");
-                    }
-                }
+                a = insertMark(tempA,tempB,a);
                 Log.e("a与b",a+"  长度相同内容比较  "+b);
             } else {
-                for(int j=0;j<Math.min(tempA.length(),tempB.length());j++){
-                     if(tempA.charAt(j)!=tempB.charAt(j)){
-                        a = a.substring(0,j) + "<font color=\"#ff0000\">" + a.substring(j,a.length()) + "</font>";
-                        break;
-                     }
-                  }
+                for(int j=0;j<tempA.length();j++){
+
+
+                }
                 Log.e("a与b",a+"  长度不等  "+b);
             }
             baiduRs.set(i,a);
         }
     }
 
+    private String insertMark(String tempA,String tempB,String a){
+        ArrayMap<Character,Integer> map = new ArrayMap<>();
+        for(int k=0;k<tempA.length();k++){
+            char t = tempA.charAt(k);
+            if(map.containsKey(t)){
+                map.put(t,map.get(t)+1);
+            }else{
+                map.put(t,1);
+            }
+            if(t!=tempB.charAt(k)){
+                int count = map.get(t);
+                int index = -1;
+                int start = 0;
+                for(int m=0;m<count;m++){
+                    index = a.indexOf(t,start);
+                    if(index>=0) {
+                        start = index + 1;
+                    }
+                }
+                StringBuilder sb = new StringBuilder(a);
+                sb.replace(index,index+1,"<font color=\"#ff0000\">"+t+"</font>");
+                a = sb.toString();
+            }
+        }
+        return a;
+    }
+
 
     /**
      *对腾讯/百度返回的结果进行分类，根据y坐标相差10判断字段为同一行
      */
-    public List<List<DataString>> handleDataList(List<DataString> list,int or){
+    private List<List<DataString>> handleDataList(List<DataString> list,int or){
         List<List<DataString>> listList = new ArrayList<>();
-        quickSort(0,list.size()-1,list,or);
-
+        //对返回结果集按y坐标值进行排序，从第一个开始遍历，按照一定的阈值将后面的归类。直到找到不满足，继续过程
+        quickSort(0,list.size()-1,list,2,or);
         List<DataString> l = new ArrayList<>();
         listList.add(l);
-        int temp = list.get(0).getXY(or);
-
+        int temp = list.get(0).getXY(2);
+        int point = (or==1)?70:20;
         for(int i=0;i<list.size();i++){
-            if(Math.abs(temp - list.get(i).getXY(or))<=20){
+            if(Math.abs(temp - list.get(i).getXY(2))<=point){
                 l.add(list.get(i));
             }else{
-                temp = list.get(i).getXY(or);
+                temp = list.get(i).getXY(2);
                 l = new ArrayList<>();
                 listList.add(l);
                 l.add(list.get(i));
@@ -380,12 +394,14 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
 
 
     /**
-     * 对归类也就是分行后的数据进行排序，按照x坐标大小
+     *
+     * @param lists
+     * @param or  or==1 表示百度/or==2表示腾讯
      */
-    public void sortData(List<List<DataString>> lists){
+    private void sortData(List<List<DataString>> lists,int or){
         for (int i=0;i<lists.size();i++){
             List<DataString> stringList = lists.get(i);
-            quickSort(0,stringList.size()-1,stringList,1);
+            quickSort(0,stringList.size()-1,stringList,1,or);
 
             StringBuffer stringBuffer = new StringBuffer();
             for(int m=0;m<stringList.size();m++){
@@ -393,33 +409,34 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             }
             String rs = stringBuffer.toString();
             Log.e( "sortData",rs );
-            tengxuRs.add(rs);
+            if(or==1) {baiduRs.add(rs);}
+            else {tengxuRs.add(rs);}
         }
     }
 
-    public void quickSort(int s,int e,List<DataString> list,int or){
-        if(s>=e) {return;}
-        int i = s;
+    private void quickSort(int s,int e,List<DataString> list,int flag,int or){
+        if(s>=e||(or==1)&&flag==1) {return;}
+        int i = s+1;
         int j = e;
         while(i<j){
-            while(i<j && list.get(i).getXY(or)<=list.get(j).getXY(or)){
+            while(i<j && list.get(i).getXY(flag)<=list.get(j).getXY(flag)){
                 i++;
             }
-            while(i<j && list.get(j).getXY(or)>list.get(i).getXY(or)){
+            while(i<j && list.get(j).getXY(flag)>list.get(i).getXY(flag)){
                 j--;
             }
             if(i<j){
                 swap(i,j,list);
             }
         }
-        if(list.get(j).getXY(or)<list.get(s).getXY(or)){
+        if(list.get(j).getXY(flag)<list.get(s).getXY(flag)){
             swap(s,j,list);
         }
-        quickSort(s,j-1,list,or);
-        quickSort(j+1,e,list,or);
+        quickSort(s,j-1,list,flag,or);
+        quickSort(j+1,e,list,flag,or);
     }
 
-    public void swap(int i,int j,List<DataString> list){
+    private void swap(int i,int j,List<DataString> list){
         DataString temp = list.get(i);
         list.set(i,list.get(j));
         list.set(j,temp);

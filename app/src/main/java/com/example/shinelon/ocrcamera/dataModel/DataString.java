@@ -25,8 +25,8 @@ public class DataString {
         return itemString;
     }
 
-    public int getXY(int or) {
-        if(or==1){
+    public int getXY(int flag) {
+        if(flag==1){
             return x;
         }else {
             return y;
