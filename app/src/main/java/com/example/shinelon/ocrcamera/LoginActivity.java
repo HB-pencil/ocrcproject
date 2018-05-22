@@ -86,14 +86,11 @@ public class LoginActivity extends AppCompatActivity {
                 return true;
             }
         });
-        mLoginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                 try{
-                     doHandle();
-                 }catch (Exception e){
-                     e.printStackTrace();
-                 }
+        mLoginButton.setOnClickListener((v)->{
+            try{
+                doHandle();
+            }catch (Exception e){
+                e.printStackTrace();
             }
         });
 
@@ -103,13 +100,10 @@ public class LoginActivity extends AppCompatActivity {
                 overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
         });
 
-        mForgetButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(LoginActivity.this,ForgetPassActicity.class);
-                startActivity(intent);
-                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
-            }
+        mForgetButton.setOnClickListener((v)->{
+            Intent intent = new Intent(LoginActivity.this,ForgetPassActicity.class);
+            startActivity(intent);
+            overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
         });
 
         mSavedA.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -192,12 +186,8 @@ public class LoginActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     e.printStackTrace();
-                    new Handler(LoginActivity.this.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(LoginActivity.this, "连接服务器失败，请检查网络！", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    new Handler(LoginActivity.this.getMainLooper()).post(()->
+                        Toast.makeText(LoginActivity.this, "连接服务器失败，请检查网络！", Toast.LENGTH_SHORT).show());
                 }
 
                 @Override
@@ -218,42 +208,24 @@ public class LoginActivity extends AppCompatActivity {
                             parseUserInfo(str);
                             mLoginButton.post(new ButtonPoster("登录",mLoginButton,false));
                             loginAccount();
-                            new Handler(getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(LoginActivity.this, "登录成功！", Toast.LENGTH_SHORT).show();
-                                }
-                            });
+                            new Handler(getMainLooper()).post(()->Toast.makeText(LoginActivity.this, "登录成功！", Toast.LENGTH_SHORT).show());
                         }else{
-                            new Handler(getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    JSONObject jsonObject = null;
-                                    try{
-                                        jsonObject = new JSONObject(str);
-                                        AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
-                                        AlertDialog dialog = builder.setMessage(jsonObject.getString("message")+"!")
-                                                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                                                    @Override
-                                                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                                                    }
-                                                }).create();
-                                        dialog.show();
-                                    }catch (Exception e){
-                                        e.printStackTrace();
-                                    }
-
+                            new Handler(getMainLooper()).post(()->{
+                                JSONObject jsonObject = null;
+                                try{
+                                    jsonObject = new JSONObject(str);
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
+                                    AlertDialog dialog = builder.setMessage(jsonObject.getString("message")+"!")
+                                            .setPositiveButton(android.R.string.ok, (dialog1, which) -> {}).create();
+                                    dialog.show();
+                                }catch (Exception e){
+                                    e.printStackTrace();
                                 }
+
                             });
                         }
                     }else{
-                        new Handler(getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(LoginActivity.this,javaBean.getMessage(),Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                        new Handler(getMainLooper()).post(()->  Toast.makeText(LoginActivity.this,javaBean.getMessage(),Toast.LENGTH_SHORT).show());
                     }
                 }
             });
@@ -309,7 +281,8 @@ public class LoginActivity extends AppCompatActivity {
 
         SharedPreferences mPreferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
         try{
-            checkLogin();
+            //checkLogin();
+            loginAccount();
             if(!mSavedA.isChecked()){
                 mPreferences.edit().putString("saved_account","").apply();
                 mPreferences.edit().putBoolean("isReA",false).apply();
