@@ -89,12 +89,7 @@ public class SettingFragment extends PreferenceFragment{
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
-                new Handler(getActivity().getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(getActivity(), "连接服务器失败，请检查网络！", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                new Handler(getActivity().getMainLooper()).post(()-> Toast.makeText(getActivity(), "连接服务器失败，请检查网络！", Toast.LENGTH_SHORT).show());
             }
 
             @Override
@@ -113,20 +108,10 @@ public class SettingFragment extends PreferenceFragment{
                     if(code == 200){
                         final CheckHelper helper = new CheckHelper(getActivity(),info);
                         if(helper.hasNewVersion()){
-                            new Handler(getActivity().getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    helper.showDialog(getActivity());
-                                }
-                            });
+                            new Handler(getActivity().getMainLooper()).post(()->helper.showDialog(getActivity()));
                         }
                     }else{
-                        new Handler(getActivity().getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(getActivity(),info.getMessage(),Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                        new Handler(getActivity().getMainLooper()).post(()->  Toast.makeText(getActivity(),info.getMessage(),Toast.LENGTH_SHORT).show());
                     }
                 }
             }

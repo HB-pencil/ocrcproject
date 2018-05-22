@@ -96,12 +96,7 @@ public class AsyncDownload extends AsyncTask<String,Long,Boolean> {
                         result =true;
                     }catch (Exception e){
                         e.printStackTrace();
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(mContext,"下载失败！",Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                        new Handler(Looper.getMainLooper()).post(()->  Toast.makeText(mContext,"下载失败！",Toast.LENGTH_SHORT).show());
                         result = false;
                     }finally {
                         try{
@@ -114,12 +109,7 @@ public class AsyncDownload extends AsyncTask<String,Long,Boolean> {
                     }
                 }
             }else {
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(mContext,"下载失败！",Toast.LENGTH_SHORT).show();
-                    }
-                });
+                new Handler(Looper.getMainLooper()).post(()-> Toast.makeText(mContext,"下载失败！",Toast.LENGTH_SHORT).show());
                 result = false;
             }
 
@@ -148,27 +138,18 @@ public class AsyncDownload extends AsyncTask<String,Long,Boolean> {
                     .setTitle("下载完成")
                     .setMessage("已经成功下载安装包，要立刻安装吗？")
                     .setCancelable(true)
-                    .setPositiveButton("好的", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Intent intent = new Intent(Intent.ACTION_VIEW);
-                            if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.N){
-                                Uri mUri = FileProvider.getUriForFile(mContext,"com.example.shinelon.ocrcamera.ocrProvider",file);
-                                intent.setDataAndType(mUri,"application/vnd.android.package-archive");
-                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                            }else{
-                                intent.setDataAndType(Uri.fromFile(file),"application/vnd.android.package-archive");
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            }
-                            mContext.startActivity(intent);
+                    .setPositiveButton("好的",(dialog1, which) -> {
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.N){
+                            Uri mUri = FileProvider.getUriForFile(mContext,"com.example.shinelon.ocrcamera.ocrProvider",file);
+                            intent.setDataAndType(mUri,"application/vnd.android.package-archive");
+                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        }else{
+                            intent.setDataAndType(Uri.fromFile(file),"application/vnd.android.package-archive");
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         }
-                    })
-                    .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                      @Override
-                      public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        }
-                    })
+                        mContext.startActivity(intent);})
+                    .setNegativeButton("取消", (dialog1, which) -> dialog1.dismiss())
                     .create();
             dialog.show();
         }

@@ -2,6 +2,7 @@ package com.example.shinelon.ocrcamera.task;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.util.ArrayMap;
 import android.util.Log;
 import com.abbyy.mobile.ocr4.ImageLoadingOptions;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,11 +54,11 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
     private List<String> baiduRs;
     private List<String> tengxuRs;
     private ProgressDialog mProgressDialog;
-    private final int BAIDU = 0;
-    private final int TENGXU =1;
     private UpdateListener listener;
     private  Request request;
     private OkHttpClient client;
+    private File file;
+    private final Integer shareFlag = 1000;
     /**
      * str
      * 不能为null，不然会报错，因为子线程返回值必须为String
@@ -65,10 +67,14 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
     private static String str2 ="";
 
 
-    public AsycProcessTask(ProgressDialog d){
+    public AsycProcessTask(ProgressDialog d,String imageUrl){
+        file = new File(imageUrl);
         mProgressDialog = d;
-        mProgressDialog.show();
+        if(!mProgressDialog.isShowing()){
+            mProgressDialog.show();
+        }
     }
+
 
     @Override
     public void onPreExecute(){
@@ -78,56 +84,17 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             daBaiduList = new ArrayList<>();
             baiduRs = new ArrayList<>();
             tengxuRs = new ArrayList<>();
-
         }
-
+        publishProgress("开始处理");
+        //开启百度识别
+        if (CheckApplication.isNotNativeRecognize){
+            baiduRecognize();
+        }
     }
 
     @Override
     public List<String> doInBackground(String... args){
-        String inputFile = args[0];
-        File file = new File(inputFile);
-        publishProgress("开始识别");
         if (CheckApplication.isNotNativeRecognize){
-            // 这一部分是百度通用文字识别参数设置(集成的sdk)
-            GeneralParams param = new GeneralParams();
-            param.setDetectDirection(true);
-            param.setVertexesLocation(true);
-            param.setImageFile(file);
-            // 调用百度通用文字识别服务
-            OCR.getInstance().recognizeGeneral(param, new OnResultListener<GeneralResult>() {
-                @Override
-                public void onResult(GeneralResult result) {
-                    // 调用成功，返回GeneralResult对象，注意此方法UI线程回调
-                    for (WordSimple wordSimple : result.getWordList()) {
-                        // wordSimple不包含位置信息
-                        Word word = (Word) wordSimple;
-                        //获得识别的每一行结果并除去空格，此处识别结果是sdk封装的方法,结果是非json，也就是处理好的数据了
-                        String itemString = word.getWords().replaceAll("\\s*","").trim();
-                        int x = word.getLocation().getLeft(); //x坐标
-                        int y = word.getLocation().getTop();  //y坐标
-                        DataString dataString = new DataString();
-                        dataString.setItemString(itemString);
-                        dataString.setX(x);
-                        dataString.setY(y);
-                        daBaiduList.add(dataString);
-                        Log.e("百度xy", x+"  "+y);
-                        Log.e("每个字段和字符数",itemString+"  "+itemString.length());
-                    }
-                    synchronized (str1){
-                        str1.notifyAll();
-                    }
-                }
-                @Override
-                public void onError(OCRError error) {
-                    // 调用失败，返回OCRError对象
-                    setResult(error.getMessage(),error.getMessage());
-                    synchronized (str1){
-                        str1.notifyAll();
-                    }
-                }
-            });
-
             String authorization = "";
             try {
                 authorization = Authorization.generateKey();
@@ -193,20 +160,23 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             publishProgress("正在处理");
             try {
                 //同步
-                synchronized (str1){
+                synchronized (shareFlag){
                     if(daBaiduList.size()==0){
                         if( !"null".equals(getResult()) ){
-                            str1.wait();
+                            shareFlag.wait(20000);
                         }
                     }
+                    shareFlag.notifyAll();
                 }
             }catch (Exception e){
                 e.printStackTrace();
             }
 
             //百度分行，因为距离远会被分开
-            List<List<DataString>> lists =  handleDataList(daBaiduList,1);
-            sortData(lists,1);
+            if(daBaiduList.size()>0){
+                List<List<DataString>> lists =  handleDataList(daBaiduList,1);
+                sortData(lists,1);
+            }
             if(baiduRs.size()==0){
                 setResult("null","null");
             }
@@ -288,7 +258,6 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
 
     @Override
     public void onPostExecute(List<String> result){
-        Log.d("onPostExecute","");
         if(!"".equals(result) && !result.equals("null")){
             listener.updateResult(result.get(0),result.get(1));
         }else{
@@ -297,6 +266,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
         if(mProgressDialog.isShowing()){
             mProgressDialog.dismiss();
         }
+        Log.e("FINISH","------------------dialog-------------------"+mProgressDialog.isShowing());
     }
     private void setResult(String result1,String result2){
         str1 = result1;
@@ -319,27 +289,35 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             String b =tengxuRs.get(i);
             Log.e("长度B&T",a.length()+"   "+b.length());
             //比较时去除不重要的标点符号干扰
+
             String tempA = a.replaceAll("\\s*\\p{Punct}\\s*","");
             String tempB = b.replaceAll("\\s*\\p{Punct}\\s*","");
+
             Log.w("temBaidu&temTengxu ",tempA+"\n"+tempB );
             if(tempA.equalsIgnoreCase(tempB)){
                 Log.e("比较","两者相等");
             }else if(tempA.length()==tempB.length())
-            {
-                a = insertMark(tempA,tempB,a);
+            {   //不相等但是长度一样
+                a = insertMark1(tempA,tempB,a);
+                b = insertMark1(tempB,tempA,b);
+                baiduRs.set(i,a);
+                tengxuRs.set(i,b);
                 Log.e("a与b",a+"  长度相同内容比较  "+b);
-            } else {
-                for(int j=0;j<tempA.length();j++){
-
-
-                }
-                Log.e("a与b",a+"  长度不等  "+b);
+            } else if(tempA.length()>tempB.length()){
+                //不相等长度B>T
+                a = insertMark2(tempA,tempB,a);
+                baiduRs.set(i,a);
+                Log.e("a与b",a+"  a长度>b长度  "+b);
+            }else {
+                //不相等长度B<T
+                b = insertMark2(tempB,tempA,b);
+                tengxuRs.set(i,b);
+                Log.e("a与b",a+"  a长度<b长度  "+b);
             }
-            baiduRs.set(i,a);
         }
     }
 
-    private String insertMark(String tempA,String tempB,String a){
+    private String insertMark1(String tempA,String tempB,String a){
         ArrayMap<Character,Integer> map = new ArrayMap<>();
         for(int k=0;k<tempA.length();k++){
             char t = tempA.charAt(k);
@@ -366,6 +344,35 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
         return a;
     }
 
+    private String insertMark2(String tempA,String tempB,String a){
+        ArrayMap<Character,Integer> map = new ArrayMap<>();
+        int n=0;
+        for(int k=0;k<tempA.length()&&(k-n)<tempB.length();k++){
+            char t = tempA.charAt(k);
+            if(map.containsKey(t)){
+                map.put(t,map.get(t)+1);
+            }else{
+                map.put(t,1);
+            }
+            if(t!=tempB.charAt(k-n)){
+                int count = map.get(t);
+                int index = -1;
+                int start = 0;
+                for(int m=0;m<count;m++){
+                    index = a.indexOf(t,start);
+                    if(index>=0) {
+                        start = index + 1;
+                    }
+                }
+                StringBuilder sb = new StringBuilder(a);
+                sb.replace(index,index+1,"<font color=\"#ff0000\">"+t+"</font>");
+                a = sb.toString();
+                n++;
+            }
+        }
+        return a;
+    }
+
 
     /**
      *对腾讯/百度返回的结果进行分类，根据y坐标相差10判断字段为同一行
@@ -374,18 +381,20 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
         List<List<DataString>> listList = new ArrayList<>();
         //对返回结果集按y坐标值进行排序，从第一个开始遍历，按照一定的阈值将后面的归类。直到找到不满足，继续过程
         quickSort(0,list.size()-1,list,2,or);
-        List<DataString> l = new ArrayList<>();
-        listList.add(l);
+        List<DataString> l1 = new ArrayList<>();
+        listList.add(l1);
+        List<DataString> current = l1;
         int temp = list.get(0).getXY(2);
         int point = (or==1)?70:20;
         for(int i=0;i<list.size();i++){
             if(Math.abs(temp - list.get(i).getXY(2))<=point){
-                l.add(list.get(i));
+                current.add(list.get(i));
             }else{
                 temp = list.get(i).getXY(2);
-                l = new ArrayList<>();
-                listList.add(l);
-                l.add(list.get(i));
+                List<DataString> l2 = new ArrayList<>();
+                listList.add(l2);
+                current = l2;
+                current.add(list.get(i));
             }
         }
         Log.e("分类结果",listList.size()+"行\n");
@@ -415,7 +424,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
     }
 
     private void quickSort(int s,int e,List<DataString> list,int flag,int or){
-        if(s>=e||(or==1)&&flag==1) {return;}
+        if(s>=e||(or==1)&&flag==2) {return;}
         int i = s+1;
         int j = e;
         while(i<j){
@@ -434,6 +443,56 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
         }
         quickSort(s,j-1,list,flag,or);
         quickSort(j+1,e,list,flag,or);
+    }
+
+    private void baiduRecognize(){
+        // 这一部分是百度通用文字识别参数设置(集成的sdk)
+        GeneralParams param = new GeneralParams();
+        param.setDetectDirection(true);
+        param.setVertexesLocation(true);
+        param.setImageFile(file);
+        // 调用百度通用文字识别服务
+        OCR.getInstance().recognizeGeneral(param, new OnResultListener<GeneralResult>() {
+            @Override
+            public void onResult(GeneralResult result) {
+                 new Thread(()->{
+                     // 调用成功，返回GeneralResult对象，注意此方法UI线程回调
+                     for (WordSimple wordSimple : result.getWordList()) {
+                         // wordSimple不包含位置信息
+                         Word word = (Word) wordSimple;
+                         //获得识别的每一行结果并除去空格，此处识别结果是sdk封装的方法,结果是非json，也就是处理好的数据了
+                         String itemString = word.getWords().replaceAll("\\s*","").trim();
+                         int x = word.getLocation().getLeft(); //x坐标
+                         int y = word.getLocation().getTop();  //y坐标
+                         DataString dataString = new DataString();
+                         dataString.setItemString(itemString);
+                         dataString.setX(x);
+                         dataString.setY(y);
+                         daBaiduList.add(dataString);
+                         Log.e("百度xy", x+"  "+y);
+                         Log.e("每个字段和字符数",itemString+"  "+itemString.length());
+                     }
+                     synchronized (shareFlag){
+                         if(tengxuRs.size()==0){
+                             try {
+                                 shareFlag.wait(20000);
+                             }catch (Exception e){
+                                 e.printStackTrace();
+                             }
+                         }
+                         shareFlag.notifyAll();
+                     }
+                 }).start();
+            }
+            @Override
+            public void onError(OCRError error) {
+                // 调用失败，返回OCRError对象
+                setResult(error.getMessage(),error.getMessage());
+                synchronized (shareFlag){
+                    shareFlag.notifyAll();
+                }
+            }
+        });
     }
 
     private void swap(int i,int j,List<DataString> list){

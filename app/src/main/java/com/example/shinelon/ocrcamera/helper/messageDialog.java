@@ -16,12 +16,7 @@ public class messageDialog extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         return builder.setMessage("请输入所有信息！")
                 .setCancelable(true)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                    }
-                })
+                .setPositiveButton(android.R.string.ok, (dialog, which) ->{})
                 .create();
     }
 }

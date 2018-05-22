@@ -77,26 +77,12 @@ public class CheckHelper {
                 .setCancelable(false)
                 .setTitle("检测到新版本，要更新吗？")
                 .setMessage("本次更新内容："+getUpdateMessage())
-                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                 @Override
-                 public void onClick(DialogInterface dialog, int which) {
-                     dialog.dismiss();
-                   }
-                 })
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        final AsyncDownload downloadTask = new AsyncDownload(activity);
-                        final String url = MainActivity.downloadUrl;
-
-                        new Handler(mActivity.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                downloadTask.execute(url);
-                            }
-                        });
-                        dialog.dismiss();
-                    }
+                .setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.dismiss())
+                .setPositiveButton(android.R.string.ok, (dialog, which) ->{
+                    final AsyncDownload downloadTask = new AsyncDownload(activity);
+                    final String url = MainActivity.downloadUrl;
+                    new Handler(mActivity.getMainLooper()).post(()->downloadTask.execute(url));
+                    dialog.dismiss();
                 });
         builder.create().show();
     }

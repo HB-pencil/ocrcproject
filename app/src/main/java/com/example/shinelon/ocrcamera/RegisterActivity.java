@@ -87,12 +87,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                             @Override
                             public void onFailure(Call call, IOException e) {
                                 e.printStackTrace();
-                                new Handler(RegisterActivity.this.getMainLooper()).post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(RegisterActivity.this, "连接服务器失败，请检查网络！", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
+                                new Handler(RegisterActivity.this.getMainLooper()).post(()->   Toast.makeText(RegisterActivity.this, "连接服务器失败，请检查网络！", Toast.LENGTH_SHORT).show());
                             }
 
                             @Override
@@ -131,19 +126,9 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                                         });
                                     } else {
                                         Log.d("okhttp", "fail");
-                                        new Handler(getMainLooper()).post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                Toast.makeText(RegisterActivity.this, "验证码发送失败，请稍后再试!", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
+                                        new Handler(getMainLooper()).post(()-> Toast.makeText(RegisterActivity.this, "验证码发送失败，请稍后再试!", Toast.LENGTH_SHORT).show());
                                     }
-                                }else{new Handler(RegisterActivity.this.getMainLooper()).post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(RegisterActivity.this, "访问失败！", Toast.LENGTH_SHORT).show();
-                                     }
-                                 });
+                                }else{new Handler(RegisterActivity.this.getMainLooper()).post(()->   Toast.makeText(RegisterActivity.this, "访问失败！", Toast.LENGTH_SHORT).show());
                                 }
                             }
                         });
@@ -155,12 +140,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                     AlertDialog dialog = new AlertDialog.Builder(this)
                             .setMessage("手机号码不能为空！")
                             .setCancelable(true)
-                            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-
-                                }
-                            })
+                            .setPositiveButton(android.R.string.ok, (dialog1, which) -> {})
                             .create();
                     dialog.show();
                 }
@@ -215,12 +195,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                                     if (result.equals("200")) {
                                         Log.d("okhttp", str);
                                         Log.d("okhttp", "" + response.code());
-                                        new Handler(getMainLooper()).post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                Toast.makeText(RegisterActivity.this, "注册成功！", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
+                                        new Handler(getMainLooper()).post(()->  Toast.makeText(RegisterActivity.this, "注册成功！", Toast.LENGTH_SHORT).show());
                                         Intent intent = new Intent(RegisterActivity.this,LoginActivity.class);
                                         try {
                                             Thread.sleep(500);
@@ -232,28 +207,13 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                                         overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                                         finish();
                                     }else if(code.equals("400")){
-                                        new Handler(getMainLooper()).post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                Toast.makeText(RegisterActivity.this, "手机号已被使用！若被占用，请联系管理员!", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
+                                        new Handler(getMainLooper()).post(()->   Toast.makeText(RegisterActivity.this, "手机号已被使用！若被占用，请联系管理员!", Toast.LENGTH_SHORT).show());
                                     } else {
                                         Log.d("okhttp", "fail");
-                                        new Handler(getMainLooper()).post(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                Toast.makeText(RegisterActivity.this, "注册失败，请稍后再试", Toast.LENGTH_SHORT).show();
-                                            }
-                                        });
+                                        new Handler(getMainLooper()).post(()->Toast.makeText(RegisterActivity.this, "注册失败，请稍后再试", Toast.LENGTH_SHORT).show());
                                     }
                                 }else{
-                                    new Handler(getMainLooper()).post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(RegisterActivity.this, "访问失败！", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
+                                    new Handler(getMainLooper()).post(()-> Toast.makeText(RegisterActivity.this, "访问失败！", Toast.LENGTH_SHORT).show());
                                 }
                             }
                         });

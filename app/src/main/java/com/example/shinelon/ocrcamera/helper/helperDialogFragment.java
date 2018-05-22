@@ -19,12 +19,7 @@ public class helperDialogFragment extends DialogFragment {
         return builder.setTitle("使用帮助")
                 .setCancelable(false)
                 .setView(R.layout.help_view)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-
-                    }
-                })
+                .setPositiveButton(android.R.string.ok,(dialog, which) ->{})
                 .create();
     }
 }

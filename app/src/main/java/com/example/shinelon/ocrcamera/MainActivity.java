@@ -207,12 +207,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         mChecker.startAppSetting(MainActivity.this);
                     }
                 })
-                .setNegativeButton("退出", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        finish();
-                    }
-                });
+                .setNegativeButton("退出", (dialog, which) -> finish() );
         mDialog = builder.create();
         mDialog.setCancelable(false);
         mDialog.setCanceledOnTouchOutside(false);

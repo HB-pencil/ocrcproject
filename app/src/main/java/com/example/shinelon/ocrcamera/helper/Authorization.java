@@ -25,7 +25,7 @@ public class Authorization{
         return new String(b);
     }
 
-    public static byte [] getResult(String original) throws Exception{
+    private static byte [] getResult(String original) throws Exception{
         String key = "2ua5OWaUCi3CAxZ0ZxAD5mIdmkW6Vknf";
         byte [] ori = original.getBytes();
         byte [] k = key.getBytes();

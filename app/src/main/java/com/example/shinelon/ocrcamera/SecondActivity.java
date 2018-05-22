@@ -59,12 +59,12 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
     private String file;
     private AsycProcessTask task;
     private ProgressDialog mProgressDialog;
+    private ProgressDialog tipsDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_second);
-
         mButton1 = (Button) findViewById(R.id.confirm_bt1);
         mButton2 = (Button) findViewById(R.id.confirm_bt2);
         mEditText1 = (EditText) findViewById(R.id.edit_text_one);
@@ -79,6 +79,11 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
         mProgressDialog.setCancelable(false);
         mProgressDialog.setCanceledOnTouchOutside(false);
 
+        tipsDialog = new ProgressDialog(this);
+        tipsDialog.setCancelable(false);
+        tipsDialog.setCanceledOnTouchOutside(false);
+        tipsDialog.setMessage("处理结果发送中");
+
         if( extras != null) {
             imageUrl = extras.getString(IMAGE_PATH);
             doRecognize(mProgressDialog);
@@ -87,7 +92,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
 
     public void doRecognize(ProgressDialog dialog) {
         // Starting recognition process
-        task = new AsycProcessTask(dialog);
+        task = new AsycProcessTask(dialog,imageUrl);
         task.registerlistener((message1,message2)->displayMessage(message1,message2));
         task.executeOnExecutor(AsycProcessTask.SERIAL_EXECUTOR,imageUrl);
         System.out.println("自动识别路径为    " + imageUrl);
@@ -143,7 +148,6 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
                             try {
                                 sendFile(txtfile,imgfile);
                                 Log.d("SEND", "onClick: 开始发送文件");
-
                             }catch (Exception e){
                                 e.printStackTrace();
                             }
@@ -159,7 +163,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
      * @param
      */
    public void sendFile (File txtFile,File imgFile) throws Exception{
-       mProgressDialog.show();
+       tipsDialog.show();
        String txtName = txtFile.getName();
        String imgName = imgFile.getName();
        if(customFileName!=null){
@@ -190,12 +194,9 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
            @Override
            public void onFailure(Call call, IOException e) {
                e.printStackTrace();
-               new Handler(SecondActivity.this.getMainLooper()).post(new Runnable() {
-                   @Override
-                   public void run() {
-                       mProgressDialog.dismiss();
-                       Toast.makeText(SecondActivity.this, "请检查网络！", Toast.LENGTH_SHORT).show();
-                   }
+               new Handler(SecondActivity.this.getMainLooper()).post(()->{
+                   tipsDialog.dismiss();
+                   Toast.makeText(SecondActivity.this, "请检查网络！", Toast.LENGTH_SHORT).show();
                });
            }
 
@@ -212,35 +213,26 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        if (result.equals("200")) {
-                            new Handler(getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mProgressDialog.dismiss();
-                                    Toast.makeText(SecondActivity.this, "发送成功！", Toast.LENGTH_SHORT).show();
-                                    File fileTxt = new File(getFilesDir(),file);
-                                    if (fileTxt.exists()){
-                                        fileTxt.delete();
-                                    }
-                                    Log.w("删除文本", " 删除" );
+                        if ("200".equals(result)) {
+                            new Handler(getMainLooper()).post(()->{
+                                tipsDialog.dismiss();
+                                Toast.makeText(SecondActivity.this, "发送成功！", Toast.LENGTH_SHORT).show();
+                                File fileTxt = new File(getFilesDir(),file);
+                                if (fileTxt.exists()){
+                                    fileTxt.delete();
                                 }
+                                Log.w("删除文本", " 删除" );
                             });
                         } else {
-                            new Handler(getMainLooper()).post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mProgressDialog.dismiss();
-                                    Toast.makeText(SecondActivity.this, "发送失败，请稍后再试！", Toast.LENGTH_SHORT).show();
-                                }
+                            new Handler(getMainLooper()).post(()->{
+                                tipsDialog.dismiss();
+                                Toast.makeText(SecondActivity.this, "发送失败，请稍后再试！", Toast.LENGTH_SHORT).show();
                             });
                         }
                     } else {
-                        new Handler(SecondActivity.this.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                mProgressDialog.dismiss();
-                                Toast.makeText(SecondActivity.this, "访问服务器失败，请稍后再试！", Toast.LENGTH_SHORT).show();
-                            }
+                        new Handler(SecondActivity.this.getMainLooper()).post(()->{
+                            tipsDialog.dismiss();
+                            Toast.makeText(SecondActivity.this, "访问服务器失败，请稍后再试！", Toast.LENGTH_SHORT).show();
                         });
                     }
                 }
