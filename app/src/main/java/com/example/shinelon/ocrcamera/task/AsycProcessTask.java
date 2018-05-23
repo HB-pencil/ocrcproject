@@ -152,7 +152,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                     //对于dataList里面的Data字符串数据进行分类分行，和百度一样，同一行y坐标相差10以内的归类在一起
                     List<List<DataString>> lists = handleDataList( daTengxuduList,2);
                     //归类以后在进行排序，因为腾讯在按他的识别结果出来的行显示时会出现各种乱序。所以还要排序
-                    sortData(lists,2);
+                    showtData(lists,2);
                 }else {
                     Log.e("错误",string);
                 }
@@ -175,7 +175,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             //百度分行，因为距离远会被分开
             if(daBaiduList.size()>0){
                 List<List<DataString>> lists =  handleDataList(daBaiduList,1);
-                sortData(lists,1);
+                showtData(lists,1);
             }
             if(baiduRs.size()==0){
                 setResult("null","null");
@@ -385,7 +385,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
         listList.add(l1);
         List<DataString> current = l1;
         int temp = list.get(0).getXY(2);
-        int point = (or==1)?70:20;
+        int point = (or==1)?56:24;
         for(int i=0;i<list.size();i++){
             if(Math.abs(temp - list.get(i).getXY(2))<=point){
                 current.add(list.get(i));
@@ -407,24 +407,23 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
      * @param lists
      * @param or  or==1 表示百度/or==2表示腾讯
      */
-    private void sortData(List<List<DataString>> lists,int or){
+    private void showtData(List<List<DataString>> lists,int or){
         for (int i=0;i<lists.size();i++){
             List<DataString> stringList = lists.get(i);
             quickSort(0,stringList.size()-1,stringList,1,or);
-
             StringBuffer stringBuffer = new StringBuffer();
             for(int m=0;m<stringList.size();m++){
                 stringBuffer.append(stringList.get(m).getItemString());
             }
             String rs = stringBuffer.toString();
-            Log.e( "sortData",rs );
+            Log.e( "showData",rs );
             if(or==1) {baiduRs.add(rs);}
             else {tengxuRs.add(rs);}
         }
     }
 
     private void quickSort(int s,int e,List<DataString> list,int flag,int or){
-        if(s>=e||(or==1)&&flag==2) {return;}
+        if(s>=e||or==1) {return;}
         int i = s+1;
         int j = e;
         while(i<j){
