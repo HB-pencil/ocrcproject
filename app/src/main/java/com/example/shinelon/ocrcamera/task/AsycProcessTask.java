@@ -127,7 +127,6 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                         .newCall(request)
                         .execute();
                 String string = response.body().string();
-                Log.e("腾讯string",string);
                 if(response.code()==200){
                     TentcentRs tentcentRs = JSONObject.parseObject(string,TentcentRs.class);
                     List<TentcentRs.DataBean.ItemsBean> list = tentcentRs.getData().getItems();
@@ -139,9 +138,10 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                         DataString da = new DataString();
                         da.setItemString(itemString);
                         da.setX(itemsBean.getItemcoord().getX());
-                        da.setY(itemsBean.getItemcoord().getY());
+                        da.setBottomY(itemsBean.getItemcoord().getY()+itemsBean.getItemcoord().getHeight());
                         daTengxuduList.add(da);
-                        Log.e("腾讯坐标xy",itemsBean.getItemcoord().getX()+"  "+itemsBean.getItemcoord().getY());
+                        Log.e("腾讯坐标xywh",itemsBean.getItemcoord().getX()+"\n"+itemsBean.getItemcoord().getY()
+                        +"\n"+itemsBean.getItemcoord().getWidth()+"\n"+itemsBean.getItemcoord().getHeight());
                         Log.w("腾讯每个字段及其字符数",itemString+"  "+itemString.length());
                     }
                     //对于dataList里面的Data字符串数据进行分类分行，和百度一样，同一行y坐标相差10以内的归类在一起
@@ -190,8 +190,6 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
 
                 String string1 = stringBuffer1.toString();
                 String string2 = stringBuffer2.toString();
-
-                Log.e("stringbuffer",string1);
                 if(string1.length()>0&&string2.length()>0){
                     setResult("<html><body>"+string1+"</body></html>","<html><body>"+string2+"</body></html>");
                 }else if(string1.length()>0){
@@ -328,7 +326,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             }else{
                 map.put(t,1);
             }
-            if(t!=tempB.charAt(k)){
+            if(t!=tempB.charAt(k) && !String.valueOf(t).equalsIgnoreCase(String.valueOf(tempB.charAt(k)))){
                 int count = map.get(t);
                 int index = -1;
                 int start = 0;
@@ -362,24 +360,25 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             }else{
                 map.put(ta,1);
             }
-            if(ta!=tb && !flag){
+            if(ta!=tb && !String.valueOf(ta).equalsIgnoreCase(String.valueOf(tb)) && !flag){
                 int count = map.get(ta);
                 int index = -1;
                 int start = 0;
                 for(int m=0;m<count;m++){
-                    index = a.indexOf(a,start);
+                    index = a.indexOf(ta,start);
                     if(index>=0) {
                         start = index + 1;
                     }
                 }
                 StringBuilder sb = new StringBuilder(a);
                 if(index>=0){
+                    Log.e("NOT-EQUAL","标记");
                     sb.replace(index,index+1,"<font color=\"#ff0000\">"+ta+"</font>");
                 }
                 a = sb.toString();
                 j++;
                 flag = true;
-            }else if(ta!=tb){
+            }else if(ta!=tb && !String.valueOf(ta).equalsIgnoreCase(String.valueOf(tb))){
                 k++;
                 flag = false;
             }else{
@@ -402,7 +401,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
         listList.add(l1);
         List<DataString> current = l1;
         int temp = list.get(0).getXY(2);
-        int point = (or==1)?45:25;
+        int point = (or==1)?45:15;
         for(int i=0;i<list.size();i++){
             if(Math.abs(temp - list.get(i).getXY(2))<=point){
                 current.add(list.get(i));
@@ -484,9 +483,9 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                          DataString dataString = new DataString();
                          dataString.setItemString(itemString);
                          dataString.setX(x);
-                         dataString.setY(y);
+                         dataString.setBottomY(y+word.getLocation().getHeight());
                          daBaiduList.add(dataString);
-                         Log.e("百度xy", x+"  "+y);
+                         Log.e("百度xywh", x+"\n"+y+"\n"+word.getLocation().getWidth()+"\n"+word.getLocation().getHeight());
                          Log.e("每个字段和字符数",itemString+"  "+itemString.length());
                      }
                      //百度分行，因为距离远会被分开

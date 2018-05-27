@@ -17,7 +17,7 @@ public class DataString {
         this.x = x;
     }
 
-    public void setY(int y) {
+    public void setBottomY(int y) {
         this.y = y;
     }
 
