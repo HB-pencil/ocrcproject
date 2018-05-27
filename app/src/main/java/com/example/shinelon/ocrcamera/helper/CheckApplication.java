@@ -8,15 +8,6 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
-
-import com.abbyy.mobile.ocr4.AssetDataSource;
-import com.abbyy.mobile.ocr4.DataSource;
-import com.abbyy.mobile.ocr4.Engine;
-import com.abbyy.mobile.ocr4.FileLicense;
-import com.abbyy.mobile.ocr4.License;
-import com.abbyy.mobile.ocr4.RecognitionConfiguration;
-import com.abbyy.mobile.ocr4.RecognitionLanguage;
-import com.abbyy.mobile.ocr4.RecognitionManager;
 import com.baidu.ocr.sdk.OCR;
 import com.baidu.ocr.sdk.OnResultListener;
 import com.baidu.ocr.sdk.exception.OCRError;
@@ -32,8 +23,8 @@ import java.util.Set;
  */
 
 public class CheckApplication extends Application {
-    public static Engine engine = null;
-    public static RecognitionManager manager = null;
+   // public static Engine engine = null;
+   // public static RecognitionManager manager = null;
     public static boolean isNotNativeRecognize = true;
     private Handler handler = null;
     public static Context context;
@@ -50,7 +41,7 @@ public class CheckApplication extends Application {
 
     public void init(){
         initAccessTokenWithAkSk();
-
+        /**
         final DataSource assetDataSrouce = new AssetDataSource( this.getAssets() );
         final List<DataSource> dataSources = new ArrayList<>();
         dataSources.add( assetDataSrouce );
@@ -80,12 +71,13 @@ public class CheckApplication extends Application {
             e.printStackTrace();
             Log.w("License",e.getMessage());
         }
+         */
     }
-
+    /**
     public static RecognitionManager getManager(){
         Log.e("manager",isNotNativeRecognize+" ");
         return manager;
-    }
+    }*/
 
     private void initAccessTokenWithAkSk() {
         handler = new Handler();

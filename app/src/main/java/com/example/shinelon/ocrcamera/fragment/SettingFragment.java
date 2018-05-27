@@ -70,7 +70,7 @@ public class SettingFragment extends PreferenceFragment{
             return false;
         });
         findPreference("connect").setOnPreferenceChangeListener((preference, o) -> {
-            CheckApplication.isNotNativeRecognize = (boolean)o;
+            //CheckApplication.isNotNativeRecognize = (boolean)o;
             preference.setSelectable(true);
             Log.e("newValue",CheckApplication.isNotNativeRecognize+"前后"+o);
             return true;

@@ -75,7 +75,6 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
-    implementation files('src/libs/MobileOcrEngine.jar')
     implementation files('src/libs/ocr-sdk.jar')
     implementation files('src/libs/commons-codec-1.10.jar')
 }

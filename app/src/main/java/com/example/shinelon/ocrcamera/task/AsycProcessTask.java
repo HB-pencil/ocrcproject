@@ -5,10 +5,6 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.ArrayMap;
 import android.util.Log;
-import com.abbyy.mobile.ocr4.ImageLoadingOptions;
-import com.abbyy.mobile.ocr4.RecognitionManager;
-import com.abbyy.mobile.ocr4.layout.MocrLayout;
-import com.abbyy.mobile.ocr4.layout.MocrPrebuiltLayoutInfo;
 import com.alibaba.fastjson.JSONObject;
 import com.baidu.ocr.sdk.OCR;
 import com.baidu.ocr.sdk.OnResultListener;
@@ -23,16 +19,10 @@ import com.example.shinelon.ocrcamera.helper.Authorization;
 import com.example.shinelon.ocrcamera.helper.CheckApplication;
 import com.example.shinelon.ocrcamera.helper.LogInterceptor;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -59,6 +49,9 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
     private OkHttpClient client;
     private File file;
     private final Integer shareFlag = 1000;
+    private volatile boolean flagB = false;
+    private volatile boolean flagT = false;
+    private long time;
     /**
      * str
      * 不能为null，不然会报错，因为子线程返回值必须为String
@@ -78,6 +71,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
 
     @Override
     public void onPreExecute(){
+        time = System.currentTimeMillis();
         setResult("","");
         if(CheckApplication.isNotNativeRecognize){
             daTengxuduList = new ArrayList<>();
@@ -89,6 +83,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
         //开启百度识别
         if (CheckApplication.isNotNativeRecognize){
             baiduRecognize();
+            publishProgress("正在处理");
         }
     }
 
@@ -153,6 +148,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                     List<List<DataString>> lists = handleDataList( daTengxuduList,2);
                     //归类以后在进行排序，因为腾讯在按他的识别结果出来的行显示时会出现各种乱序。所以还要排序
                     showtData(lists,2);
+                    flagT = true;
                 }else {
                     Log.e("错误",string);
                 }
@@ -161,9 +157,10 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             try {
                 //同步
                 synchronized (shareFlag){
-                    if(daBaiduList.size()==0){
+                    if(!flagB){
                         if( !"null".equals(getResult()) ){
-                            shareFlag.wait(20000);
+                            Log.e("TENGXUN","wait");
+                            shareFlag.wait(30000);
                         }
                     }
                     shareFlag.notifyAll();
@@ -172,15 +169,6 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                 e.printStackTrace();
             }
 
-            //百度分行，因为距离远会被分开
-            if(daBaiduList.size()>0){
-                List<List<DataString>> lists =  handleDataList(daBaiduList,1);
-                showtData(lists,1);
-            }
-            if(baiduRs.size()==0){
-                setResult("null","null");
-            }
-            publishProgress("正在处理");
 
             if(("null").equals(getResult())){
                 Log.e("getResult",getResult().toString());
@@ -204,17 +192,29 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                 String string2 = stringBuffer2.toString();
 
                 Log.e("stringbuffer",string1);
-                setResult("<html><body>"+string1+"</body></html>",string2);
+                if(string1.length()>0&&string2.length()>0){
+                    setResult("<html><body>"+string1+"</body></html>","<html><body>"+string2+"</body></html>");
+                }else if(string1.length()>0){
+                    setResult("<html><body>"+string1+"</body></html>",
+                            "<html><body>some error has happened! <br/>  ⊙﹏⊙∥  <br/>请保证截取内容没有多余干扰</body></html>");
+                }else if(string2.length()>0){
+                    setResult("<html><body>some error has happened! <br/>  ⊙﹏⊙∥  <br/>请保证截取内容没有多余干扰</body></html>",
+                            "<html><body>"+string2+"</body></html>");
+                }else {
+                    setResult("<html><body>some error has happened! <br/>  ⊙﹏⊙∥  <br/>请保证截取内容没有多余干扰</body></html>",
+                            "<html><body>ssome error has happened! <br/>  ⊙﹏⊙∥  <br/>请保证截取内容没有多余干扰</body></html>");
+                }
+
                 Log.e("getResult",getResult().toString());
                 Log.e("两者list字段各自长度",baiduRs.size()+"    "+tengxuRs.size());
                 return getResult();
             }
             //以下为本地识别
         }else {
-
+        /**
             try {
                 FileInputStream inputStream = new FileInputStream(file);
-                ImageLoadingOptions options = new ImageLoadingOptions();
+               ImageLoadingOptions options = new ImageLoadingOptions();
                 options.setShouldUseOriginalImageResolution(true);
                 MocrLayout mocrLayout =   CheckApplication.getManager().recognizeText(inputStream, options, new RecognitionManager.RecognitionCallback() {
                     @Override
@@ -243,6 +243,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             }catch (Exception e){
                 e.printStackTrace();
             }
+         */
         }
 
         Log.e("getResult",getResult().toString());
@@ -266,7 +267,8 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
         if(mProgressDialog.isShowing()){
             mProgressDialog.dismiss();
         }
-        Log.e("FINISH","------------------dialog-------------------"+mProgressDialog.isShowing());
+        long current = (System.currentTimeMillis() - time)/1000;
+        Log.e("FINISH","------------------use time-------------------"+current+"s");
     }
     private void setResult(String result1,String result2){
         str1 = result1;
@@ -274,8 +276,8 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
     }
     public List<String> getResult(){
         List<String> list = new ArrayList<>();
-        list.add(str1);
         list.add(str2);
+        list.add(str1);
         return list;
     }
 
@@ -337,7 +339,9 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                     }
                 }
                 StringBuilder sb = new StringBuilder(a);
-                sb.replace(index,index+1,"<font color=\"#ff0000\">"+t+"</font>");
+                if(index>=0){
+                    sb.replace(index,index+1,"<font color=\"#ff0000\">"+t+"</font>");
+                }
                 a = sb.toString();
             }
         }
@@ -346,28 +350,41 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
 
     private String insertMark2(String tempA,String tempB,String a){
         ArrayMap<Character,Integer> map = new ArrayMap<>();
-        int n=0;
-        for(int k=0;k<tempA.length()&&(k-n)<tempB.length();k++){
-            char t = tempA.charAt(k);
-            if(map.containsKey(t)){
-                map.put(t,map.get(t)+1);
+        int j=0;
+        int k=0;
+        //跳转标记
+        boolean flag = false;
+        while(j<tempA.length() && k<tempB.length()){
+            char ta = tempA.charAt(j);
+            char tb = tempB.charAt(k);
+            if(map.containsKey(ta)){
+                map.put(ta,map.get(ta)+1);
             }else{
-                map.put(t,1);
+                map.put(ta,1);
             }
-            if(t!=tempB.charAt(k-n)){
-                int count = map.get(t);
+            if(ta!=tb && !flag){
+                int count = map.get(ta);
                 int index = -1;
                 int start = 0;
                 for(int m=0;m<count;m++){
-                    index = a.indexOf(t,start);
+                    index = a.indexOf(a,start);
                     if(index>=0) {
                         start = index + 1;
                     }
                 }
                 StringBuilder sb = new StringBuilder(a);
-                sb.replace(index,index+1,"<font color=\"#ff0000\">"+t+"</font>");
+                if(index>=0){
+                    sb.replace(index,index+1,"<font color=\"#ff0000\">"+ta+"</font>");
+                }
                 a = sb.toString();
-                n++;
+                j++;
+                flag = true;
+            }else if(ta!=tb){
+                k++;
+                flag = false;
+            }else{
+                j++;
+                k++;
             }
         }
         return a;
@@ -385,7 +402,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
         listList.add(l1);
         List<DataString> current = l1;
         int temp = list.get(0).getXY(2);
-        int point = (or==1)?56:24;
+        int point = (or==1)?45:25;
         for(int i=0;i<list.size();i++){
             if(Math.abs(temp - list.get(i).getXY(2))<=point){
                 current.add(list.get(i));
@@ -450,6 +467,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
         param.setDetectDirection(true);
         param.setVertexesLocation(true);
         param.setImageFile(file);
+        Log.e("调用BAIDU","执行");
         // 调用百度通用文字识别服务
         OCR.getInstance().recognizeGeneral(param, new OnResultListener<GeneralResult>() {
             @Override
@@ -471,11 +489,21 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                          Log.e("百度xy", x+"  "+y);
                          Log.e("每个字段和字符数",itemString+"  "+itemString.length());
                      }
+                     //百度分行，因为距离远会被分开
+                     if(daBaiduList.size()>0){
+                         List<List<DataString>> lists =  handleDataList(daBaiduList,1);
+                         showtData(lists,1);
+                         flagB = true;
+                     }
+                     if(baiduRs.size()==0){
+                         setResult("null","null");
+                     }
                      synchronized (shareFlag){
-                         if(tengxuRs.size()==0){
+                         if(!flagT){
                              try {
-                                 shareFlag.wait(20000);
-                             }catch (Exception e){
+                                 Log.e("BAIDU","wait");
+                                 shareFlag.wait(30000);
+                             }catch (Exception e) {
                                  e.printStackTrace();
                              }
                          }
@@ -486,7 +514,8 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             @Override
             public void onError(OCRError error) {
                 // 调用失败，返回OCRError对象
-                setResult(error.getMessage(),error.getMessage());
+                flagB = true;
+                Log.e("BAIDU",error.getMessage());
                 synchronized (shareFlag){
                     shareFlag.notifyAll();
                 }
