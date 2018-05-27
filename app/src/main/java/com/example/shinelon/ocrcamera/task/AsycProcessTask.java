@@ -160,7 +160,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                     if(!flagB){
                         if( !"null".equals(getResult()) ){
                             Log.e("TENGXUN","wait");
-                            shareFlag.wait(30000);
+                            shareFlag.wait(60000);
                         }
                     }
                     shareFlag.notifyAll();
@@ -401,7 +401,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
         listList.add(l1);
         List<DataString> current = l1;
         int temp = list.get(0).getXY(2);
-        int point = (or==1)?45:15;
+        int point = (or==1)?52:25;
         for(int i=0;i<list.size();i++){
             if(Math.abs(temp - list.get(i).getXY(2))<=point){
                 current.add(list.get(i));
@@ -501,7 +501,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                          if(!flagT){
                              try {
                                  Log.e("BAIDU","wait");
-                                 shareFlag.wait(30000);
+                                 shareFlag.wait(60000);
                              }catch (Exception e) {
                                  e.printStackTrace();
                              }
