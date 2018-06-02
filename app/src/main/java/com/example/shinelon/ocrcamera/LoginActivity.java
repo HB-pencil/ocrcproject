@@ -281,8 +281,7 @@ public class LoginActivity extends AppCompatActivity {
 
         SharedPreferences mPreferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
         try{
-            //checkLogin();
-            loginAccount();
+            checkLogin();
             if(!mSavedA.isChecked()){
                 mPreferences.edit().putString("saved_account","").apply();
                 mPreferences.edit().putBoolean("isReA",false).apply();

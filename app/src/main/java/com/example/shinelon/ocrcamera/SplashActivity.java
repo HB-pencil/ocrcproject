@@ -40,19 +40,16 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.splash_layout);
         client = new OkHttpClient();
         checkToken();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if(flag){
-                    intent = new Intent(SplashActivity.this,MainActivity.class);
+        new Handler().postDelayed(()->{
+            if(flag){
+                intent = new Intent(SplashActivity.this,MainActivity.class);
 
-                }else {
-                    intent = new Intent(SplashActivity.this,LoginActivity.class);
-                }
-                startActivity(intent);
-                finish();
-                overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
+            }else {
+                intent = new Intent(SplashActivity.this,LoginActivity.class);
             }
+            startActivity(intent);
+            finish();
+            overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
         },2000);
     }
 
