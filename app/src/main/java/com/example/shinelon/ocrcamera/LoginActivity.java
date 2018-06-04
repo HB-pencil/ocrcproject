@@ -22,6 +22,7 @@ import com.alibaba.fastjson.JSON;
 import com.example.shinelon.ocrcamera.helper.ButtonPoster;
 import com.example.shinelon.ocrcamera.dataModel.JavaBean;
 import com.example.shinelon.ocrcamera.dataModel.UserInfoLab;
+import com.example.shinelon.ocrcamera.helper.CheckApplication;
 import com.example.shinelon.ocrcamera.helper.messageDialog;
 
 import org.json.JSONObject;
@@ -71,6 +72,8 @@ public class LoginActivity extends AppCompatActivity {
         mPassEdit.setText(getPass());
         mSavedA.setChecked(getCheckedA());
         mSavedP.setChecked(getCheckedP());
+
+        checkNetWork();
 
         Log.d("我是onCreate()","调用");
         mPassEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -297,6 +300,18 @@ public class LoginActivity extends AppCompatActivity {
 
         }catch (Exception e){
             e.printStackTrace();
+        }
+    }
+
+    public void checkNetWork(){
+         AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                 .setTitle("网络错误")
+                 .setMessage("请确保网络畅通！")
+                 .setPositiveButton("确定",(p1,p2)->{})
+                 .setNegativeButton("取消",(p1,p2)->finish());
+        boolean rs = CheckApplication.isNetWorkAvailable();
+        if(!rs){
+            builder.create().show();
         }
     }
 

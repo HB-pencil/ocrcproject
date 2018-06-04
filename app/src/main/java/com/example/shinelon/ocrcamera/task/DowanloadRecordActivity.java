@@ -1,5 +1,6 @@
 package com.example.shinelon.ocrcamera.task;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -53,6 +54,7 @@ public class DowanloadRecordActivity extends AppCompatActivity{
     Boolean hasNextPage ;
     LinearLayoutManager manager;
     CustomAdapter mAdapter;
+    ProgressDialog progressDialog;
     int number = 1;
     static String parentPath;
     private static final int IMAGE = 0;
@@ -66,6 +68,7 @@ public class DowanloadRecordActivity extends AppCompatActivity{
         toolbar = (Toolbar) findViewById(R.id.upload_bar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        progressDialog = new ProgressDialog(this);
 
         client = new OkHttpClient();
         recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -76,28 +79,13 @@ public class DowanloadRecordActivity extends AppCompatActivity{
         File file = new File(Environment.getExternalStorageDirectory(), "ocrCamera");
         parentPath = file.getAbsolutePath();
         uploadList = new ArrayList<>();
+        //查询
+        progressDialog.setMessage("查询中，请稍后");
+        progressDialog.show();
         setData(number);
-        /**
-         * 异步线程
-         */
-        try {
-            Thread.sleep(2000);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (uploadInfo != null) {
-            uploadList = uploadInfo.getData().getList();
-            hasNextPage = uploadInfo.getData().isHasNextPage();
-        } else {
-            Toast.makeText(this, "获取出错，请稍后再试！", Toast.LENGTH_SHORT).show();
-            finish();
-        }
-
 
         mAdapter = new CustomAdapter(uploadList);
         recyclerView.setAdapter(mAdapter);
-        doUpdate();//遍历list判断文件是否下载，是否要更新视图
-
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -158,7 +146,17 @@ public class DowanloadRecordActivity extends AppCompatActivity{
     }
 
     public void notifyUpdateDone(){
-        runOnUiThread(() ->  mAdapter.notifyDataSetChanged());
+        runOnUiThread(() -> {
+            if (uploadInfo.getData().getList().size()>0) {
+                mAdapter.notifyDataSetChanged();
+            } else {
+                Toast.makeText(this, "获取出错，请稍后再试！", Toast.LENGTH_SHORT).show();
+            }
+            if(progressDialog.isShowing()){
+                progressDialog.dismiss();
+            }
+            doUpdate();//遍历list判断文件是否下载，是否要更新视图
+        });
     }
 
 

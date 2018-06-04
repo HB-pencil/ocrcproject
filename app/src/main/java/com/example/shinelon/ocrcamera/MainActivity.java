@@ -84,7 +84,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String userName;
     private TextView textView;
     public static String downloadUrl = "";
-    private ProgressDialog mProgressDialog;
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
     private ImageView mCusImageView;
@@ -118,8 +117,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mHandler = new Handler();
         userName = UserInfoLab.getUserInfo().getPhone();
-
-        mProgressDialog = new ProgressDialog(this);
 
         mCusImageView  = (ImageView) findViewById(R.id.image_photo);
         progressBar = findViewById(R.id.progress_bar);
@@ -610,9 +607,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
                 break;
             case R.id.upload_image:
-                mProgressDialog.setMessage("正在努力加载,请稍后");
-                mProgressDialog.setCancelable(false);
-                mProgressDialog.show();
                 Intent intent3 = new Intent(this,DowanloadRecordActivity.class);
                 startActivity(intent3);
                 overridePendingTransition(android.R.anim.slide_in_left,android.R.anim.slide_out_right);
@@ -644,9 +638,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onStop() {
         super.onStop();
         Log.e("错误：","onStop()");
-        if(mProgressDialog.isShowing()){
-            mProgressDialog.dismiss();
-        }
     }
 
 

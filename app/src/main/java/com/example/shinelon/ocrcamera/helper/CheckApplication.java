@@ -4,6 +4,8 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -91,20 +93,25 @@ public class CheckApplication extends Application {
             public void onError(OCRError error) {
                 error.printStackTrace();
                 final String message = error.getMessage();
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(getApplicationContext(),"AK，SK方式获取token失败 " + message, Toast.LENGTH_SHORT).show();
-                    }
-                });
-
+                handler.post(()->Toast.makeText(getApplicationContext(),"AK，SK方式获取token失败 " + message, Toast.LENGTH_SHORT).show());
             }
         }, getApplicationContext(),"qsv0ZAOxsT7cy5eIE5t92IUN","Kl3cv5v2FaHSaS8gUZu1a16Ny9LzTMXo");
-        handler = null;
     }
 
     public static Context getCotex(){
         return context;
+    }
+
+    public static boolean isNetWorkAvailable(){
+          ConnectivityManager manager = (ConnectivityManager) getCotex().getSystemService(Context.CONNECTIVITY_SERVICE);
+          if(manager==null){
+              return false;
+          }
+        NetworkInfo info = manager.getActiveNetworkInfo();
+        if(info==null || info.isAvailable()){
+            return false;
+        }
+        return true;
     }
 }
 
