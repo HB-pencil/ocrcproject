@@ -108,7 +108,7 @@ public class CheckApplication extends Application {
               return false;
           }
         NetworkInfo info = manager.getActiveNetworkInfo();
-        if(info==null || info.isAvailable()){
+        if(info==null || !info.isAvailable()){
             return false;
         }
         return true;

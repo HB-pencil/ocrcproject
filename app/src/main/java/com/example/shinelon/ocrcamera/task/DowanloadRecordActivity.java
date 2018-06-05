@@ -51,7 +51,7 @@ public class DowanloadRecordActivity extends AppCompatActivity{
     static final int TYPE_NORMAL = 0;
     static final int TYPE_EMPTY = 2;
     List<UploadInfo.DataBean.ListBean> uploadList;
-    Boolean hasNextPage ;
+    boolean hasNextPage ;
     LinearLayoutManager manager;
     CustomAdapter mAdapter;
     ProgressDialog progressDialog;
@@ -79,11 +79,6 @@ public class DowanloadRecordActivity extends AppCompatActivity{
         File file = new File(Environment.getExternalStorageDirectory(), "ocrCamera");
         parentPath = file.getAbsolutePath();
         uploadList = new ArrayList<>();
-        //查询
-        progressDialog.setMessage("查询中，请稍后");
-        progressDialog.show();
-        setData(number);
-
         mAdapter = new CustomAdapter(uploadList);
         recyclerView.setAdapter(mAdapter);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -100,6 +95,11 @@ public class DowanloadRecordActivity extends AppCompatActivity{
                 }
             }
         });
+
+        //查询
+        progressDialog.setMessage("查询中，请稍后");
+        progressDialog.show();
+        setData(number);
     }
 
 
