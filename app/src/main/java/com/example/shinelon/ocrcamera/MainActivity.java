@@ -118,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mHandler = new Handler();
         userName = UserInfoLab.getUserInfo().getPhone();
 
+
         mCusImageView  = (ImageView) findViewById(R.id.image_photo);
         progressBar = findViewById(R.id.progress_bar);
         progresssBarText = findViewById(R.id.progress_bar_text);

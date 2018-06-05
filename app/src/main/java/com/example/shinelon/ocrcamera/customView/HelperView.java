@@ -18,6 +18,7 @@ import android.widget.RelativeLayout;
 public class HelperView extends View {
     private Paint paint = new Paint();
     private Path path = new Path();
+    private Path path1 = new Path();
     public HelperView(Context context){
         this(context,null);
     }
@@ -54,5 +55,10 @@ public class HelperView extends View {
         path.lineTo(5F,getHeight()-5F);
         path.close();
         canvas.drawPath(path,paint);
+        path1.moveTo(5F,getHeight()/2F);
+        path1.lineTo(getWidth()-5F,getHeight()/2F);
+        path1.moveTo(getWidth()/2F,5F);
+        path1.lineTo(getWidth()/2F,getHeight()-5F);
+        canvas.drawPath(path1,paint);
     }
 }
