@@ -16,7 +16,7 @@
     <string name="version_info">版本号：%1$s</string>
     <string name="open">Open</string>
     <string name="close">Close</string>
-    <string name="more">糟糕，没有更多内容了！</string>
+    <string name="more">(°ー°〃) 糟糕，没有更多内容了！</string>
     <string name="tips1">请选择图片或拍照,默认使用联网识别</string>
     <string name="tips2">如果想要离线识别</string>
     <string name="tips3">请在设置中关闭联网识别</string>

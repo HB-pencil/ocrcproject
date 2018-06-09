@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
@@ -122,6 +123,9 @@ public class DowanloadRecordActivity extends AppCompatActivity{
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
+                new Handler(Looper.getMainLooper()).post(()->Toast.makeText(DowanloadRecordActivity.this,"网络错误！",
+                        Toast.LENGTH_SHORT).show());
+                progressDialog.dismiss();
             }
 
             @Override
@@ -138,7 +142,10 @@ public class DowanloadRecordActivity extends AppCompatActivity{
                         notifyUpdateDone();
                     }catch (Exception e){
                         e.printStackTrace();
+                        progressDialog.dismiss();
                     }
+                }else {
+                    progressDialog.dismiss();
                 }
             }
         });
@@ -150,7 +157,7 @@ public class DowanloadRecordActivity extends AppCompatActivity{
             if (uploadInfo.getData().getList().size()>0) {
                 mAdapter.notifyDataSetChanged();
             } else {
-                Toast.makeText(this, "获取出错，请稍后再试！", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "没有数据！", Toast.LENGTH_SHORT).show();
             }
             if(progressDialog.isShowing()){
                 progressDialog.dismiss();
