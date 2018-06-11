@@ -22,6 +22,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import okhttp3.Headers;
 import okhttp3.MediaType;
@@ -58,6 +59,8 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
      */
     private static String str1 ="";
     private static String str2 ="";
+    private static int baidu =0;
+    private static int tengxu =0;
 
 
     public AsycProcessTask(ProgressDialog d,String imageUrl){
@@ -134,12 +137,15 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                     while (iterator.hasNext()){
                         TentcentRs.DataBean.ItemsBean itemsBean = (TentcentRs.DataBean.ItemsBean) iterator.next();
                         String itemString = itemsBean.getItemstring();
-                        itemString = itemString.replaceAll("[\\s]+","").trim();
+                        itemString = itemString.replaceAll("[\\s]+", "").trim();
                         DataString da = new DataString();
                         da.setItemString(itemString);
                         da.setX(itemsBean.getItemcoord().getX());
-                        da.setBottomY(itemsBean.getItemcoord().getY()+itemsBean.getItemcoord().getHeight());
+                        da.setBottomY(itemsBean.getItemcoord().getY()+itemsBean.getItemcoord().getHeight()/3);
                         daTengxuduList.add(da);
+                        if(tengxu==0){
+                            tengxu=itemsBean.getItemcoord().getHeight()/2;
+                        }
                         Log.e("腾讯坐标xywh",itemsBean.getItemcoord().getX()+"\n"+itemsBean.getItemcoord().getY()
                         +"\n"+itemsBean.getItemcoord().getWidth()+"\n"+itemsBean.getItemcoord().getHeight());
                         Log.w("腾讯每个字段及其字符数",itemString+"  "+itemString.length());
@@ -292,6 +298,9 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
 
             String tempA = a.replaceAll("\\s*\\p{Punct}\\s*","");
             String tempB = b.replaceAll("\\s*\\p{Punct}\\s*","");
+            if (tempA.charAt(tempA.length()-1)!=tempB.charAt(tempB.length()-1)){
+                tempB=tempB.substring(0,tempB.length()-1);
+            }
 
             Log.w("temBaidu&temTengxu ",tempA+"\n"+tempB );
             if(tempA.equalsIgnoreCase(tempB)){
@@ -318,18 +327,24 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
     }
 
     private String insertMark1(String tempA,String tempB,String a){
+        //标记次数
+        int mFlag=0;
         ArrayMap<Character,Integer> map = new ArrayMap<>();
         for(int k=0;k<tempA.length();k++){
             char t = tempA.charAt(k);
-            if(map.containsKey(t)){
-                map.put(t,map.get(t)+1);
-            }else{
-                map.put(t,1);
+            int temp=0;
+            Integer rs=map.get(t);
+            if (rs!=null) {
+                temp=rs + 1;
+                map.put(t,temp );
+            } else {
+                map.put(t, 1);
             }
             if(t!=tempB.charAt(k) && !String.valueOf(t).equalsIgnoreCase(String.valueOf(tempB.charAt(k)))){
-                int count = map.get(t);
+                int count = temp;
                 int index = -1;
                 int start = 0;
+                count=caCulateCount(count,t,mFlag);
                 for(int m=0;m<count;m++){
                     index = a.indexOf(t,start);
                     if(index>=0) {
@@ -339,6 +354,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                 StringBuilder sb = new StringBuilder(a);
                 if(index>=0){
                     sb.replace(index,index+1,"<font color=\"#ff0000\">"+t+"</font>");
+                    mFlag++;
                 }
                 a = sb.toString();
             }
@@ -348,45 +364,70 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
 
     private String insertMark2(String tempA,String tempB,String a){
         ArrayMap<Character,Integer> map = new ArrayMap<>();
+        int temp=0;
         int j=0;
         int k=0;
         //跳转标记
         boolean flag = false;
-        while(j<tempA.length() && k<tempB.length()){
+        int mFlag=0;
+        while(j<tempA.length() && k<tempB.length()) {
             char ta = tempA.charAt(j);
             char tb = tempB.charAt(k);
-            if(map.containsKey(ta)){
-                map.put(ta,map.get(ta)+1);
-            }else{
-                map.put(ta,1);
+            Integer rs=map.get(ta);
+            if (rs!=null) {
+                temp=rs + 1;
+                map.put(ta,temp );
+            } else {
+                map.put(ta, 1);
             }
-            if(ta!=tb && !String.valueOf(ta).equalsIgnoreCase(String.valueOf(tb)) && !flag){
-                int count = map.get(ta);
+            if (ta != tb && !String.valueOf(ta).equalsIgnoreCase(String.valueOf(tb)) && !flag) {
+                int count = temp;
                 int index = -1;
                 int start = 0;
-                for(int m=0;m<count;m++){
-                    index = a.indexOf(ta,start);
-                    if(index>=0) {
+                count = caCulateCount(count, ta,mFlag);
+                for (int m = 0; m < count; m++) {
+                    index = a.indexOf(ta, start);
+                    if (index >= 0) {
                         start = index + 1;
                     }
                 }
                 StringBuilder sb = new StringBuilder(a);
-                if(index>=0){
-                    Log.e("NOT-EQUAL","标记");
-                    sb.replace(index,index+1,"<font color=\"#ff0000\">"+ta+"</font>");
+                if (index >= 0) {
+                    Log.e("NOT-EQUAL", "标记");
+                    sb.replace(index, index + 1, "<font color=\"#ff0000\">" + ta + "</font>");
+                    mFlag++;
                 }
                 a = sb.toString();
                 j++;
                 flag = true;
-            }else if(ta!=tb && !String.valueOf(ta).equalsIgnoreCase(String.valueOf(tb))){
+            } else if (ta != tb && !String.valueOf(ta).equalsIgnoreCase(String.valueOf(tb))) {
                 k++;
                 flag = false;
-            }else{
+            } else {
                 j++;
                 k++;
             }
         }
         return a;
+    }
+
+    /**
+     * 计算跳过次数
+     */
+    private int caCulateCount(int count,char t,int mFlag){
+        switch (t){
+            case '0':return count+mFlag*4;
+            case 'f':return count+mFlag*4;
+            case 'o':return count+mFlag*4;
+            case 'n':return count+mFlag*2;
+            case 't':return count+mFlag*2;
+            case '#':return count+mFlag;
+            case 'c':return count+mFlag;
+            case 'l':return count+mFlag;
+            case 'r':return count+mFlag;
+            case '=':return count+mFlag;
+            default:return count;
+        }
     }
 
 
@@ -401,9 +442,9 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
         listList.add(l1);
         List<DataString> current = l1;
         int temp = list.get(0).getXY(2);
-        int point = (or==1)?52:25;
+        int point = (or==1)?baidu:tengxu;
         for(int i=0;i<list.size();i++){
-            if(Math.abs(temp - list.get(i).getXY(2))<=point){
+            if(Math.abs(temp - list.get(i).getXY(2))<point){
                 current.add(list.get(i));
             }else{
                 temp = list.get(i).getXY(2);
@@ -483,8 +524,11 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                          DataString dataString = new DataString();
                          dataString.setItemString(itemString);
                          dataString.setX(x);
-                         dataString.setBottomY(y+word.getLocation().getHeight());
+                         dataString.setBottomY(y+word.getLocation().getHeight()/2);
                          daBaiduList.add(dataString);
+                         if(baidu==0){
+                             baidu=word.getLocation().getHeight()/3;
+                         }
                          Log.e("百度xywh", x+"\n"+y+"\n"+word.getLocation().getWidth()+"\n"+word.getLocation().getHeight());
                          Log.e("每个字段和字符数",itemString+"  "+itemString.length());
                      }

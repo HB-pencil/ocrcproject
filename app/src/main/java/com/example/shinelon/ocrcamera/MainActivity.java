@@ -417,7 +417,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Bitmap bitmap1 = gpuImage.getBitmapWithFilterApplied();
 
                 ByteArrayOutputStream out1 = new ByteArrayOutputStream();
-                bitmap1.compress(Bitmap.CompressFormat.JPEG,20,out1);
+                bitmap1.compress(Bitmap.CompressFormat.JPEG,10,out1);
                 try{
                     File file = new File(pFile,"sampleTransformed"+System.currentTimeMillis()+".jpg");
                     imagePath = file.getAbsolutePath();
