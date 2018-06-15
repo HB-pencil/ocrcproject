@@ -119,7 +119,6 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             Response response;
             try {
                 publishProgress("正在处理");
-                Log.e("腾讯-------------------","true");
                 client = new OkHttpClient();
                 response = client.newBuilder()
                         .connectTimeout(30,TimeUnit.SECONDS)
@@ -141,7 +140,7 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
                         DataString da = new DataString();
                         da.setItemString(itemString);
                         da.setX(itemsBean.getItemcoord().getX());
-                        da.setBottomY(itemsBean.getItemcoord().getY()+itemsBean.getItemcoord().getHeight()/3);
+                        da.setBottomY(itemsBean.getItemcoord().getY()+itemsBean.getItemcoord().getHeight()/2);
                         daTengxuduList.add(da);
                         if(tengxu==0){
                             tengxu=itemsBean.getItemcoord().getHeight()/2;
@@ -272,7 +271,6 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             mProgressDialog.dismiss();
         }
         long current = (System.currentTimeMillis() - time)/1000;
-        Log.e("FINISH","------------------use time-------------------"+current+"s");
     }
     private void setResult(String result1,String result2){
         str1 = result1;
@@ -298,121 +296,233 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
 
             String tempA = a.replaceAll("\\s*\\p{Punct}\\s*","");
             String tempB = b.replaceAll("\\s*\\p{Punct}\\s*","");
-            if (tempA.charAt(tempA.length()-1)!=tempB.charAt(tempB.length()-1)){
-                tempB=tempB.substring(0,tempB.length()-1);
-            }
-
             Log.w("temBaidu&temTengxu ",tempA+"\n"+tempB );
             if(tempA.equalsIgnoreCase(tempB)){
                 Log.e("比较","两者相等");
-            }else if(tempA.length()==tempB.length())
-            {   //不相等但是长度一样
-                a = insertMark1(tempA,tempB,a);
-                b = insertMark1(tempB,tempA,b);
-                baiduRs.set(i,a);
-                tengxuRs.set(i,b);
-                Log.e("a与b",a+"  长度相同内容比较  "+b);
-            } else if(tempA.length()>tempB.length()){
-                //不相等长度B>T
-                a = insertMark2(tempA,tempB,a);
-                baiduRs.set(i,a);
-                Log.e("a与b",a+"  a长度>b长度  "+b);
-            }else {
-                //不相等长度B<T
-                b = insertMark2(tempB,tempA,b);
-                tengxuRs.set(i,b);
-                Log.e("a与b",a+"  a长度<b长度  "+b);
+            }else{
+                Log.e("比较","两者不等");
+                List<String> list = insertMark(tempA,tempB,a,b);
+                baiduRs.set(i,list.get(0));
+                tengxuRs.set(i,list.get(1));
             }
         }
-    }
-
-    private String insertMark1(String tempA,String tempB,String a){
-        //标记次数
-        int mFlag=0;
-        ArrayMap<Character,Integer> map = new ArrayMap<>();
-        for(int k=0;k<tempA.length();k++){
-            char t = tempA.charAt(k);
-            int temp=0;
-            Integer rs=map.get(t);
-            if (rs!=null) {
-                temp=rs + 1;
-                map.put(t,temp );
-            } else {
-                map.put(t, 1);
-            }
-            if(t!=tempB.charAt(k) && !String.valueOf(t).equalsIgnoreCase(String.valueOf(tempB.charAt(k)))){
-                int count = temp;
-                int index = -1;
-                int start = 0;
-                count=caCulateCount(count,t,mFlag);
-                for(int m=0;m<count;m++){
-                    index = a.indexOf(t,start);
-                    if(index>=0) {
-                        start = index + 1;
-                    }
-                }
-                StringBuilder sb = new StringBuilder(a);
-                if(index>=0){
-                    sb.replace(index,index+1,"<font color=\"#ff0000\">"+t+"</font>");
-                    mFlag++;
-                }
-                a = sb.toString();
-            }
-        }
-        return a;
-    }
-
-    private String insertMark2(String tempA,String tempB,String a){
-        ArrayMap<Character,Integer> map = new ArrayMap<>();
-        int temp=0;
-        int j=0;
-        int k=0;
-        //跳转标记
-        boolean flag = false;
-        int mFlag=0;
-        while(j<tempA.length() && k<tempB.length()) {
-            char ta = tempA.charAt(j);
-            char tb = tempB.charAt(k);
-            Integer rs=map.get(ta);
-            if (rs!=null) {
-                temp=rs + 1;
-                map.put(ta,temp );
-            } else {
-                map.put(ta, 1);
-            }
-            if (ta != tb && !String.valueOf(ta).equalsIgnoreCase(String.valueOf(tb)) && !flag) {
-                int count = temp;
-                int index = -1;
-                int start = 0;
-                count = caCulateCount(count, ta,mFlag);
-                for (int m = 0; m < count; m++) {
-                    index = a.indexOf(ta, start);
-                    if (index >= 0) {
-                        start = index + 1;
-                    }
-                }
-                StringBuilder sb = new StringBuilder(a);
-                if (index >= 0) {
-                    Log.e("NOT-EQUAL", "标记");
-                    sb.replace(index, index + 1, "<font color=\"#ff0000\">" + ta + "</font>");
-                    mFlag++;
-                }
-                a = sb.toString();
-                j++;
-                flag = true;
-            } else if (ta != tb && !String.valueOf(ta).equalsIgnoreCase(String.valueOf(tb))) {
-                k++;
-                flag = false;
-            } else {
-                j++;
-                k++;
-            }
-        }
-        return a;
     }
 
     /**
-     * 计算跳过次数
+     * 字符串差异标记算法
+     * @param tempA  经过处理清除干扰的字符串——上边第一个
+     * @param tempB  经过处理清除干扰的字符串——下边第二个
+     * @param a 原始字符串上边
+     * @param b 原始字符串下边
+     * @return 原始字符串处理后的标记结果
+     */
+    private List<String> insertMark(String tempA,String tempB,String a,String b){
+        //a,b标记次数
+        int mFlag1=0;
+        int mFlag2=0;
+        //存储结果的集合
+        List<String> list = new ArrayList<>();
+        //代替HashMap节约内存，ArrayMap双数组基于二分查找，key为tempA/B的字符，value为次数
+        ArrayMap<Character,Integer> map1 = new ArrayMap<>();
+        ArrayMap<Character,Integer> map2 = new ArrayMap<>();
+        //tempA,tempB两者的指针（下标）
+        int i=0;
+        int j=0;
+        //tempA，tempB中各个字符出现的次数
+        int count1=0;
+        int count2=0;
+
+        //循环对比两者的每一个字符
+        while(i<tempA.length()&&j<tempB.length()){
+            char t1 = tempA.charAt(i);
+            char t2 = tempB.charAt(j);
+            Integer res1=map1.get(t1);
+            Integer res2 =map2.get(t2);
+            if(res1!=null){
+                map1.put(t1,res1+1);
+            }else {
+                map1.put(t1,1);
+            }
+            if(res2!=null){
+                map2.put(t2,res2+1);
+            }else {
+                map2.put(t2,1);
+            }
+            //不相等
+            if(t1!=t2 && !String.valueOf(t1).equalsIgnoreCase(String.valueOf(t2))){
+                //不相等开始的索引
+                int index1 = -1;
+                //后面又相等了的索引
+                int start1 = 0;
+                int index2 = -1;
+                int start2 = 0;
+
+                //字符出现的次数
+                count1=map1.get(t1);
+                //插入标记后出现的次数
+                count1=caCulateCount(count1,t1,mFlag1);
+                count2=map2.get(t2);
+                count2=caCulateCount(count2,t2,mFlag2);
+
+                //原始字符串中跳过重复定位到最新字符
+                for(int k=0;k<count1;k++){
+                    index1 = a.indexOf(t1,start1);
+                    if(index1>=0) {
+                        start1 = index1 + 1;
+                    }
+                }
+                for(int k=0;k<count2;k++){
+                    index2 = b.indexOf(t2,start2);
+                    if(index2>=0) {
+                        start2= index2 + 1;
+                    }
+                }
+                Log.d("index1、2",index1+" "+index2);
+
+                //是否定位到
+                boolean isFind=false;
+                //定位到后的最后相等字符的标记
+                int lastIndex=-1;
+                //定位不到后最后字符的标记
+                int nothing= -1;
+                //定位到
+                int var1=i;
+                for(int n=1;n<5;n++){
+                    i=var1+n;
+                    if(i<tempA.length()){
+                        char current = tempA.charAt(i);
+                        Log.d("范围判断",current+" "+i);
+                        res1=map1.get(current);
+                        if(res1!=null){
+                            map1.put(current,res1+1);
+                        }else {
+                            map1.put(current,1);
+                        }
+                        nothing=i;
+                        //定位tempB的末尾
+                        int index = tempB.indexOf(current,j);
+                        Log.d("tempB-index",index+"");
+                        //在5个字符的范围内
+                        if(index-j<=4&&index-j>=0){
+                            Log.d("char相等",current+" "+tempB.charAt(index));
+                            //次数计算
+                            int count=map1.get(current);
+                            count = caCulateCount(count,current,mFlag1);
+                            Log.d("count",count+"次");
+                            //定位a的末尾相等字符的索引
+                            int start=0;
+                            for(int k=0;k<count;k++){
+                                lastIndex = a.indexOf(current,start);
+                                start = lastIndex+1;
+                            }
+                            StringBuilder sb1 = new StringBuilder(a);
+                            Log.d("INDEXA",index1+" "+lastIndex);
+                            try{
+                                //标记
+                                sb1.replace(index1,lastIndex,"<font color=\"#ff0000\">"+a.substring(index1,lastIndex)+"</font>");
+                            }catch (StringIndexOutOfBoundsException e){
+                                list.add(a);
+                                list.add(b);
+                                return list;
+                            }
+                            a=sb1.toString();
+                            mFlag1++;
+                            //定位b的末尾字符，一定是在index2后首次出现
+                            int end2 = b.indexOf(current,index2);
+                            //具有不同字符
+                            if(end2-index2>0){
+                                StringBuilder sb2 = new StringBuilder(b);
+                                Log.d("INDEXB",index1+" "+lastIndex);
+                                try{
+                                    //标记
+                                    sb2.replace(index2,end2,"<font color=\"#ff0000\">"+b.substring(index2,end2)+"</font>");
+                                }catch (StringIndexOutOfBoundsException e){
+                                    list.add(a);
+                                    list.add(b);
+                                    return list;
+                                }
+                                b=sb2.toString();
+                                mFlag2++;
+                            }
+                            int var2 = j;
+                            for (int k=1;var2+k<=index;k++){
+                                j=var2+k;
+                                char c = tempB.charAt(j);
+                                res2=map2.get(c);
+                                if(res2!=null){
+                                    map2.put(c,res2+1);
+                                }else {
+                                    map2.put(c,1);
+                                }
+                            }
+                            isFind=true;
+                            break;
+                        }
+                    }else{
+                        //数组越界
+                        nothing=i-1;
+                        break;
+                    }
+                }
+                //范围内没有定位到
+                if(!isFind){
+                    //未定位到，最后一个字符
+                    char last = tempA.charAt(nothing);
+                    Integer rs = map1.get(last);
+                    int start=0;
+                    //定位a末尾索引
+                    for(int k=0;k<rs;k++){
+                        lastIndex = a.indexOf(last,start);
+                        start = lastIndex+1;
+                    }
+                    StringBuilder sb1 = new StringBuilder(a);
+                    Log.d("NotFind-replaceA",index1+" "+start);
+                    try{
+                        //标记
+                        sb1.replace(index1,start,"<font color=\"#ff0000\">"+a.substring(index1,start)+"</font>");
+                    }catch (StringIndexOutOfBoundsException e){
+                        list.add(a);
+                        list.add(b);
+                        return list;
+                    }
+                    a=sb1.toString();
+                    mFlag1++;
+                    Log.d("NotFind",a);
+
+                    StringBuilder sb2 = new StringBuilder(b);
+                    int distance = lastIndex-index1;
+                    //定位b末尾索引
+                    int end2 = index2+distance;
+                    end2=end2<b.length()?end2+1:b.length();
+                    Log.d("NotFind-replaceB",index2+" "+end2);
+                    try{
+                        //标记
+                        sb2.replace(index2,end2,"<font color=\"#ff0000\">"+b.substring(index2,end2)+"</font>");
+                    }catch (StringIndexOutOfBoundsException e){
+                        list.add(a);
+                        list.add(b);
+                        return list;
+                    }
+                    b=sb2.toString();
+                    mFlag2++;
+                    Log.d("NotFind",b);
+                    //上面只变化了i的值
+                    j=j+4;
+                }
+            }
+            Log.d("结果",a+"\n"+b);
+            //遍历前进
+            i++;
+            j++;
+        }
+        list.add(a);
+        list.add(b);
+        return list;
+    }
+
+
+    /**
+     * 计算插入后的跳过次数
      */
     private int caCulateCount(int count,char t,int mFlag){
         switch (t){
