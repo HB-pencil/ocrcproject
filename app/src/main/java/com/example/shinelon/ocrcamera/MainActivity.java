@@ -43,6 +43,7 @@ import com.example.shinelon.ocrcamera.helper.helperDialogFragment;
 import com.example.shinelon.ocrcamera.task.DowanloadRecordActivity;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -398,11 +399,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             progressBar.setVisibility(View.VISIBLE);
             progresssBarText.setVisibility(View.VISIBLE);
             Log.e("openUri",uri.toString());
+            String path = "";
+            if("content".equals(uri.getScheme())){
+                path = changeToPath(uri);
+            }else {
+                path = uri.toString().split("//")[1];
+            }
+            FileInputStream fis = new FileInputStream(path);
+            Log.e("uriToPath",path);
+            float size = fis.available()/1024F;
+            int quality = 25;
+            if(size<250){
+                quality=100;
+            }else if(size<512){
+                quality=50;
+            }else if(size<1024){
+                quality=25;
+            }else if(size<2048){
+                quality=15;
+            }else if(size<3072){
+                quality=10;
+            }else {
+                quality=5;
+            }
+            fis.close();
+            final int q = quality;
+            Log.e("quality与size",q+" "+size);
+
             InputStream inputStream = getContentResolver().openInputStream(uri);
             Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.JPEG,20,out);
-
             ExecutorService service = Executors.newSingleThreadExecutor();
             service.submit(()->{
                 gpuImage.setImage(bitmap);
@@ -415,9 +442,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 gpuImage.setFilter(group);
                 Bitmap bitmap1 = gpuImage.getBitmapWithFilterApplied();
-
                 ByteArrayOutputStream out1 = new ByteArrayOutputStream();
-                bitmap1.compress(Bitmap.CompressFormat.JPEG,10,out1);
+
+                bitmap1.compress(Bitmap.CompressFormat.JPEG,q,out1);
                 try{
                     File file = new File(pFile,"sampleTransformed"+System.currentTimeMillis()+".jpg");
                     imagePath = file.getAbsolutePath();
@@ -435,6 +462,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         setUri(Uri.fromFile(file));
                         sendUpdateInfo(Uri.fromFile(file));
                     }
+                    fileOutputStream.close();
+                    out1.close();
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -455,6 +484,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     cropFile.delete();
                 }
             });
+            inputStream.close();
+            out.close();
         }catch(Exception e){
             e.printStackTrace();
         }

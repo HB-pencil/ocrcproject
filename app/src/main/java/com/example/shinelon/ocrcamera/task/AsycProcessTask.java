@@ -293,7 +293,6 @@ public class AsycProcessTask extends AsyncTask<String,String,List<String>> {
             String b =tengxuRs.get(i);
             Log.e("长度B&T",a.length()+"   "+b.length());
             //比较时去除不重要的标点符号干扰
-
             String tempA = a.replaceAll("\\s*\\p{Punct}\\s*","");
             String tempB = b.replaceAll("\\s*\\p{Punct}\\s*","");
             Log.w("temBaidu&temTengxu ",tempA+"\n"+tempB );
