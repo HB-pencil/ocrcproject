@@ -409,9 +409,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.e("uriToPath",path);
             float size = fis.available()/1024F;
             int quality = 25;
-            if(size<250){
-                quality=100;
-            }else if(size<512){
+            if(size<512){
                 quality=50;
             }else if(size<1024){
                 quality=25;

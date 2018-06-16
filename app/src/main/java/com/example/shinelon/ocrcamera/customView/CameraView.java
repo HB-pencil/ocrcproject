@@ -55,7 +55,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
             parameters.setRotation(0);
         }
         parameters.setPreviewSize(preList.get(preList.size()-1).width,preList.get(preList.size()-1).height);
-        parameters.setPictureSize( picList.get((int)( picList.size()*0.7)).width,picList.get((int)(picList.size()*0.7)).height);
+        parameters.setPictureSize( picList.get((int)( picList.size()*0.6)).width,picList.get((int)(picList.size()*0.6)).height);
         if(state){
             parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
         }else {
