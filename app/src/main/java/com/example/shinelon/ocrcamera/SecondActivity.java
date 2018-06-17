@@ -140,7 +140,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
             EditText editText = dialogview.findViewById(R.id.edit_dialog);
             AlertDialog dialog = new AlertDialog.Builder(this)
                     .setView(dialogview)
-                    .setCancelable(false)
+                    .setCancelable(true)
                     .setTitle("提示：")
                     .setPositiveButton("确认", (p1,p2)->{
                         customFileName = editText.getText().toString();
@@ -154,8 +154,10 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
 
                         }
                     })
+                    .setNegativeButton("取消",(p1,p2)->Log.d("Cancel","用户取消"))
                     .create();
             dialog.show();
+            dialog.setCanceledOnTouchOutside(true);
     }
 
     /**
