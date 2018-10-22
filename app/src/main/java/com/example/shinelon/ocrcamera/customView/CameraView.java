@@ -54,15 +54,18 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         }else if(!CameraActivity.isVertical) {
             parameters.setRotation(0);
         }
-        parameters.setPreviewSize(preList.get(preList.size()-1).width,preList.get(preList.size()-1).height);
-        parameters.setPictureSize( picList.get((int)( picList.size()*0.6)).width,picList.get((int)(picList.size()*0.6)).height);
+
+        if(preList.get(0).width> preList.get(preList.size()-1).width){
+            parameters.setPreviewSize(preList.get(0).width,preList.get(0).height);
+        }else{
+            parameters.setPreviewSize(preList.get(preList.size()-1).width,preList.get(preList.size()-1).height);
+        }
+        parameters.setPictureSize( picList.get((int)( picList.size()*0.7)).width,picList.get((int)(picList.size()*0.7)).height);
         if(state){
             parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
         }else {
             parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
         }
-        parameters.setPreviewFormat(PixelFormat.JPEG);
-        parameters.setPictureFormat(PixelFormat.JPEG);
         List<String> focusList = parameters.getSupportedFocusModes();
         if(focusList.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)){
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
@@ -75,7 +78,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
             camera.setPreviewDisplay(holder);
             camera.startPreview();
         }catch (Exception e){
-            e.getMessage();
+            e.printStackTrace();
         }
     }
 
